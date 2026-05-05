@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
@@ -517,7 +518,26 @@ function CellRecommend({ c, onOpen }) {
 }
 
 function ShowcaseDrawer({ contractor, onClose }) {
-  return (
+  // Lock body scroll while drawer is open so the page underneath doesn't scroll
+  // and the drawer becomes the only scrollable surface. Compensate for the
+  // disappearing scrollbar to avoid layout shift.
+  useEffect(() => {
+    const body = document.body;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) {
+      body.style.paddingRight = `${scrollBarWidth}px`;
+    }
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+    };
+  }, []);
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <>
       <motion.div
         initial={{ opacity: 0 }}
@@ -532,7 +552,7 @@ function ShowcaseDrawer({ contractor, onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 right-0 z-50 h-screen w-full max-w-[480px] bg-canvas border-l border-ink-100 overflow-y-auto"
+        className="fixed top-0 right-0 z-50 h-screen w-full max-w-[480px] bg-white border-l border-ink-100 overflow-y-auto"
       >
         <div className="sticky top-0 z-10 px-6 py-5 border-b border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -610,6 +630,7 @@ function ShowcaseDrawer({ contractor, onClose }) {
           </p>
         </div>
       </motion.aside>
-    </>
+    </>,
+    document.body
   );
 }
