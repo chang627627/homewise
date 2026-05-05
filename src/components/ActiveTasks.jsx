@@ -8,6 +8,8 @@ import {
   Flame,
   Clock,
   Sparkles,
+  CheckCircle2,
+  ThumbsUp,
 } from 'lucide-react';
 import SectionHeader from './ui/SectionHeader';
 import Pill from './ui/Pill';
@@ -84,36 +86,69 @@ function FlowDots({ flow }) {
   );
 }
 
-export default function ActiveTasks({ onNavigate, decisionHandled = false, scheduledSlot }) {
-  // After Jason is approved, the kitchen sink task moves into "Scheduled" state
+export default function ActiveTasks({
+  onNavigate,
+  decisionHandled = false,
+  scheduledSlot,
+  jobCompleted = false,
+  recommended,
+}) {
+  // After Jason is approved, the kitchen sink task moves into "Scheduled" state.
+  // Once the homeowner confirms the visit, it moves into "Completed".
   const slotLabel = scheduledSlot || 'Friday 2 PM';
-  const visibleTasks = tasks.map((t) =>
-    t.convId === 'sink' && decisionHandled
-      ? {
-          ...t,
-          urgency: { tone: 'sage', label: `Scheduled · ${slotLabel}` },
-          confidence: 96,
-          currentAction: 'Scheduled with Jason · monitoring for changes',
-          nextUserAction: `Visit confirmed · ${slotLabel}`,
-          flow: [
-            { label: 'Issue understood', state: 'done' },
-            { label: 'Contractors found', state: 'done' },
-            { label: 'Quotes received', state: 'done' },
-            { label: 'Awaiting approval', state: 'done' },
-            { label: 'Scheduled', state: 'active' },
-          ],
-        }
-      : t
-  );
+  const visibleTasks = tasks.map((t) => {
+    if (t.convId !== 'sink') return t;
+    if (jobCompleted) {
+      return {
+        ...t,
+        urgency: { tone: 'sage', label: 'Completed' },
+        confidence: 100,
+        currentAction:
+          recommended === 'yes'
+            ? "You recommended Jason · He's now Recommended by 13 Homewisers"
+            : 'Job closed out · Logged in your file',
+        nextUserAction: 'Nothing to do. Homewise is watching for follow-ups.',
+        flow: [
+          { label: 'Issue understood', state: 'done' },
+          { label: 'Contractors found', state: 'done' },
+          { label: 'Quotes received', state: 'done' },
+          { label: 'Awaiting approval', state: 'done' },
+          { label: 'Completed', state: 'done' },
+        ],
+        completedState: true,
+        recommended,
+      };
+    }
+    if (decisionHandled) {
+      return {
+        ...t,
+        urgency: { tone: 'sage', label: `Scheduled · ${slotLabel}` },
+        confidence: 96,
+        currentAction: 'Scheduled with Jason · monitoring for changes',
+        nextUserAction: `Visit confirmed · ${slotLabel}`,
+        flow: [
+          { label: 'Issue understood', state: 'done' },
+          { label: 'Contractors found', state: 'done' },
+          { label: 'Quotes received', state: 'done' },
+          { label: 'Awaiting approval', state: 'done' },
+          { label: 'Scheduled', state: 'active' },
+        ],
+        scheduledState: true,
+      };
+    }
+    return t;
+  });
   return (
     <section className="space-y-6">
       <SectionHeader
         eyebrow="Active AI tasks"
         title="What Homewise is working on right now."
         description={
-          decisionHandled
-            ? `One job in motion. Jason booked for ${slotLabel}. Homewise is monitoring.`
-            : "One job in motion. Click to see the conversation, what the AI's done, and what's next."
+          jobCompleted
+            ? 'One job, closed out. Click for the receipt, photos, and the recommendation you sent.'
+            : decisionHandled
+              ? `One job in motion. Jason booked for ${slotLabel}. Homewise is monitoring.`
+              : "One job in motion. Click to see the conversation, what the AI's done, and what's next."
         }
         trailing={
           <Pill tone="sage" live>
@@ -175,6 +210,28 @@ export default function ActiveTasks({ onNavigate, decisionHandled = false, sched
                 </div>
               </div>
               <Confidence value={t.confidence} label="Task confidence" />
+              {t.scheduledState && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNavigate?.('completion');
+                  }}
+                  className="group/btn w-full h-10 mt-1 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+                >
+                  <CheckCircle2 size={13} strokeWidth={2.2} />
+                  Confirm visit complete
+                </button>
+              )}
+              {t.completedState && t.recommended === 'yes' && (
+                <div className="rounded-2xl bg-sage-50/60 border border-sage-100 px-3 py-2.5 inline-flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-sage-600 ring-1 ring-sage-100">
+                    <ThumbsUp size={12} strokeWidth={2.2} />
+                  </span>
+                  <span className="text-[11.5px] text-ink-700 leading-snug">
+                    Recommendation sent. Jason's count is now <strong className="text-ink-900">13 Homewisers</strong>.
+                  </span>
+                </div>
+              )}
             </div>
           </motion.article>
         ))}

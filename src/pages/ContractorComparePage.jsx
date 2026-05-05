@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
   ShieldCheck,
@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Clock,
   FileBadge,
+  ThumbsUp,
+  Image as ImageIcon,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -36,6 +38,30 @@ const contractors = [
     relevantWork: { value: 6, label: 'similar jobs · 12 mo' },
     permitHistory: { value: 11, label: 'permits pulled · 12 mo' },
     earliest: { value: 'Friday', label: '2 days' },
+    recommendCount: 12,
+    showcase: [
+      {
+        category: 'Sink leak repair',
+        scope: 'P-trap + faucet cartridge replacement',
+        date: 'Mar 2026',
+        photoTone: 'sage',
+        photoLabel: 'Under sink · after',
+      },
+      {
+        category: 'Water heater swap',
+        scope: '50-gal gas heater replacement + permit',
+        date: 'Feb 2026',
+        photoTone: 'sky',
+        photoLabel: 'New heater · installed',
+      },
+      {
+        category: 'Toilet replacement',
+        scope: 'Two-piece toilet swap + supply line',
+        date: 'Jan 2026',
+        photoTone: 'ember',
+        photoLabel: 'Toilet · finished',
+      },
+    ],
   },
   {
     id: 'bayline',
@@ -49,6 +75,23 @@ const contractors = [
     relevantWork: { value: 4, label: 'similar jobs · 12 mo' },
     permitHistory: { value: 7, label: 'permits pulled · 12 mo' },
     earliest: { value: 'Saturday', label: '3 days' },
+    recommendCount: 7,
+    showcase: [
+      {
+        category: 'Pipe repair',
+        scope: 'Burst supply line · drywall left for owner',
+        date: 'Mar 2026',
+        photoTone: 'sky',
+        photoLabel: 'Pipe · repaired',
+      },
+      {
+        category: 'Sink installation',
+        scope: 'Undermount sink + new faucet',
+        date: 'Jan 2026',
+        photoTone: 'sage',
+        photoLabel: 'Sink · installed',
+      },
+    ],
   },
   {
     id: 'quickfix',
@@ -62,8 +105,16 @@ const contractors = [
     relevantWork: { value: 2, label: 'similar jobs · 12 mo' },
     permitHistory: { value: 3, label: 'permits pulled · 12 mo' },
     earliest: { value: 'Today', label: 'Same-day' },
+    recommendCount: 1,
+    showcase: [],
   },
 ];
+
+const photoTone = {
+  sage: 'from-sage-200 to-sage-300',
+  sky: 'from-sky2026-100 to-sky2026-300',
+  ember: 'from-ember-100 to-ember-200',
+};
 
 const accentBg = {
   sage: 'from-sage-200 to-sage-400 ring-sage-300/40 text-sage-700',
@@ -91,7 +142,16 @@ const sharedRationale = [
   },
 ];
 
-export default function ContractorComparePage({ onNavigate }) {
+export default function ContractorComparePage({ onNavigate, jobCompleted, recommended }) {
+  const [showcaseOpen, setShowcaseOpen] = useState(null); // contractor id or null
+  // After homeowner recommends Jason, his count bumps by 1
+  const liveContractors = contractors.map((c) =>
+    c.id === 'jason' && jobCompleted && recommended === 'yes'
+      ? { ...c, recommendCount: c.recommendCount + 1, justRecommended: true }
+      : c
+  );
+  const open = liveContractors.find((c) => c.id === showcaseOpen);
+
   return (
     <div className="space-y-8">
       <BackBar
@@ -147,7 +207,7 @@ export default function ContractorComparePage({ onNavigate }) {
               Criterion
             </div>
           </div>
-          {contractors.map((c, idx) => (
+          {liveContractors.map((c, idx) => (
             <motion.div
               key={c.id}
               initial={{ opacity: 0, y: 6 }}
@@ -199,13 +259,13 @@ export default function ContractorComparePage({ onNavigate }) {
         {/* Comparison rows */}
         <div className="divide-y divide-ink-100">
           <CompareRow label="Rating" sub="With number of reviews">
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellRating key={c.id} c={c.rating} />
             ))}
           </CompareRow>
 
           <CompareRow label="Years licensed" sub="Verified with state board">
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellSimple
                 key={c.id}
                 value={`${c.yearsLicensed} yrs`}
@@ -214,13 +274,13 @@ export default function ContractorComparePage({ onNavigate }) {
           </CompareRow>
 
           <CompareRow label="License" sub="Verified ✓ or flagged">
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellCheck key={c.id} ok={c.license.ok} text={c.license.label} />
             ))}
           </CompareRow>
 
           <CompareRow label="Insurance" sub="GL + workers comp current">
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellCheck
                 key={c.id}
                 ok={c.insurance.ok}
@@ -233,7 +293,7 @@ export default function ContractorComparePage({ onNavigate }) {
             label="Relevant past work"
             sub="Same job type · 12 mo · pulled from permit records"
           >
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellRelevant key={c.id} v={c.relevantWork} />
             ))}
           </CompareRow>
@@ -242,18 +302,38 @@ export default function ContractorComparePage({ onNavigate }) {
             label="Permit history"
             sub="Total permits pulled · 12 mo"
           >
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellPermits key={c.id} v={c.permitHistory} />
             ))}
           </CompareRow>
 
           <CompareRow label="Earliest availability" sub="Stated availability for this scope">
-            {contractors.map((c) => (
+            {liveContractors.map((c) => (
               <CellAvailability key={c.id} v={c.earliest} />
+            ))}
+          </CompareRow>
+
+          <CompareRow
+            label="Recommended by Homewisers"
+            sub="Real homeowners on completed Homewise jobs · tap to see work"
+          >
+            {liveContractors.map((c) => (
+              <CellRecommend
+                key={c.id}
+                c={c}
+                onOpen={() => c.showcase.length > 0 && setShowcaseOpen(c.id)}
+              />
             ))}
           </CompareRow>
         </div>
       </section>
+
+      {/* Showcase drawer */}
+      <AnimatePresence>
+        {open && (
+          <ShowcaseDrawer contractor={open} onClose={() => setShowcaseOpen(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Shared rationale — light card matching Quote Compare's plain-language summary */}
       <motion.section
@@ -393,5 +473,143 @@ function CellAvailability({ v }) {
       <span className="text-[12px] font-semibold text-ink-900">{v.value}</span>
       <span className="text-[10.5px] text-ink-500">· {v.label}</span>
     </div>
+  );
+}
+
+function CellRecommend({ c, onOpen }) {
+  const isNew = c.recommendCount < 3;
+  if (isNew) {
+    return (
+      <div className="inline-flex items-center gap-1.5 text-[12px] text-ink-500">
+        <Sparkles size={11} className="text-ink-400" strokeWidth={2} />
+        <span>New to Homewise</span>
+      </div>
+    );
+  }
+  return (
+    <button
+      onClick={onOpen}
+      className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 transition-all ${
+        c.justRecommended
+          ? 'bg-sage-50 border-sage-200 hover:border-sage-300'
+          : 'bg-white border-ink-200 hover:border-ink-300'
+      }`}
+    >
+      <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sage-50 text-sage-600 ring-1 ring-sage-100">
+        <ThumbsUp size={10} strokeWidth={2.4} />
+      </span>
+      <span className="text-[12px] font-semibold text-ink-900 tabular-nums">
+        {c.recommendCount}
+      </span>
+      <span className="text-[10.5px] text-ink-500">Homewisers</span>
+      <ChevronRight
+        size={11}
+        className="text-ink-400 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all"
+        strokeWidth={2}
+      />
+      {c.justRecommended && (
+        <span className="ml-1 inline-flex items-center rounded-full bg-sage-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-white">
+          +1 you
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ShowcaseDrawer({ contractor, onClose }) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-ink-900/30 backdrop-blur-[2px]"
+      />
+      <motion.aside
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 right-0 z-50 h-screen w-full max-w-[480px] bg-canvas border-l border-ink-100 overflow-y-auto"
+      >
+        <div className="sticky top-0 z-10 px-6 py-5 border-b border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className={`relative h-9 w-9 rounded-2xl bg-gradient-to-br ${accentBg[contractor.accent]} ring-1 flex items-center justify-center shrink-0`}
+            >
+              <span className="editorial text-[13px]">{contractor.initials}</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-ink-900 truncate">
+                {contractor.name}
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <ThumbsUp size={10} className="text-sage-500" strokeWidth={2.4} />
+                <span className="text-[10.5px] uppercase tracking-[0.14em] text-sage-600 font-bold">
+                  Recommended by {contractor.recommendCount} Homewisers
+                </span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+          >
+            <X size={13} strokeWidth={2} />
+          </button>
+        </div>
+        <div className="px-6 py-5">
+          <div className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
+            Recent recommended jobs · sorted by relevance to your scope
+          </div>
+          <div className="space-y-2.5">
+            {contractor.showcase.map((job, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: i * 0.05 }}
+                className="rounded-2xl bg-white border border-ink-100/80 overflow-hidden"
+              >
+                <div className="relative aspect-[5/2]">
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${photoTone[job.photoTone]}`}
+                  />
+                  <div className="absolute inset-0 dot-grid opacity-30" />
+                  <div className="absolute top-2 left-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
+                      <ImageIcon size={9} strokeWidth={2.2} />
+                      {job.photoLabel}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3.5">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <Pill tone="sage" icon={ThumbsUp}>
+                      Recommended
+                    </Pill>
+                    <span className="text-[10.5px] tabular-nums text-ink-500">
+                      {job.date}
+                    </span>
+                  </div>
+                  <div className="text-[13px] font-semibold text-ink-900 mt-1">
+                    {job.category}
+                  </div>
+                  <p className="mt-0.5 text-[12px] text-ink-500 leading-snug">
+                    {job.scope}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
+            Showcase only includes jobs scoped and completed through Homewise.
+            Other Homewisers chose to share their photos. No names or addresses appear.
+          </p>
+        </div>
+      </motion.aside>
+    </>
   );
 }

@@ -38,11 +38,26 @@ const steps = [
   },
 ];
 
-export default function OverviewPage({ onNavigate, decisionHandled, scheduledSlot, hasStartedFirstTask }) {
+export default function OverviewPage({
+  onNavigate,
+  decisionHandled,
+  scheduledSlot,
+  jobCompleted,
+  recommended,
+  hasStartedFirstTask,
+}) {
   if (!hasStartedFirstTask) {
     return <EmptyOverview onNavigate={onNavigate} />;
   }
-  return <PopulatedOverview onNavigate={onNavigate} decisionHandled={decisionHandled} scheduledSlot={scheduledSlot} />;
+  return (
+    <PopulatedOverview
+      onNavigate={onNavigate}
+      decisionHandled={decisionHandled}
+      scheduledSlot={scheduledSlot}
+      jobCompleted={jobCompleted}
+      recommended={recommended}
+    />
+  );
 }
 
 function EmptyOverview({ onNavigate }) {
@@ -157,7 +172,7 @@ function EmptyOverview({ onNavigate }) {
   );
 }
 
-function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot }) {
+function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot, jobCompleted, recommended }) {
   return (
     <div className="space-y-12 lg:space-y-16">
       {/* Hero */}
@@ -186,14 +201,22 @@ function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot }) {
           </span>
         </h1>
         <p className="mt-3 text-[13.5px] text-ink-500 max-w-xl leading-relaxed">
-          {decisionHandled
-            ? 'No decisions waiting. The kitchen sink job is moving. Open Conversations to follow it.'
-            : 'One job in motion. Homewise will surface only what needs your call. Open Conversations to see the thread.'}
+          {jobCompleted
+            ? `Kitchen sink job closed out. ${recommended === 'yes' ? 'Jason has one more recommendation.' : 'Recorded for your file.'}`
+            : decisionHandled
+              ? 'No decisions waiting. The kitchen sink job is moving. Open Conversations to follow it.'
+              : 'One job in motion. Homewise will surface only what needs your call. Open Conversations to see the thread.'}
         </p>
       </section>
 
       <OverviewCards onNavigate={onNavigate} decisionHandled={decisionHandled} />
-      <ActiveTasks onNavigate={onNavigate} decisionHandled={decisionHandled} scheduledSlot={scheduledSlot} />
+      <ActiveTasks
+        onNavigate={onNavigate}
+        decisionHandled={decisionHandled}
+        scheduledSlot={scheduledSlot}
+        jobCompleted={jobCompleted}
+        recommended={recommended}
+      />
     </div>
   );
 }

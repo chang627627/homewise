@@ -10,6 +10,7 @@ import ContractorComparePage from './pages/ContractorComparePage';
 import QuoteComparePage from './pages/QuoteComparePage';
 import ConversationPage from './pages/ConversationPage';
 import OnboardingPage from './pages/OnboardingPage';
+import CompletionPage from './pages/CompletionPage';
 
 const pageMap = {
   overview: OverviewPage,
@@ -21,6 +22,7 @@ const pageMap = {
   'contractor-compare': ContractorComparePage,
   'quote-compare': QuoteComparePage,
   conversation: ConversationPage,
+  completion: CompletionPage,
 };
 
 // Pages that hide the footer (so the chat input pins to the viewport bottom without page scroll competing)
@@ -33,6 +35,9 @@ export default function App() {
   const [scheduledSlot, setScheduledSlot] = useState(null);
   const [hasStartedFirstTask, setHasStartedFirstTask] = useState(false);
   const [hasOnboarded, setHasOnboarded] = useState(false);
+  const [jobCompleted, setJobCompleted] = useState(false);
+  const [recommended, setRecommended] = useState(null);
+  const [photosShared, setPhotosShared] = useState(false);
   const Page = pageMap[page] || OverviewPage;
 
   if (!hasOnboarded) {
@@ -52,6 +57,9 @@ export default function App() {
     // The user explicitly approved a contractor (sent via opts.decisionHandled)
     if (opts.decisionHandled) setDecisionHandled(true);
     if (opts.scheduledSlot) setScheduledSlot(opts.scheduledSlot);
+    if (opts.jobCompleted) setJobCompleted(true);
+    if (opts.recommended) setRecommended(opts.recommended);
+    if (opts.photosShared !== undefined) setPhotosShared(opts.photosShared);
     setPage(id);
     if (typeof window !== 'undefined') {
       requestAnimationFrame(() => {
@@ -99,6 +107,9 @@ export default function App() {
                   conversationId={conversationId}
                   decisionHandled={decisionHandled}
                   scheduledSlot={scheduledSlot}
+                  jobCompleted={jobCompleted}
+                  recommended={recommended}
+                  photosShared={photosShared}
                   hasStartedFirstTask={hasStartedFirstTask}
                 />
               </motion.div>
