@@ -45,6 +45,7 @@ const cols = [
     bio: 'Family-run since 2012. 14 years licensed. Specializes in residential plumbing repairs and faucet replacements.',
     rating: { score: 4.8, reviews: 168 },
     responseTime: 'Usually replies within 2 hours',
+    phone: '(510) 555-0142',
     slots: [
       { id: 'fri-2', time: 'Fri 2 PM', window: 'weekday-pm' },
       { id: 'fri-4', time: 'Fri 4 PM', window: 'weekday-pm' },
@@ -63,6 +64,7 @@ const cols = [
     bio: 'Bayline has 9 years licensed and offers a 1-year workmanship warranty. Higher-end residential work.',
     rating: { score: 4.6, reviews: 92 },
     responseTime: 'Usually replies within 4 hours',
+    phone: '(510) 555-0291',
     slots: [
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
       { id: 'sat-1', time: 'Sat 1 PM', window: 'weekend' },
@@ -81,6 +83,7 @@ const cols = [
     bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
     rating: { score: 4.5, reviews: 41 },
     responseTime: 'Usually replies within 1 hour',
+    phone: '(510) 555-0463',
     slots: [
       { id: 'today-5', time: 'Today 5 PM', window: 'weekday-pm' },
       { id: 'tomorrow-9', time: 'Tomorrow 9 AM', window: 'weekday-am' },
@@ -564,9 +567,6 @@ export default function QuoteComparePage({ onNavigate }) {
 }
 
 function ContactDrawer({ contractor, onClose }) {
-  const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
-
   // Lock body scroll while open
   useEffect(() => {
     const body = document.body;
@@ -582,12 +582,6 @@ function ContactDrawer({ contractor, onClose }) {
   }, []);
 
   if (typeof document === 'undefined') return null;
-
-  const handleSend = () => {
-    if (!message.trim()) return;
-    setSent(true);
-    setTimeout(onClose, 1400);
-  };
 
   return createPortal(
     <>
@@ -644,80 +638,57 @@ function ContactDrawer({ contractor, onClose }) {
             <p className="text-[13px] text-ink-700 leading-relaxed">{contractor.bio}</p>
           </section>
 
-          {/* Suggested questions */}
-          {!sent && (
+          {/* Direct contact — primary action */}
+          {contractor.phone && (
             <section>
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-                Suggested questions · tap to use
+                Direct contact
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {suggestedQuestions.map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => setMessage(q)}
-                    className="text-left h-auto py-1.5 px-3 rounded-full text-[11.5px] text-ink-700 bg-canvas-soft border border-ink-100 hover:border-ink-300 hover:bg-white transition-all"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+              <a
+                href={`tel:${contractor.phone.replace(/\D/g, '')}`}
+                className="group flex items-center justify-between gap-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft px-4 py-3 transition-all"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft/15 text-canvas-soft shrink-0">
+                    <Phone size={14} strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-[13.5px] font-semibold tabular-nums">
+                      {contractor.phone}
+                    </div>
+                    <div className="text-[11px] text-canvas-soft/70">
+                      Call {contractor.name.split(' ')[0]} directly
+                    </div>
+                  </div>
+                </div>
+                <ArrowRight
+                  size={13}
+                  className="opacity-70 group-hover:translate-x-0.5 transition-all shrink-0"
+                  strokeWidth={2}
+                />
+              </a>
             </section>
           )}
 
-          {/* Message field */}
+          {/* Suggested questions — static reference for the call */}
           <section>
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-              Your question
+              Things to ask when you call
             </div>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={`Hi ${contractor.name.split(' ')[0]}, quick question before I book...`}
-              rows={4}
-              disabled={sent}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300 resize-none disabled:opacity-60"
-            />
-            <div className="mt-1 text-[11px] text-ink-500">
-              Homewise sends this with your scope attached. {contractor.name.split(' ')[0]} replies in-thread.
-            </div>
-          </section>
-        </div>
-
-        {/* Footer / send action */}
-        <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
-          {sent ? (
-            <span className="inline-flex items-center gap-1.5 text-[12.5px] text-sage-700 font-semibold">
-              <CheckCircle2 size={14} className="text-sage-500" strokeWidth={2.2} />
-              Sent. {contractor.name.split(' ')[0]} typically replies in {contractor.responseTime.toLowerCase().replace('usually replies ', '')}.
-            </span>
-          ) : (
-            <>
-              <span className="text-[11px] text-ink-500 leading-snug max-w-[55%]">
-                Booking is paused until you've heard back, if you want.
-              </span>
-              <button
-                onClick={handleSend}
-                disabled={!message.trim()}
-                className={`group h-10 pl-4 pr-3 rounded-2xl inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all ${
-                  message.trim()
-                    ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft'
-                    : 'bg-ink-100 text-ink-400 cursor-not-allowed'
-                }`}
-              >
-                <Send size={12} strokeWidth={2.2} />
-                Send question
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-xl transition-colors ${
-                    message.trim()
-                      ? 'bg-canvas-soft/15 group-hover:bg-canvas-soft/25'
-                      : 'bg-white/30'
-                  }`}
+            <ul className="space-y-1.5">
+              {suggestedQuestions.map((q, i) => (
+                <li
+                  key={q}
+                  className="flex items-start gap-2 text-[12.5px] text-ink-700 leading-snug"
                 >
-                  <ArrowRight size={11} strokeWidth={2.2} />
-                </span>
-              </button>
-            </>
-          )}
+                  <span className="shrink-0 mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-canvas-soft text-ink-500 text-[10px] font-bold tabular-nums">
+                    {i + 1}
+                  </span>
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </motion.aside>
     </>,
