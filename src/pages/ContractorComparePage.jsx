@@ -199,6 +199,26 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
         </div>
       </header>
 
+      {/* Global flag note above the matrix — surfaces any insurance issues at a glance */}
+      {liveContractors.some((c) => !c.insurance.ok) && (
+        <div className="rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3 flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
+            <AlertCircle size={12} strokeWidth={2} />
+          </span>
+          <div className="text-[12.5px] text-ink-700 leading-relaxed">
+            <strong className="text-ink-900 font-semibold">Heads up.</strong>{' '}
+            {liveContractors.filter((c) => !c.insurance.ok).length} of {liveContractors.length} contractors{' '}
+            {liveContractors.filter((c) => !c.insurance.ok).length === 1 ? 'has' : 'have'} flagged insurance.
+            See{' '}
+            {liveContractors
+              .filter((c) => !c.insurance.ok)
+              .map((c) => c.name.split(' ')[0])
+              .join(', ')}
+            's row before booking.
+          </div>
+        </div>
+      )}
+
       {/* Comparison matrix */}
       <section className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
         {/* Column headers */}
@@ -241,6 +261,14 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
                         <Sparkles size={10} className="text-sage-500" />
                         <span className="text-[10px] uppercase tracking-[0.14em] text-sage-600 font-bold">
                           AI top match
+                        </span>
+                      </div>
+                    )}
+                    {!c.insurance.ok && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <AlertCircle size={10} className="text-ember-500" strokeWidth={2.4} />
+                        <span className="text-[10px] uppercase tracking-[0.14em] text-ember-500 font-bold">
+                          Insurance flagged
                         </span>
                       </div>
                     )}
@@ -415,29 +443,28 @@ function CellSimple({ value }) {
 }
 
 function CellCheck({ ok, text }) {
+  if (!ok) {
+    return (
+      <div className="inline-flex items-start gap-1.5 rounded-lg bg-ember-50 ring-1 ring-ember-200 px-2 py-1.5">
+        <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
+          <AlertCircle size={11} strokeWidth={2.4} />
+        </span>
+        <div className="min-w-0">
+          <div className="text-[12.5px] font-bold text-ember-500 uppercase tracking-[0.04em]">
+            Flagged
+          </div>
+          <div className="text-[11px] text-ink-700 leading-tight mt-0.5">{text}</div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex items-start gap-1.5">
-      <span
-        className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md ring-1 shrink-0 ${
-          ok
-            ? 'bg-sage-50 text-sage-600 ring-sage-100'
-            : 'bg-ember-50 text-ember-500 ring-ember-100'
-        }`}
-      >
-        {ok ? (
-          <CheckCircle2 size={11} strokeWidth={2.2} />
-        ) : (
-          <AlertCircle size={11} strokeWidth={2.2} />
-        )}
+      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md ring-1 shrink-0 bg-sage-50 text-sage-600 ring-sage-100">
+        <CheckCircle2 size={11} strokeWidth={2.2} />
       </span>
       <div className="min-w-0">
-        <div
-          className={`text-[12.5px] font-semibold ${
-            ok ? 'text-sage-700' : 'text-ember-500'
-          }`}
-        >
-          {ok ? 'Verified' : 'Flagged'}
-        </div>
+        <div className="text-[12.5px] font-semibold text-sage-700">Verified</div>
         <div className="text-[11px] text-ink-500 leading-tight mt-0.5">{text}</div>
       </div>
     </div>

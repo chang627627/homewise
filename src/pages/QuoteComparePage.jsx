@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   Check,
@@ -13,6 +14,9 @@ import {
   MessageCircle,
   Clock,
   Hourglass,
+  Send,
+  Phone,
+  Star,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -38,6 +42,9 @@ const cols = [
     verdict: { tone: 'sage', label: 'Fair price' },
     status: 'received',
     received: '11:08 AM today',
+    bio: 'Family-run since 2012. 14 years licensed. Specializes in residential plumbing repairs and faucet replacements.',
+    rating: { score: 4.8, reviews: 168 },
+    responseTime: 'Usually replies within 2 hours',
     slots: [
       { id: 'fri-2', time: 'Fri 2 PM', window: 'weekday-pm' },
       { id: 'fri-4', time: 'Fri 4 PM', window: 'weekday-pm' },
@@ -53,6 +60,9 @@ const cols = [
     verdict: { tone: 'ember', label: 'Higher than market' },
     status: 'received',
     received: '2:42 PM today',
+    bio: 'Bayline has 9 years licensed and offers a 1-year workmanship warranty. Higher-end residential work.',
+    rating: { score: 4.6, reviews: 92 },
+    responseTime: 'Usually replies within 4 hours',
     slots: [
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
       { id: 'sat-1', time: 'Sat 1 PM', window: 'weekend' },
@@ -68,12 +78,23 @@ const cols = [
     verdict: { tone: 'ember', label: 'Low, missing details' },
     status: 'conversation',
     received: '4:15 PM today · clarifying',
+    bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
+    rating: { score: 4.5, reviews: 41 },
+    responseTime: 'Usually replies within 1 hour',
     slots: [
       { id: 'today-5', time: 'Today 5 PM', window: 'weekday-pm' },
       { id: 'tomorrow-9', time: 'Tomorrow 9 AM', window: 'weekday-am' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
   },
+];
+
+// Suggested pre-filled questions, shown as click-to-fill chips in the contact drawer
+const suggestedQuestions = [
+  'Can you confirm cost includes materials?',
+  'Will the area need to be cleared before you arrive?',
+  'How long do you expect the visit to take?',
+  'What happens if more work is needed once you start?',
 ];
 
 const statusMap = {
@@ -199,6 +220,8 @@ const accentBg = {
 export default function QuoteComparePage({ onNavigate }) {
   const [windows, setWindows] = useState(new Set(['weekday-pm', 'weekend']));
   const [picked, setPicked] = useState({ jason: 'fri-2', bayline: 'sat-10', quickfix: 'today-5' });
+  const [contactOpen, setContactOpen] = useState(null); // contractor id or null
+  const openContractor = cols.find((c) => c.id === contactOpen);
 
   const slotsFor = (c) => c.slots.filter((s) => windows.has(s.window));
   const pickedSlot = (c) => {
@@ -513,13 +536,192 @@ export default function QuoteComparePage({ onNavigate }) {
                   Approve {c.name.split(' ')[0]}
                   {sel && ` · ${sel.time}`}
                 </button>
+                <button
+                  onClick={() => setContactOpen(c.id)}
+                  className="w-full h-7 rounded-lg text-[11.5px] text-ink-500 hover:text-ink-900 hover:bg-canvas-soft transition-all inline-flex items-center justify-center gap-1.5"
+                >
+                  <MessageCircle size={11} strokeWidth={1.9} />
+                  Ask {c.name.split(' ')[0]} before booking
+                </button>
               </div>
             );
           })}
         </div>
       </section>
 
+      {/* Contact drawer — message a contractor before committing */}
+      <AnimatePresence>
+        {openContractor && (
+          <ContactDrawer
+            contractor={openContractor}
+            onClose={() => setContactOpen(null)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
+  );
+}
+
+function ContactDrawer({ contractor, onClose }) {
+  const [message, setMessage] = useState('');
+  const [sent, setSent] = useState(false);
+
+  // Lock body scroll while open
+  useEffect(() => {
+    const body = document.body;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) body.style.paddingRight = `${scrollBarWidth}px`;
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+    };
+  }, []);
+
+  if (typeof document === 'undefined') return null;
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    setSent(true);
+    setTimeout(onClose, 1400);
+  };
+
+  return createPortal(
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-ink-900/30 backdrop-blur-[2px]"
+      />
+      <motion.aside
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 right-0 z-50 h-screen w-full max-w-[480px] bg-white border-l border-ink-100 overflow-y-auto flex flex-col"
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 px-6 py-5 border-b border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className={`relative h-9 w-9 rounded-2xl bg-gradient-to-br ${accentBg[contractor.accent]} ring-1 flex items-center justify-center shrink-0`}
+            >
+              <span className="editorial text-[13px]">{contractor.initials}</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-ink-900 truncate">
+                {contractor.name}
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-ink-500">
+                <Star size={10} className="text-ember-300 fill-ember-300" strokeWidth={0} />
+                <span className="font-semibold text-ink-700 tabular-nums">{contractor.rating.score}</span>
+                <span>({contractor.rating.reviews})</span>
+                <span className="mx-1 text-ink-300">·</span>
+                <span>{contractor.responseTime}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+          >
+            <X size={13} strokeWidth={2} />
+          </button>
+        </div>
+
+        <div className="flex-1 px-6 py-5 space-y-5">
+          {/* About */}
+          <section>
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
+              About
+            </div>
+            <p className="text-[13px] text-ink-700 leading-relaxed">{contractor.bio}</p>
+          </section>
+
+          {/* Suggested questions */}
+          {!sent && (
+            <section>
+              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
+                Suggested questions · tap to use
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedQuestions.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => setMessage(q)}
+                    className="text-left h-auto py-1.5 px-3 rounded-full text-[11.5px] text-ink-700 bg-canvas-soft border border-ink-100 hover:border-ink-300 hover:bg-white transition-all"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Message field */}
+          <section>
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
+              Your question
+            </div>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={`Hi ${contractor.name.split(' ')[0]}, quick question before I book...`}
+              rows={4}
+              disabled={sent}
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300 resize-none disabled:opacity-60"
+            />
+            <div className="mt-1 text-[11px] text-ink-500">
+              Homewise sends this with your scope attached. {contractor.name.split(' ')[0]} replies in-thread.
+            </div>
+          </section>
+        </div>
+
+        {/* Footer / send action */}
+        <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
+          {sent ? (
+            <span className="inline-flex items-center gap-1.5 text-[12.5px] text-sage-700 font-semibold">
+              <CheckCircle2 size={14} className="text-sage-500" strokeWidth={2.2} />
+              Sent. {contractor.name.split(' ')[0]} typically replies in {contractor.responseTime.toLowerCase().replace('usually replies ', '')}.
+            </span>
+          ) : (
+            <>
+              <span className="text-[11px] text-ink-500 leading-snug max-w-[55%]">
+                Booking is paused until you've heard back, if you want.
+              </span>
+              <button
+                onClick={handleSend}
+                disabled={!message.trim()}
+                className={`group h-10 pl-4 pr-3 rounded-2xl inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all ${
+                  message.trim()
+                    ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft'
+                    : 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                }`}
+              >
+                <Send size={12} strokeWidth={2.2} />
+                Send question
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-xl transition-colors ${
+                    message.trim()
+                      ? 'bg-canvas-soft/15 group-hover:bg-canvas-soft/25'
+                      : 'bg-white/30'
+                  }`}
+                >
+                  <ArrowRight size={11} strokeWidth={2.2} />
+                </span>
+              </button>
+            </>
+          )}
+        </div>
+      </motion.aside>
+    </>,
+    document.body
   );
 }
 
