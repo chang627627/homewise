@@ -288,7 +288,7 @@ function SignupScreen({ onContinue }) {
 
       <div className="mt-8 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
         <ShieldCheck size={12} className="text-sage-500" strokeWidth={2} />
-        End-to-end encrypted · No contractor sees your home until you ask
+        No contractor sees your home until you ask
       </div>
       <p className="mt-2 text-[11px] text-ink-400 text-center leading-relaxed">
         By continuing you agree to Homewise's terms and privacy policy.

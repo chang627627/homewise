@@ -194,19 +194,33 @@ function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot, jobComp
             </span>
           </div>
         </div>
-        <h1 className="editorial text-[28px] md:text-[34px] leading-[1.1] text-ink-900 tracking-tight max-w-2xl">
-          Your AI is on it.
-          <span className="block text-ink-500">
-            You decide what matters.
-          </span>
-        </h1>
-        <p className="mt-3 text-[13.5px] text-ink-500 max-w-xl leading-relaxed">
-          {jobCompleted
-            ? `Kitchen sink job closed out. ${recommended === 'yes' ? 'Jason has one more recommendation.' : 'Recorded for your file.'}`
+        {(() => {
+          const hero = jobCompleted
+            ? {
+                primary: 'Job closed out.',
+                secondary:
+                  recommended === 'yes'
+                    ? 'You recommended Jason. Homewise is keeping a quiet eye.'
+                    : 'Recorded for your file.',
+              }
             : decisionHandled
-              ? 'No decisions waiting. The kitchen sink job is moving. Open Conversations to follow it.'
-              : 'One job in motion. Homewise will surface only what needs your call. Open Conversations to see the thread.'}
-        </p>
+              ? {
+                  primary: `${scheduledSlot || 'Friday 2 PM'} with Jason.`,
+                  secondary: 'Homewise is watching for changes.',
+                }
+              : {
+                  primary: '1 decision today.',
+                  secondary: 'Pick your plumber.',
+                };
+          return (
+            <>
+              <h1 className="editorial text-[28px] md:text-[34px] leading-[1.1] text-ink-900 tracking-tight max-w-2xl">
+                {hero.primary}
+                <span className="block text-ink-500">{hero.secondary}</span>
+              </h1>
+            </>
+          );
+        })()}
       </section>
 
       <OverviewCards onNavigate={onNavigate} decisionHandled={decisionHandled} />

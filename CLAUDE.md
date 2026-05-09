@@ -279,6 +279,81 @@ footer to the screen edge.
   the loop on Step 7 of the PDF spec. Documents/etc would be thin
   wrappers.
 
+## Round 1 testing changes (n=4, May 2026)
+
+Trust hypotheses T1–T5 tested with 4 homeowners. Synthesis surfaced 3
+universal/near-universal frictions; each fix below maps to a specific
+finding:
+
+### Contact contractor before booking (4/4 — universal)
+- New "Ask [Name] before booking" button on Quote Compare, **above** the
+  Approve CTA, sized equal to it (h-10, ring-1, phone icon). Was
+  originally a small ghost link below approve and got missed.
+- Click opens portal'd contact drawer (`bg-white`, body-scroll locked,
+  flush right edge) with: contractor avatar + rating + response time,
+  bio, click-to-call card with phone number (primary `bg-ink-900`
+  card), and a static numbered list of "things to ask when you call."
+- **No in-app messaging.** Phone communication belongs on the phone,
+  not threaded into the conversation page. Drawer is contact info +
+  call action + reference questions. Don't add a textarea.
+
+### Confidence score killed entirely (3/4 questioned 92%)
+- Testing said the score "isn't carrying its weight." Tried sourcing
+  it inline ("based on photo match…"), then a step-by-step "How
+  Homewise got here" panel. Both added chrome.
+- **Final move: removed the score.** Diagnosis eyebrow on Scope is
+  now `Most likely cause` (was `Primary diagnosis · 92% confidence`).
+  The diagnosis content + local benchmark range already do the trust
+  work the number wasn't doing.
+
+### Insurance flag — three layered signals (3/4)
+- Global ember note above the matrix listing flagged contractors by
+  name ("Heads up. 1 of 3 contractors has flagged insurance. See
+  Quickfix's row before booking.")
+- Column-header ember pill under Quickfix's name (parallels Jason's
+  "AI top match" sage pill).
+- Insurance matrix cell wrapped in an ember-tinted card with bold
+  uppercase FLAGGED label (vs. plain inline text).
+- Earlier full-banner attempt was "ugly as fuck" per user. Three
+  smaller signals reinforce without dominating.
+
+### Sage tint on AI top match column (Banks's "paid to be promoted")
+- The "AI TOP MATCH" pill alone wasn't pulling the eye. Banks
+  assumed Jason was paid to be promoted because the visual hierarchy
+  didn't reinforce the label.
+- Jason's whole column on Contractor Compare is now tinted
+  `bg-sage-50/40` continuously from header through every matrix row,
+  with `lg:-my-4 lg:py-4` padding tricks so the tint bleeds through
+  row dividers and reads as one continuous column.
+- `aiPickIndex` is computed once and passed to every `CompareRow`.
+
+### Overview cards stripped to "at a glance" strip
+- Was: 4-card grid with sparklines, icon chips, hover arrows, delta
+  sublines, and big numbers. Felt like a SaaS analytics dashboard.
+- Now: 4 minimal cards — just label + big number (+ optional one-line
+  sub on the action card). No sparklines, no icons, no hover arrows.
+- Above the grid: `AT A GLANCE · FOR YOUR ACTIVE JOB` eyebrow to
+  scope what these counts mean (state, not analytics — the active
+  task is the only "job," not a 30-day rollup).
+
+### Populated Overview hero made state-aware
+- Was: static `Your AI is on it. / You decide what matters.` (brand
+  wallpaper that worked on Empty Overview, redundant on Populated).
+- Now: contextual to state.
+  - Pre-decision: `1 decision today. / Pick your plumber.`
+  - Post-decision: `[scheduledSlot] with Jason. / Homewise is
+    watching for changes.`
+  - Post-completion: `Job closed out. / [recommendation status].`
+- Same Mobbin pattern as Rox's "Here's your focus for today,"
+  Base44's "Pick up where you left off."
+
+### Sign-up trust line tightened
+- Was: `End-to-end encrypted · No contractor sees your home until
+  you ask` — two claims in one line, encryption is technical noise
+  for this audience.
+- Now: `No contractor sees your home until you ask` — single claim,
+  the actual emotional hook.
+
 ## What was tried and rejected (do NOT redo)
 
 - Persistent right AI panel on every page → two-chat conflict on intake;
@@ -418,4 +493,17 @@ Production URL: https://homewise-rust.vercel.app
 - Don't put em dashes (—) in user-facing copy.
 - Don't bring back shadows.
 - Don't use serif typefaces.
+- Don't bring back the 92% confidence score on Scope. Testing
+  killed it — the diagnosis content carries trust on its own.
+- Don't add a textarea or send button to the contact drawer on
+  Quote Compare. Phone communication stays on the phone. The
+  drawer is contact info + call CTA + reference questions only.
+- Don't reintroduce sparklines / icon chips / hover arrows / delta
+  sublines on the Overview "at a glance" cards. Numbers are
+  single-digit state, not analytics — they don't earn that chrome.
+- Don't make the Populated Overview hero a static brand line. It
+  has to be state-aware (decision today / scheduled / completed).
+- Don't add "End-to-end encrypted" or other technical claims to
+  the sign-up trust line. The audience cares about "no contractor
+  sees your home until you ask," not crypto.
 - Don't add a Reset demo button — refresh handles it.
