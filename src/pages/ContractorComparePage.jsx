@@ -145,6 +145,7 @@ const sharedRationale = [
 
 export default function ContractorComparePage({ onNavigate, jobCompleted, recommended }) {
   const [showcaseOpen, setShowcaseOpen] = useState(null); // contractor id or null
+  const aiPickIndex = contractors.findIndex((c) => c.aiPick);
   // After homeowner recommends Jason, his count bumps by 1
   const liveContractors = contractors.map((c) =>
     c.id === 'jason' && jobCompleted && recommended === 'yes'
@@ -201,8 +202,8 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
 
       {/* Global flag note above the matrix — surfaces any insurance issues at a glance */}
       {liveContractors.some((c) => !c.insurance.ok) && (
-        <div className="rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3 flex items-start gap-2.5">
-          <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
+        <div className="rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3 flex items-center gap-2.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
             <AlertCircle size={12} strokeWidth={2} />
           </span>
           <div className="text-[12.5px] text-ink-700 leading-relaxed">
@@ -236,7 +237,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
               transition={{ duration: 0.35, delay: idx * 0.06 }}
               className={`lg:col-span-3 rounded-2xl p-3 ${
                 c.aiPick
-                  ? 'bg-white border border-sage-200 ring-1 ring-sage-100'
+                  ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100'
                   : 'bg-white border border-ink-100'
               }`}
             >
@@ -287,13 +288,13 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
 
         {/* Comparison rows */}
         <div className="divide-y divide-ink-100">
-          <CompareRow label="Rating" sub="With number of reviews">
+          <CompareRow label="Rating" sub="With number of reviews" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellRating key={c.id} c={c.rating} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Years licensed" sub="Verified with state board">
+          <CompareRow label="Years licensed" sub="Verified with state board" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellSimple
                 key={c.id}
@@ -302,13 +303,13 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
             ))}
           </CompareRow>
 
-          <CompareRow label="License" sub="Verified ✓ or flagged">
+          <CompareRow label="License" sub="Verified ✓ or flagged" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellCheck key={c.id} ok={c.license.ok} text={c.license.label} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Insurance" sub="GL + workers comp current">
+          <CompareRow label="Insurance" sub="GL + workers comp current" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellCheck
                 key={c.id}
@@ -321,6 +322,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Relevant past work"
             sub="Same job type · 12 mo · pulled from permit records"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellRelevant key={c.id} v={c.relevantWork} />
@@ -330,13 +332,14 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Permit history"
             sub="Total permits pulled · 12 mo"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellPermits key={c.id} v={c.permitHistory} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Earliest availability" sub="Stated availability for this scope">
+          <CompareRow label="Earliest availability" sub="Stated availability for this scope" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellAvailability key={c.id} v={c.earliest} />
             ))}
@@ -345,6 +348,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Recommended by Homewisers"
             sub="Real homeowners on completed Homewise jobs · tap to see work"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellRecommend
@@ -408,7 +412,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
   );
 }
 
-function CompareRow({ label, sub, children }) {
+function CompareRow({ label, sub, children, aiPickIndex }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 px-5 py-4">
       <div className="lg:col-span-3 min-w-0">
@@ -418,7 +422,14 @@ function CompareRow({ label, sub, children }) {
         {sub && <div className="text-[11px] text-ink-500 mt-0.5">{sub}</div>}
       </div>
       {React.Children.map(children, (child, i) => (
-        <div key={i} className="lg:col-span-3">
+        <div
+          key={i}
+          className={`lg:col-span-3 ${
+            i === aiPickIndex
+              ? 'lg:bg-sage-50/40 lg:-my-4 lg:py-4 lg:-mx-1.5 lg:px-1.5 lg:rounded-none'
+              : ''
+          }`}
+        >
           {child}
         </div>
       ))}

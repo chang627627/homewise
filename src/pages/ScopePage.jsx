@@ -187,7 +187,7 @@ export default function ScopePage({ onNavigate }) {
                       <Lightbulb size={11} strokeWidth={2.2} />
                     </span>
                     <span className="text-[10.5px] uppercase tracking-[0.16em] text-sage-600 font-semibold">
-                      Primary diagnosis · 92% confidence
+                      Most likely cause
                     </span>
                   </div>
                   <div className="text-[14px] font-semibold text-ink-900 leading-snug">
@@ -196,13 +196,6 @@ export default function ScopePage({ onNavigate }) {
                   <p className="mt-1.5 text-[12.5px] text-ink-500 leading-relaxed">
                     Standing water under the trap and the slow drip at the spout base are unrelated. Photo of the supply line behind the cabinet rules out a higher-pressure leak.
                   </p>
-                  <div className="mt-3 flex items-start gap-1.5 text-[11px] text-ink-500 leading-snug">
-                    <Info size={10} className="text-ink-400 mt-0.5 shrink-0" strokeWidth={2} />
-                    <span>
-                      Confidence based on photo match (3/3 shots), 14 similar past jobs in your ZIP, and your faucet age. Score is{' '}
-                      <strong className="text-ink-700 font-semibold">advisory, not a guarantee.</strong>
-                    </span>
-                  </div>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
