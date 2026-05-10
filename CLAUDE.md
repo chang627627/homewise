@@ -57,14 +57,17 @@ custom shadow tokens (`shadow-soft`, `shadow-card`, `shadow-glow`,
 
 ```
 src/
-├── App.jsx                          ← root, page state machine
+├── App.jsx                          ← root, page state machine + onboarding gate
 ├── main.jsx                         ← React entry
 ├── index.css                        ← Tailwind + custom utilities (.editorial, .glass, .dot-grid, .no-scrollbar)
+├── assets/
+│   ├── google.svg                   ← Google G logo (real multi-color, from Wikimedia)
+│   └── apple.svg                    ← Apple logo (rendered white on dark via `invert`)
 ├── components/
 │   ├── Sidebar.jsx                  ← left rail: brand, home selector, "+ New AI task", 3 nav items, user
-│   ├── OverviewCards.jsx            ← 4 stat tiles (clickable to deep pages, decision-aware)
+│   ├── OverviewCards.jsx            ← stripped 4-up stat cards (label + number only, no charts/icons)
 │   ├── ApprovalSection.jsx          ← single decision card (no longer used on Overview, kept as legacy)
-│   ├── ActiveTasks.jsx              ← task cards with flow dots, AI is doing, Next from you, confidence
+│   ├── ActiveTasks.jsx              ← task cards w/ flow dots, AI is doing, Next, confidence + "Confirm visit" CTA
 │   ├── ContractorMatch.jsx          ← featured Jason card (legacy — was on the cut Contractors page)
 │   ├── QuoteIntelligence.jsx        ← 3 quote cards + dark AI rec card (legacy — was on the cut Quotes page)
 │   └── ui/
@@ -74,16 +77,19 @@ src/
 │       ├── Confidence.jsx           ← animated confidence bar
 │       ├── SectionHeader.jsx
 │       ├── PageHeader.jsx           ← used on deep pages (Tasks, Schedule)
-│       └── BackBar.jsx              ← used on focused-flow pages
+│       ├── BackBar.jsx              ← used on focused-flow pages
+│       └── FlowProgress.jsx         ← 3-step pill row (Scope → Contractors → Quotes), clickable back-nav
 └── pages/
-    ├── OverviewPage.jsx             ← EmptyOverview + PopulatedOverview (state-aware)
+    ├── OnboardingPage.jsx           ← 3-step Flow 1: signup → 5 questions → maintenance plan
+    ├── OverviewPage.jsx             ← EmptyOverview + PopulatedOverview (state-aware, contextual hero)
     ├── TasksPage.jsx                ← Conversations list (state-aware)
     ├── SchedulePage.jsx             ← EmptySchedule + PopulatedSchedule (state-aware)
     ├── ConversationPage.jsx         ← full thread for one task; post-approval tail appended dynamically
-    ├── IntakePage.jsx               ← ChatGPT-style intake conversation
-    ├── ScopePage.jsx                ← AI-generated scope of work (PDF spec)
-    ├── ContractorComparePage.jsx    ← side-by-side 3 contractors (PDF spec)
-    └── QuoteComparePage.jsx         ← apples-to-apples quote comparison (PDF spec)
+    ├── IntakePage.jsx               ← ChatGPT-style intake (gated on Upload + Urgency clicks, reactive replies)
+    ├── ScopePage.jsx                ← AI-generated scope (no 92% number — killed per testing)
+    ├── ContractorComparePage.jsx    ← side-by-side 3 contractors + showcase drawer + recommendation row
+    ├── QuoteComparePage.jsx         ← apples-to-apples + availability windows + slot picker + contact drawer
+    └── CompletionPage.jsx           ← Flow 3 close-out: confirm work + photo opt-in + binary recommend
 ```
 
 **Deleted, do not recreate:** `ApprovalsPage.jsx`, `ContractorsPage.jsx`,
@@ -94,35 +100,45 @@ patterns.
 
 ## State machine (lives in App.jsx)
 
-Three pieces of app state drive the entire UX:
+Seven pieces of app state drive the entire UX:
 
 | State | Type | Trigger | Effect |
 |---|---|---|---|
+| `hasOnboarded` | bool | `OnboardingPage` `onComplete` callback | when `false`, App returns the onboarding flow **before** the main layout renders. Refresh resets to `false`. |
 | `page` | string | sidebar click, CTA click | which page renders |
 | `conversationId` | string | task card click → `onNavigate({ page: 'conversation', conversationId: 'sink' })` | which thread to show in ConversationPage |
 | `hasStartedFirstTask` | bool | navigating to `scope` | empty → populated everywhere |
-| `decisionHandled` | bool | `onNavigate({ page: 'overview', decisionHandled: true })` from per-contractor approve buttons on Quote Compare | pending → approved everywhere |
+| `decisionHandled` | bool | per-contractor approve on Quote Compare | pending → approved everywhere |
+| `scheduledSlot` | string | passed alongside `decisionHandled` from Quote Compare (e.g. `"Fri 2 PM"`) | drives the "Scheduled · X" pill copy + active task description |
+| `jobCompleted` | bool | submit on `CompletionPage` | active task flips from "Scheduled" → "Completed"; Contractor Compare shows "+1 you" badge on Jason |
+| `recommended` | `'yes'` \| `'no'` \| null | passed alongside `jobCompleted` from `CompletionPage` | drives recommendation row count bump + post-completion hero copy |
+| `photosShared` | bool | photo-approval toggle in CompletionPage | future-use (the consent flag); doesn't currently drive visible UI |
 
 `handleNavigate(id, opts)` accepts either a string id OR an object
-`{ page, conversationId?, decisionHandled? }`.
+`{ page, conversationId?, decisionHandled?, scheduledSlot?, jobCompleted?, recommended?, photosShared? }`.
 
 **No reset button.** This is treated as a real product. To reset state,
 refresh the page.
 
 ## Pages and routing
 
+`OnboardingPage` is **outside** the page map — it short-circuits in
+App.jsx when `hasOnboarded === false` and renders its own full-viewport
+layout (no sidebar). After `onComplete`, the main app layout takes over.
+
 State-based pseudo-routing via `pageMap` in App.jsx:
 
 | Key | Component | Sidebar nav | Notes |
 |---|---|---|---|
-| `overview` | OverviewPage | ✓ | Empty + Populated states |
+| `overview` | OverviewPage | ✓ | Empty + Populated states; populated has state-aware hero |
 | `tasks` | TasksPage | ✓ ("Conversations") | Empty + Populated states |
 | `schedule` | SchedulePage | ✓ | Empty + Populated states |
-| `intake` | IntakePage | hidden | Focused flow |
+| `intake` | IntakePage | hidden | Focused flow; gated on user clicks |
 | `scope` | ScopePage | hidden | Focused flow |
-| `contractor-compare` | ContractorComparePage | hidden | Focused flow |
-| `quote-compare` | QuoteComparePage | hidden | Focused flow |
+| `contractor-compare` | ContractorComparePage | hidden | Focused flow + showcase drawer |
+| `quote-compare` | QuoteComparePage | hidden | Focused flow + contact drawer |
 | `conversation` | ConversationPage | hidden | Focused flow |
+| `completion` | CompletionPage | hidden | Focused flow; entry via "Confirm visit complete" on Overview |
 
 `fullViewportPages = new Set(['intake', 'conversation'])` — these pages hide
 the page footer so the chat input pins to the viewport bottom without page
@@ -135,6 +151,40 @@ footer to the screen edge.
 ## Demo flow (the case-study story)
 
 ```
+[ Onboarding · screen 1 — Sign-up ]
+  Brand mark top-left. Centered.
+  Eyebrow: "— GET STARTED"
+  H1: "Start with your home. / Take it from there."
+  Sub: "Two minutes. Then your home's first plan, ready when you are."
+  CTAs: Continue with Google (white, real Google G) · Continue with Apple
+        (dark, white Apple via .invert) · "OR" divider · Continue with email
+  Trust line: "🛡 No contractor sees your home until you ask."
+  Terms below.
+        │
+        ▼  click any SSO/email
+[ Onboarding · screen 2 — Profile (5 questions, all pre-filled for demo) ]
+  Back link top-left ("← Back"). Step 1 of 2 indicator top-right.
+  Eyebrow: "QUICK SETUP · ABOUT A MINUTE"
+  H1: "Five questions, then we plan."
+  Q01 Home type (chip-select, "House" pre-selected)
+  Q02 Year built (chip-select, "1980–2000" pre-selected)
+  Q03 Where you live (text address + ZIP — "124 Maple St, Oakland, CA" + "94609")
+  Q04 Outdoor features (multi-select chips, Yard + Mature trees pre-selected)
+  Q05 Major systems (multi-select chips, Central HVAC + Water heater pre-selected)
+        │
+        ▼  click "Show my maintenance plan"
+[ Onboarding · screen 3 — Maintenance plan ]
+  Back link "← Edit my answers". Step 2 of 2 indicator.
+  Eyebrow: "YOUR HOME'S BASELINE PLAN"
+  H1: "Here's what's on your radar."
+  Sub: "Homewise will quietly track these, ping you ahead of seasonal windows,
+        and find pros when you're ready."
+  4–5 maintenance items, each tagged with a "From: [source]" pill so the
+  user can see why each item is on the list (HVAC service · From Central HVAC,
+  Gutter cleaning · From Yard + Mature trees, Smoke + CO test · Standard
+  for every home, etc.).
+        │
+        ▼  click "Continue to your home"  →  hasOnboarded = true
 [ Empty Overview ]
   Hero: "Your AI is ready. Tell it what happened."
   + Big "Start your first task" CTA
@@ -144,72 +194,146 @@ footer to the screen edge.
         ▼  click CTA OR sidebar "+ New AI task"
 [ Intake (chat) ]
   ChatGPT-style: messages scroll inside the card, input pinned at bottom,
-  page footer hidden so nothing competes for scroll.
-  Conversation auto-plays:
-    - User describes leak
-    - AI proactively requests 3 specific photos (per PDF: shot guidance)
-    - User uploads 2
-    - AI thinking → urgency capture (3 options, "slow leak this week" pre-selected)
-    - User reply → AI clarifying questions (panel photo + handle type)
-    - User reply + final photo → AI scope summary
+  page footer hidden so nothing competes for scroll. **Input bar is
+  permanent** — never replaced by a CTA dock.
+  Conversation auto-plays but **gates on real user clicks** at 2 points:
+    - User describes leak (auto)
+    - AI thinking → photo request (3 specific shots, with "Upload photos"
+      button) → **GATE: waits for user to click Upload photos**
+    - User reply "Sending the first two" (auto) → photos block → AI thinking
+    - Urgency picker (3 options) → **GATE: waits for user to click an option**
+    - User reply text is **dynamic** based on which urgency was picked
+      (e.g., "Active leak right now. Need someone today." vs. "Slow leak.
+      Sometime this week is fine.")
+    - AI clarifying questions (panel photo + handle type)
+    - User reply + final photo (auto)
+    - AI scope summary message + "Scoped as" summary card
+  Once `done`, two suggested chips appear in the chat: white "I have more
+  to add" (focuses input) and dark "Generate scope of work" (the actual
+  advance). Suggested-prompt pattern; input bar stays put.
         │
         ▼  click "Generate scope of work"  →  hasStartedFirstTask = true
 [ Scope ]                                     (Sidebar badges appear: Conversations 1 · Schedule 1)
-  Centered (max-w-4xl mx-auto). Header is stacked vertically:
-    eyebrow → title → description → CTAs (Export PDF · Edit scope · Approve & find contractors)
+  Full-width layout (NOT centered max-w-4xl — that read as misaligned vs.
+  the other deep pages). BackBar + FlowProgress + header all span the page;
+  only the document <article> stays narrow centered at max-w-4xl mx-auto.
+  FlowProgress: 1 Scope of work · 2 Contractors · 3 Quotes · Then book
   AI-generated disclaimer banner.
-  Document body: 01 Diagnosis (primary + alternative), 02 Job summary,
+  Document body: 01 Diagnosis (eyebrow now "Most likely cause", no 92%
+  confidence number — killed per Round 1 testing), 02 Job summary,
   03 Itemized labor, 04 Materials, 05 Exclusions, 06 Unit-priced add-ons,
-  07 Acceptance criteria. NO side rail (deleted: AI confidence, Ask AI,
-  Attached evidence, Will be sent to).
+  07 Acceptance criteria.
         │
         ▼  click "Approve & find contractors"
 [ Contractor Compare ]
-  Header stacked vertically with CTAs (Reject all 3 · Show 3 different ·
-  Approve all 3 & send scope).
-  Comparison matrix: Rating, Years licensed, License (✓/Flagged), Insurance,
-  Relevant past work, Permit history, Earliest availability.
-  Single shared "Why we picked these three" rationale card — light style,
-  matches Quote Compare's plain-language summary visually.
+  BackBar + FlowProgress (step 2). Header stacked vertically with CTAs
+  (Reject all 3 · Show 3 different · Approve all 3 & send scope).
+  Global ember "Heads up" note above the matrix when any contractor has
+  flagged insurance (lists names: "See Quickfix's row before booking.")
+  Column headers: Jason's card has sage-50/50 fill + "AI top match" pill;
+  Quickfix's card has ember "Insurance flagged" pill mirroring Jason's.
+  Comparison matrix rows: Rating · Years licensed · License · Insurance
+  (Quickfix wrapped in ember-tinted card with bold FLAGGED) · Relevant
+  past work · Permit history · Earliest availability · **Recommended
+  by Homewisers** (count chip or "New to Homewise" if <3; tap opens
+  showcase drawer).
+  Jason's column is tinted **continuously sage-50/40** through every row
+  via aiPickIndex prop on CompareRow (lg:-my-4 lg:py-4 padding trick
+  so tint bleeds through divides).
+  Single shared "Why we picked these three" rationale card below matrix.
+
+  Showcase drawer (opens on tap of a "Recommended by N Homewisers" chip):
+    Portal'd to document.body to escape the App-level motion.div
+    transform's containing block; bg-white, body scroll locked with
+    paddingRight compensation for the disappearing scrollbar.
+    Header: contractor avatar + "RECOMMENDED BY N HOMEWISERS" eyebrow.
+    Cards: past recommended jobs — tinted before/after photo + job
+    category + scope summary + completion date + privacy footer
+    ("No names or addresses appear").
         │
         ▼  click "Approve all 3 & send scope"
 [ Quote Compare ]
-  Header stacked vertically with status pills.
-  Plain-language summary card (light, sage accent strip).
-  3 quote total cards.
+  BackBar + FlowProgress (step 3). Header stacked vertically with status
+  pills + plain-language summary card.
+  3 quote total cards (Jason "AI pick" with sage outline).
   Matrix: line-by-line scope deviations + outlier flags ($75 fee, missing
-  materials, BETTER 1-yr warranty). Per-contractor "Pick this contractor"
-  row at the bottom of the matrix — Jason highlighted (`bg-ink-900`,
-  not sage), Bayline + Quickfix outline buttons.
-  NO Homewise verdict, NO deviations rail, NO status strip (all deleted as
-  redundant).
+  materials, BETTER 1-yr warranty).
+  Totals row.
+  **Your availability** picker row (4 toggle chips: Weekday AM/PM, Evenings,
+  Weekend — defaults to Weekday PM + Weekend).
+  **Pick a slot & approve** row (per contractor):
+    - Filtered slot chips (only the contractor's slots whose window
+      matches the user's selected windows — "No overlap with your
+      availability" if none match)
+    - Secondary white "Ask [Name] before booking" button **above** the
+      Approve CTA (was a small ghost link below, missed per testing)
+    - Primary "Approve [Name] · [picked slot]" button — Jason ink-900,
+      Bayline + Quickfix white outline. Disabled if no overlap.
+
+  Contact drawer (opens on "Ask [Name] before booking"):
+    Portal'd, bg-white, body-scroll locked.
+    Header: contractor avatar + rating + response time.
+    About: short bio.
+    Direct contact: prominent ink-900 click-to-call card with phone number.
+    Things to ask: static numbered list of 4 reference questions (NOT a
+    textarea; phone communication stays on the phone).
         │
-        ▼  click "Approve Jason"  →  decisionHandled = true (via opts)
-[ Back to Overview — POPULATED ]
-  Hero updates: "No decisions waiting. The kitchen sink job is moving."
-  4 stat cards reflect: 1 task, 0 decisions (was 1), 3 quotes, 3 vetted.
-  Active task card shows "Scheduled · Friday 2 PM" pill, flow all done
-  except Scheduled now active, AI IS DOING "Scheduled with Jason ·
-  monitoring", NEXT FROM YOU "Visit confirmed · 2 days away", confidence 96%.
+        ▼  click "Approve Jason · Fri 2 PM"  →  decisionHandled = true, scheduledSlot
+[ Back to Overview — POPULATED · pre-completion ]
+  Eyebrow: "GOOD MORNING, MARA · APRIL 23"
+  Hero is **state-aware contextual** (was "Your AI is on it / You decide
+  what matters" — that's brand wallpaper).
+    - Pre-decision: "1 decision today. / Pick your plumber."
+    - Post-decision: "Fri 2 PM with Jason. / Homewise is watching for changes."
+  "AT A GLANCE · FOR YOUR ACTIVE JOB" eyebrow above the 4-up stat strip:
+    Task in motion · 1
+    Decision today / Decisions waiting · 1/0 (ember/sage tone)
+    Quotes received · 3
+    Contractors verified · 3
+  Active task card shows "Scheduled · Fri 2 PM" pill, flow all done except
+  Scheduled now active, AI IS DOING "Scheduled with Jason · monitoring",
+  NEXT FROM YOU "Visit confirmed · Fri 2 PM", confidence 96%, plus a new
+  dark "Confirm visit complete" CTA at the bottom of the card.
+        │
+        ▼  click "Confirm visit complete" on the active task card
+[ Completion ]
+  BackBar "Back to overview".
+  Eyebrow: "FINAL STEP · CLOSE OUT THE JOB"
+  H1: "Jason marked the visit complete."
+  3 stacked sections:
+    01 Confirm work is done — 3 cards (Yes, it's done / Not yet / Something's
+       wrong; "Yes" pre-selected for demo)
+    02 Approve photos for Jason's showcase — 3 "after" thumbnails + opt-in
+       toggle (default off per Flow 3 spec)
+    03 Would you recommend Jason — binary Yes / No (no stars, no comment)
+  Submit "Close out the job" → jobCompleted = true + recommended.
+        │
+        ▼  back to Overview (now POPULATED · post-completion)
+  Hero: "Job closed out. / You recommended Jason. Homewise is keeping a quiet eye."
+  Active task card pivots: "Completed" pill, "AI is doing: You recommended
+  Jason · He's now Recommended by 13 Homewisers", sage-tinted
+  "Recommendation sent" badge inside the card.
+  On Contractor Compare, Jason's recommendation row now shows "13" with
+  a "+1 YOU" badge.
         │
         ▼  click active task card
 [ Conversation ]
-  Full thread (25 messages now, was 21 — booking-confirmation tail
-  appended dynamically when decisionHandled is true):
-    user describes problem → AI photo request → user uploads + answers
-    urgency + clarifying questions → AI actions (license, insurance,
-    benchmark, outreach) → AI message about Jason's quote + inline quote
-    artifact card → user asks comparison question → AI summary + inline
-    quote-compare artifact card →
-    [ post-approval tail: ]
-    user "Approve Jason for Friday 2 PM"
+  Full thread:
+    intake (problem → photos → urgency → clarifying → final photo)
+  + AI actions (license, insurance, benchmark, outreach)
+  + Jason quote arrives → inline quote artifact card
+  + AI proactive side-by-side ("Quick side-by-side now that the others
+    are in...") — NO fake user question; the side-by-side is unprompted
+  + Inline quote-compare artifact card
+  + [ post-approval tail when decisionHandled is true: ]
+    action "You approved Jason · Friday 2 PM" (was a fake typed message,
+    now an action entry per testing — users don't actually type approval)
     action "Booking confirmed with Jason Plumbing Co."
     action "Added to your calendar"
     AI "Booked. Jason will text you 30 min before…"
-    live indicator "Confirmed · Friday April 25, 2:00 PM · 2 days away"
-  + Side rail: status pill becomes "Confirmed · Friday 2 PM",
-  artifacts (scope/contractors/quotes), suggested next swaps from
-  approval-themed to scheduling-themed.
+    live indicator "Confirmed · Friday April 25, 2:00 PM"
+  + Side rail: status pill, artifacts (scope/contractors/quotes),
+  suggested next swaps from approval-themed to scheduling-themed.
         │
         ▼  click Schedule in sidebar
 [ Schedule ]
@@ -401,19 +525,171 @@ spec-driven elements:
 - **Quote Compare**: line-level scope deviations + outlier flags. Plain-
   language summary card. Per-contractor approve actions in the matrix.
 
+## Onboarding (Flow 1)
+
+Per the Flow 1 PDF — but trimmed to avoid repeating Empty Overview
+content. Three screens, all in `OnboardingPage.jsx`:
+
+1. **Sign-up** — brand mark + headline + 3 CTAs (Google / Apple /
+   email). Google G uses the real multi-color Wikimedia SVG; Apple
+   logo is the black silhouette flipped white via Tailwind `invert`
+   on a dark button. Trust line is **just** the privacy promise
+   ("No contractor sees your home until you ask") — encryption
+   claim was dropped as technical noise. No "Sign in" link (the
+   demo is single-flow).
+2. **Profile** — 5 questions, **all pre-filled for the demo**:
+   home type (House), year built (1980–2000), address + ZIP
+   (124 Maple St, Oakland, CA / 94609), outdoor (Yard + Mature
+   trees), systems (Central HVAC + Water heater). Back link to
+   sign-up; Step 1 of 2 indicator.
+3. **Maintenance plan** — derived from the profile via
+   `buildMaintenance(profile)`. Each item carries a `source` field
+   ("From Central HVAC", "From Yard + Mature trees", "Standard for
+   every home") so the connection between Step 2's selections and
+   Step 3's items is visible — users wondered "I picked 2, why
+   does this show 4?" before the source pills were added. Back
+   link reads "Edit my answers"; Step 2 of 2 indicator.
+
+**Photos are NOT collected in onboarding.** The first AI task's
+intake already collects photos; asking again would be repetitive.
+
+## Flow 3 — Job completion, recommendation, showcase
+
+After Jason finishes the visit, the homeowner closes the loop.
+Entry point: a "Confirm visit complete" CTA inside the Overview's
+active task card, visible when `decisionHandled && !jobCompleted`.
+
+`CompletionPage.jsx` is one screen with three numbered sections per
+the Flow 3 PDF:
+
+- **01 Confirm work is done** — Yes / Not yet / Something's wrong.
+  Only "Yes" is wired for the demo; the other two would stub to
+  reschedule and ops escalation respectively.
+- **02 Approve photos for Jason's showcase** — 3 contractor-uploaded
+  "after" thumbnails + opt-in toggle (default OFF per the design
+  principle in the PDF; "Privacy default is OFF for photo approval.
+  Never flip the default.").
+- **03 Would you recommend Jason** — binary Yes / No. No stars, no
+  comment box, no follow-up granularity. The count is the signal.
+
+Submit fires `onNavigate({ page: 'overview', jobCompleted: true,
+recommended, photosShared })`. Overview hero pivots to post-completion
+copy; active task card flips to "Completed" with a sage
+"Recommendation sent" badge; Contractor Compare's "Recommended by
+Homewisers" row bumps Jason's count by 1 with a sage "+1 you" badge.
+
+**Showcase row on Contractor Compare** uses `CellRecommend` to render
+the count chip (or "New to Homewise" when `recommendCount < 3` — the
+cold-start threshold per Flow 3 spec, not hardcoded). Tap opens the
+`ShowcaseDrawer` listing past recommended jobs with category +
+before/after photo + scope summary + completion date. No homeowner
+names or addresses appear, per spec.
+
+## Quote Compare availability overlap
+
+The Quote Compare page is more than the apples-to-apples matrix — it
+also closes the scheduling loop. Per testing feedback ("Friday 2 PM
+is bad UX, I need to find a time that works for both of us"), the
+page has a two-step decision area below the matrix:
+
+- **Your availability** (4 toggle chips: Weekday AM, Weekday PM,
+  Evenings, Weekend). Default selection: Weekday PM + Weekend.
+- **Pick a slot & approve** (per-contractor column):
+  - **Slot chips** — filtered to overlaps between the contractor's
+    offered slots and the user's selected windows. "No overlap
+    with your availability" empty state when nothing matches; the
+    Approve button is disabled.
+  - **Ask [Name] before booking** — secondary white button **above**
+    Approve. Opens the ContactDrawer (bio + click-to-call card +
+    static reference questions).
+  - **Approve [Name] · [picked slot]** — primary CTA. Jason is
+    `bg-ink-900` (the AI pick); others are white outline.
+
+The picked slot is passed to App via `onNavigate({ ...,
+scheduledSlot: sel.time })` and flows through to the active task
+card's "Scheduled · X" pill, the conversation thread's booking
+action, and the Schedule page's visit card.
+
+## Operations: Figma capture, Mobbin research, Vercel auto-deploy
+
+- **Figma capture script** is left in `index.html` (`<script src="
+  https://mcp.figma.com/mcp/html-to-design/capture.js" async>`)
+  per Figma MCP guidance ("Leave the capture script in the HTML
+  unless the user explicitly asks you to remove it"). It's a no-op
+  unless the URL hash includes `#figmacapture=…`, so it's safe
+  in production. Used to capture localhost screens into a portfolio
+  Figma file via the `mcp__figma__generate_figma_design` tool.
+  Chrome viewport for captures: `osascript -e 'tell application
+  "Google Chrome" to set bounds of front window to {0, 0, 1450,
+  1021}'` → 1440×900 inner viewport (1450 accounts for scrollbar
+  width).
+- **Mobbin MCP** is registered for this project
+  (`https://api.mobbin.com/mcp`). Use `mcp__mobbin__search_screens`
+  for design-pattern research when stuck on a specific UX problem
+  (e.g., "data widget too complicated → search comparison/dashboard
+  patterns"). Don't do screen-by-screen Mobbin passes — testing-
+  driven changes win over pattern matching.
+- **Vercel auto-deploy** is connected to the GitHub repo
+  (`chang627627/homewise`). Every push to `main` triggers an
+  auto-build + deploy to `homewise-rust.vercel.app` within ~30s.
+  Main branch is protected (PRs required for non-admins); the
+  admin (chang) can bypass and push directly. Teammate
+  `radiiiianttt` has write access via collaborator invite.
+
 ## Component conventions
 
 - **Pill**: `<Pill tone="sage|ember|sky|neutral|soft" icon={X} live>` —
   `live` adds a pulsing dot.
 - **Confidence**: `<Confidence value={92} label="..." size="md|lg">` —
   animated bar, color-coded by threshold (≥85 sage, ≥65 ember, else ink).
+  *Note: the 92% on Scope was killed; this component is still used on
+  the active task card and inside ConversationPage's side rail.*
 - **BackBar**: focused-flow pages use this; `onBack` prop, `label`,
   optional `context` eyebrow.
+- **FlowProgress**: 3-step pill row (Scope → Contractors → Quotes) +
+  trailing "Then book" hint. `current` prop picks which step is active;
+  completed steps are clickable and call `onNavigate`. Used on all three
+  Flow 2 focused-flow pages.
 - **PageHeader**: deep-page intro; `eyebrow`, `title`, `description`,
   optional `trailing` pill.
 - All page components accept `onNavigate(id, opts?)` for navigation.
 - `onNavigate` accepts either a string `id` or an object
-  `{ page: string, conversationId?: string, decisionHandled?: boolean }`.
+  `{ page, conversationId?, decisionHandled?, scheduledSlot?,
+    jobCompleted?, recommended?, photosShared? }`.
+
+### Drawer pattern (Showcase + Contact)
+
+Both right-side drawers (ShowcaseDrawer on Contractor Compare,
+ContactDrawer on Quote Compare) follow the same three rules:
+
+1. **Portal to `document.body`** via `createPortal`. The App-level
+   `motion.div` page-transition wrapper has a `y` transform which
+   creates a containing block for any `position: fixed` descendant.
+   Without portaling, the drawer attaches to the padded main column
+   instead of the viewport corner.
+2. **Body scroll lock** on mount, restored on unmount, with
+   `padding-right: ${scrollBarWidth}px` compensation so the page
+   underneath doesn't shift when the scrollbar disappears.
+3. **`bg-white` panel on `bg-canvas` page** so the drawer visually
+   distinguishes itself from the warm off-white page background.
+
+```js
+useEffect(() => {
+  const body = document.body;
+  const prevOverflow = body.style.overflow;
+  const prevPaddingRight = body.style.paddingRight;
+  const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+  body.style.overflow = 'hidden';
+  if (scrollBarWidth > 0) body.style.paddingRight = `${scrollBarWidth}px`;
+  return () => {
+    body.style.overflow = prevOverflow;
+    body.style.paddingRight = prevPaddingRight;
+  };
+}, []);
+```
+
+The animation is `motion.aside` sliding from `x: '100%'` to `x: 0` over
+350ms ease-out. Reuse this pattern for any future right-side panel.
 
 ## Custom Tailwind (still defined, mostly unused now)
 
