@@ -32,9 +32,9 @@ export default function Button({
       className={`inline-flex items-center justify-center gap-2 font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none ${variants[variant]} ${sizes[size]} ${className}`}
       {...rest}
     >
-      {Icon && <Icon size={16} strokeWidth={1.9} />}
+      {Icon && <Icon size={16} strokeWidth={1.8} />}
       {children}
-      {IconRight && <IconRight size={16} strokeWidth={1.9} />}
+      {IconRight && <IconRight size={16} strokeWidth={1.8} />}
     </button>
   );
 }

@@ -7,6 +7,31 @@ compare → booking → schedule.
 
 **Live:** https://homewise-rust.vercel.app
 
+## Design system source of truth
+
+**[DESIGN.md](DESIGN.md)** is the canonical reference for tokens, type scale,
+component recipes, color roles, and voice. Read it before changing visuals.
+
+This file (CLAUDE.md) covers **how it's built** — state machine, page flows,
+focused-flow gates, mock data, deploy. DESIGN.md covers **how it should
+look**. Don't duplicate token definitions here; update DESIGN.md instead.
+
+### Red-flag checklist (run before opening a PR)
+
+```bash
+npm run design-check
+```
+
+Or manually grep your diff for:
+
+- `bg-[#` / `text-[#` / `ring-[#` — raw hex in Tailwind arbitrary values. Use a token.
+- `—` inside JSX text content. Em dashes are banned in user copy (allowed in `//` comments).
+- `shadow-soft` / `shadow-card` / `shadow-glow` / `shadow-inset-soft` — banned, even though still defined in `tailwind.config.js`.
+- `text-[Npx]` for type that has a named role (hero-l, hero-m, section-l, eyebrow…). Inline px is for one-off spots only.
+- Hand-rolled button / pill / card classes outside `src/components/ui/`. Route through Button.jsx / Pill.jsx / Card.jsx.
+- A fourth color role beyond sage / ember / sky2026. We have three. Don't add a fourth.
+- A fourth surface tier beyond canvas / white card / ink-900. We have three. Don't add a fourth.
+
 ## Stack
 
 - **Vite 5** + **React 18** + **Tailwind 3**

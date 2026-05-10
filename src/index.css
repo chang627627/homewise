@@ -66,13 +66,70 @@ body {
     box-shadow: inset 0 0 0 1px rgba(26, 26, 23, 0.1);
   }
 
-  .editorial {
-    /* "Editorial" type — kept as a class so we can re-style hero/headlines
-       in one place. Uses Geist for a refined, AI-product feel. */
+  .hairline-inset {
+    /* Subtle inner ring + top highlight. Use on tier-3 surfaces and
+       pressed/selected states to suggest depth without a shadow. */
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 0 0 1px rgba(26, 26, 23, 0.04);
+  }
+
+  .hairline-on-dark {
+    /* Top highlight for ink-900 surfaces (CTAs, FlowProgress current step,
+       inverted callouts). Reads as a 1px specular edge. Pairs with .grain-dark
+       for full craft texture. */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .grain-dark {
+    /* Subtle SVG noise on ink-900 surfaces. Layered via ::before so the
+       button's bg-ink-900 stays intact. Reads as machined metal vs.
+       flat-painted plastic. Very subtle — ~4% opacity over the dark fill. */
+    position: relative;
+    isolation: isolate;
+  }
+  .grain-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grain-dark > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .editorial.editorial {
+    /* Display headlines. Geist variable axis at 500 with strong negative
+       tracking reads editorial-light at scale (vs. SaaS-bold at 600).
+       Doubled class selector gives specificity (0,2,0) so .editorial
+       wins over Tailwind's tracking-tight (0,1,0) utility. */
     font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.028em;
+    font-weight: 500;
+    letter-spacing: -0.040em;
     font-feature-settings: 'tnum';
+  }
+
+  .editorial-italic {
+    /* Quiet AI-narration voice. Used as a quote marker inside agent
+       messages and for hushed callouts ("Booked. Jason will text…"). */
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.012em;
+  }
+
+  .figure {
+    /* Numeric / money / time. Always tabular, slightly heavier than body
+       so columns of figures align and read with weight. */
+    font-weight: 500;
+    font-feature-settings: 'tnum', 'cv11';
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.005em;
   }
 
   .dot-grid {

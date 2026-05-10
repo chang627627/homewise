@@ -40,7 +40,7 @@ export default function ApprovalSection({ onNavigate, decisionHandled }) {
         />
         <div className="rounded-3xl border border-dashed border-ink-200 bg-canvas-soft/40 p-8 max-w-3xl flex items-center gap-4">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
-            <Sparkles size={16} strokeWidth={1.9} />
+            <Sparkles size={16} strokeWidth={1.8} />
           </span>
           <div className="min-w-0">
             <div className="text-[14px] font-semibold text-ink-900 tracking-[-0.005em]">
@@ -170,11 +170,11 @@ export default function ApprovalSection({ onNavigate, decisionHandled }) {
                   onClick={() => onNavigate?.('contractor-compare')}
                   className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-1.5 text-[13px] font-medium transition-all"
                 >
-                  <Scale size={14} strokeWidth={1.9} />
+                  <Scale size={14} strokeWidth={1.8} />
                   Compare all
                 </button>
                 <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-1.5 text-[13px] font-medium transition-all">
-                  <MessageSquareText size={14} strokeWidth={1.9} />
+                  <MessageSquareText size={14} strokeWidth={1.8} />
                   Ask AI to negotiate
                 </button>
                 <button className="h-10 pl-4 pr-3 rounded-2xl bg-sage-500 hover:bg-sage-600 text-white inline-flex items-center gap-2 text-[13px] font-semibold transition-all">

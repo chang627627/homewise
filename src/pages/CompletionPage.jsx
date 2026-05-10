@@ -112,7 +112,7 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
         <div className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
           <div className="px-5 py-4 border-b border-ink-100/80 bg-gradient-to-b from-canvas-soft/30 to-white flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Camera size={13} className="text-ink-500" strokeWidth={1.9} />
+              <Camera size={13} className="text-ink-500" strokeWidth={1.8} />
               <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
                 Jason uploaded · 3 photos
               </span>
@@ -196,7 +196,7 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
           disabled={!canSubmit}
           className={`group h-12 pl-5 pr-3 rounded-2xl inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all ${
             canSubmit
-              ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft'
+              ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
               : 'bg-ink-100 text-ink-400 cursor-not-allowed'
           }`}
         >
@@ -220,8 +220,9 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
 function Section({ num, title, sub, children }) {
   return (
     <section>
-      <div className="flex items-baseline gap-3 mb-3 flex-wrap">
+      <div className="flex items-center gap-2.5 mb-3 flex-wrap">
         <span className="text-[11px] tabular-nums text-ink-400 font-bold">{num}</span>
+        <span className="h-px w-4 bg-ink-200" />
         <h3 className="editorial text-[17px] leading-tight text-ink-900">{title}</h3>
       </div>
       {sub && (

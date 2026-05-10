@@ -297,8 +297,8 @@ export default function QuoteComparePage({ onNavigate }) {
                 Reviewed
               </Pill>
             </div>
-            <p className="text-[16px] leading-relaxed text-ink-900 editorial italic">
-              "Jason is the cheapest <em className="not-italic font-normal text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
+            <p className="editorial-italic text-[16px] leading-relaxed text-ink-900">
+              "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
             </p>
           </div>
         </div>
@@ -431,7 +431,7 @@ export default function QuoteComparePage({ onNavigate }) {
         </div>
 
         {/* Total row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-deep/50 hairline-inset items-center">
           <div className="md:col-span-3">
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
               Total
@@ -465,7 +465,7 @@ export default function QuoteComparePage({ onNavigate }) {
                   onClick={() => toggleWindow(w.id)}
                   className={`h-8 px-3 rounded-full inline-flex items-center gap-1.5 text-[11.5px] font-medium transition-all ${
                     on
-                      ? 'bg-ink-900 text-canvas-soft'
+                      ? 'bg-ink-900 text-canvas-soft hairline-on-dark'
                       : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
                   }`}
                 >
@@ -507,7 +507,7 @@ export default function QuoteComparePage({ onNavigate }) {
                           onClick={() => setPicked((p) => ({ ...p, [c.id]: s.id }))}
                           className={`h-7 px-2.5 rounded-full inline-flex items-center gap-1 text-[11.5px] font-medium transition-all ${
                             on
-                              ? 'bg-sage-500 text-white ring-1 ring-sage-500'
+                              ? 'bg-sage-500 text-white ring-1 ring-sage-500 hairline-on-dark'
                               : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
                           }`}
                         >
@@ -538,7 +538,7 @@ export default function QuoteComparePage({ onNavigate }) {
                     noOverlap
                       ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
                       : c.aiPick
-                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft'
+                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
                       : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
                   }`}
                 >
@@ -614,7 +614,7 @@ function ContactDrawer({ contractor, onClose }) {
               </div>
               <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-ink-500">
                 <Star size={10} className="text-ember-300 fill-ember-300" strokeWidth={0} />
-                <span className="font-semibold text-ink-700 tabular-nums">{contractor.rating.score}</span>
+                <span className="figure text-ink-700">{contractor.rating.score}</span>
                 <span>({contractor.rating.reviews})</span>
                 <span className="mx-1 text-ink-300">·</span>
                 <span>{contractor.responseTime}</span>
@@ -632,8 +632,11 @@ function ContactDrawer({ contractor, onClose }) {
         <div className="flex-1 px-6 py-5 space-y-5">
           {/* About */}
           <section>
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-              About
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                About
+              </span>
             </div>
             <p className="text-[13px] text-ink-700 leading-relaxed">{contractor.bio}</p>
           </section>
@@ -641,12 +644,15 @@ function ContactDrawer({ contractor, onClose }) {
           {/* Direct contact — primary action */}
           {contractor.phone && (
             <section>
-              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-                Direct contact
+              <div className="flex items-center gap-2 mb-2">
+                <span className="h-px w-3 bg-ink-200" />
+                <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                  Direct contact
+                </span>
               </div>
               <a
                 href={`tel:${contractor.phone.replace(/\D/g, '')}`}
-                className="group flex items-center justify-between gap-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft px-4 py-3 transition-all"
+                className="group flex items-center justify-between gap-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark px-4 py-3 transition-all"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft/15 text-canvas-soft shrink-0">
@@ -672,8 +678,11 @@ function ContactDrawer({ contractor, onClose }) {
 
           {/* Suggested questions — static reference for the call */}
           <section>
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-              Things to ask when you call
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                Things to ask when you call
+              </span>
             </div>
             <ul className="space-y-1.5">
               {suggestedQuestions.map((q, i) => (

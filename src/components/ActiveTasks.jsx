@@ -171,13 +171,13 @@ export default function ActiveTasks({
               <span
                 className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 ${accentMap[t.accent]}`}
               >
-                <t.icon size={15} strokeWidth={1.9} />
+                <t.icon size={15} strokeWidth={1.8} />
               </span>
               <span className="shrink-0 h-8 w-8 rounded-xl ring-1 ring-ink-100 flex items-center justify-center text-ink-500 group-hover:text-ink-900 group-hover:ring-ink-200 group-hover:bg-canvas-soft transition-all">
                 <ChevronRight size={13} />
               </span>
             </div>
-            <h3 className="text-[15px] font-semibold text-ink-900 tracking-[-0.005em] leading-snug">
+            <h3 className="text-[15px] font-medium text-ink-900 tracking-[-0.015em] leading-snug">
               {t.title}
             </h3>
             <div className="flex items-center gap-1.5 mt-1.5">
@@ -216,7 +216,7 @@ export default function ActiveTasks({
                     e.stopPropagation();
                     onNavigate?.('completion');
                   }}
-                  className="group/btn w-full h-10 mt-1 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+                  className="group/btn w-full h-10 mt-1 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
                 >
                   <CheckCircle2 size={13} strokeWidth={2.2} />
                   Confirm visit complete

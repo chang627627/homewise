@@ -167,11 +167,11 @@ export default function ContractorMatch() {
 
             <div className="mt-6 grid grid-cols-3 gap-2">
               <button className="h-10 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium transition-all">
-                <Phone size={13} strokeWidth={1.9} />
+                <Phone size={13} strokeWidth={1.8} />
                 Call
               </button>
               <button className="h-10 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium transition-all">
-                <MessageSquareText size={13} strokeWidth={1.9} />
+                <MessageSquareText size={13} strokeWidth={1.8} />
                 Message
               </button>
               <button className="h-10 rounded-2xl bg-sage-500 hover:bg-sage-600 text-white inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold transition-all">

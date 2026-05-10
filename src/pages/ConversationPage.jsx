@@ -286,10 +286,11 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
           <span
             className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[c.accent]}`}
           >
-            <Icon size={18} strokeWidth={1.9} />
+            <Icon size={18} strokeWidth={1.8} />
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-2">
+              <span className="h-px w-3 bg-ink-300" />
               <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-semibold">
                 Conversation
               </span>
@@ -339,10 +340,10 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
           {/* Reply input */}
           <div className="border-t border-ink-100/80 px-4 py-3 bg-gradient-to-t from-canvas-soft/40 to-white flex items-center gap-2">
             <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-              <Paperclip size={14} strokeWidth={1.9} />
+              <Paperclip size={14} strokeWidth={1.8} />
             </button>
             <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-              <Mic size={14} strokeWidth={1.9} />
+              <Mic size={14} strokeWidth={1.8} />
             </button>
             <input
               type="text"
@@ -362,8 +363,11 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
         <aside className="lg:col-span-4 space-y-4">
           {/* Task summary */}
           <div className="rounded-3xl bg-white border border-ink-100/80 p-5">
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-              Task summary
+            <div className="flex items-center gap-2 mb-3">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                Task summary
+              </span>
             </div>
             <div className="space-y-2.5 text-[12.5px]">
               <SummaryRow label="Started" value={c.started} />
@@ -377,8 +381,11 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
 
           {/* Linked artifacts */}
           <div className="rounded-3xl bg-white border border-ink-100/80 p-5">
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-              Generated artifacts
+            <div className="flex items-center gap-2 mb-3">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                Generated artifacts
+              </span>
             </div>
             <div className="space-y-1.5">
               {c.artifacts.map((a) => {
@@ -390,7 +397,7 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
                     className="group w-full flex items-center gap-2.5 rounded-xl bg-canvas-soft border border-ink-100 hover:border-ink-200 px-3 py-2.5 text-left transition-all"
                   >
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-ink-700 ring-1 ring-ink-100 shrink-0">
-                      <AIcon size={13} strokeWidth={1.9} />
+                      <AIcon size={13} strokeWidth={1.8} />
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="text-[12.5px] font-semibold text-ink-900 truncate">
@@ -412,8 +419,11 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
 
           {/* Quick actions */}
           <div className="rounded-3xl bg-white border border-ink-100/80 p-5">
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-              Suggested next
+            <div className="flex items-center gap-2 mb-3">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                Suggested next
+              </span>
             </div>
             <div className="space-y-1.5">
               {(decisionHandled
@@ -576,7 +586,7 @@ function ActionItem({ m }) {
       <span
         className={`shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-xl ring-1 ${accentMap[m.accent]} bg-white`}
       >
-        <Icon size={13} strokeWidth={1.9} />
+        <Icon size={13} strokeWidth={1.8} />
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
@@ -624,7 +634,7 @@ function ArtifactCard({ m, onNavigate }) {
         >
           <div className="px-4 py-3.5 flex items-start gap-3">
             <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-ink-700 ring-1 ring-ink-100 shrink-0">
-              <Icon size={15} strokeWidth={1.9} />
+              <Icon size={15} strokeWidth={1.8} />
             </span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">

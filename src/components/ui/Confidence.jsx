@@ -15,7 +15,7 @@ export default function Confidence({ value = 0, label = 'Confidence', size = 'md
         <span className="text-[11px] uppercase tracking-[0.14em] text-ink-500">
           {label}
         </span>
-        <span className={`text-[12px] font-semibold tabular-nums ${tone}`}>
+        <span className={`figure text-[12px] ${tone}`}>
           {pct}%
         </span>
       </div>

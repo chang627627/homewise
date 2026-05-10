@@ -182,16 +182,16 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
         </p>
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <X size={13} strokeWidth={1.9} />
+            <X size={13} strokeWidth={1.8} />
             Reject all 3
           </button>
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <RefreshCw size={13} strokeWidth={1.9} />
+            <RefreshCw size={13} strokeWidth={1.8} />
             Show 3 different
           </button>
           <button
             onClick={() => onNavigate?.('quote-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
+            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
           >
             <Send size={13} strokeWidth={2} />
             Approve all 3 &amp; send scope
@@ -441,7 +441,7 @@ function CellRating({ c }) {
   return (
     <div className="flex items-center gap-1.5">
       <Star size={12} className="text-ember-300 fill-ember-300" strokeWidth={1.5} />
-      <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+      <span className="figure text-[15px] text-ink-900">
         {c.score}
       </span>
       <span className="text-[11.5px] text-ink-500">({c.reviews})</span>
@@ -496,7 +496,7 @@ function CellRelevant({ v }) {
 function CellPermits({ v }) {
   return (
     <div className="flex items-center gap-1.5">
-      <FileBadge size={12} className="text-ink-400" strokeWidth={1.9} />
+      <FileBadge size={12} className="text-ink-400" strokeWidth={1.8} />
       <span className="text-[13px] font-semibold text-ink-900 tabular-nums">
         {v.value}
       </span>
@@ -508,7 +508,7 @@ function CellPermits({ v }) {
 function CellAvailability({ v }) {
   return (
     <div className="inline-flex items-center gap-1.5 rounded-full bg-canvas-soft border border-ink-100 px-2.5 py-1">
-      <Clock size={11} className="text-ink-500" strokeWidth={1.9} />
+      <Clock size={11} className="text-ink-500" strokeWidth={1.8} />
       <span className="text-[12px] font-semibold text-ink-900">{v.value}</span>
       <span className="text-[10.5px] text-ink-500">· {v.label}</span>
     </div>
@@ -619,8 +619,11 @@ function ShowcaseDrawer({ contractor, onClose }) {
           </button>
         </div>
         <div className="px-6 py-5">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-            Recent recommended jobs · sorted by relevance to your scope
+          <div className="flex items-center gap-2 mb-3">
+            <span className="h-px w-3 bg-ink-200" />
+            <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Recent recommended jobs · sorted by relevance to your scope
+            </span>
           </div>
           <div className="space-y-2.5">
             {contractor.showcase.map((job, i) => (

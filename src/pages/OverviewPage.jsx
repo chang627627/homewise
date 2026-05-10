@@ -65,8 +65,9 @@ function EmptyOverview({ onNavigate }) {
     <div className="space-y-16 lg:space-y-24">
       {/* Hero / empty state */}
       <section className="relative">
-        {/* ambient gradient */}
+        {/* ambient gradient + dot-grid texture anchor */}
         <div className="pointer-events-none absolute -inset-x-10 -top-20 -bottom-12 -z-10">
+          <div className="absolute inset-0 dot-grid opacity-50" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_30%,rgba(154,174,140,0.18),transparent_70%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(40%_40%_at_85%_20%,rgba(217,164,97,0.10),transparent_70%)]" />
         </div>
@@ -113,7 +114,7 @@ function EmptyOverview({ onNavigate }) {
           >
             <button
               onClick={() => onNavigate?.('intake')}
-              className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+              className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
             >
               Start your first task
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
@@ -152,7 +153,7 @@ function EmptyOverview({ onNavigate }) {
             >
               <div className="flex items-start justify-between mb-4">
                 <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 group-hover:bg-sage-50 group-hover:text-sage-600 group-hover:ring-sage-100 transition-all">
-                  <s.icon size={15} strokeWidth={1.9} />
+                  <s.icon size={15} strokeWidth={1.8} />
                 </span>
                 <span className="editorial text-[15px] text-ink-300 leading-none tabular-nums">
                   {s.n}

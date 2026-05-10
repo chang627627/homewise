@@ -60,6 +60,7 @@ export default function Sidebar({
           <span className="editorial text-[17px] leading-none text-ink-900">
             Homewise
           </span>
+          <span className="flex-1 h-px bg-ink-200/70 ml-1" />
         </div>
 
         <div className="relative mt-4">
@@ -68,7 +69,7 @@ export default function Sidebar({
             className="group w-full flex items-center gap-2.5 rounded-2xl bg-canvas-soft border border-ink-100 p-2 hover:border-ink-200 transition-all"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
-              <Home size={15} strokeWidth={1.9} />
+              <Home size={15} strokeWidth={1.8} />
             </span>
             <span className="flex-1 min-w-0 flex flex-col items-start leading-tight">
               <span className="text-[12.5px] font-semibold text-ink-900 truncate w-full text-left">
@@ -112,7 +113,7 @@ export default function Sidebar({
                     }`}
                   >
                     <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-canvas text-ink-700 ring-1 ring-ink-100">
-                      <Home size={12} strokeWidth={1.9} />
+                      <Home size={12} strokeWidth={1.8} />
                     </span>
                     <div className="flex flex-col leading-tight">
                       <span className="text-[12px] font-medium text-ink-900">
@@ -135,7 +136,7 @@ export default function Sidebar({
         {/* New task CTA */}
         <button
           onClick={() => onNavigate?.('intake')}
-          className="group mt-3 w-full h-10 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+          className="group mt-3 w-full h-10 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
         >
           <Sparkles size={13} strokeWidth={2.2} />
           New AI task
@@ -166,7 +167,7 @@ export default function Sidebar({
             </div>
           </div>
           <button className="relative h-9 w-9 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all">
-            <Bell size={14} strokeWidth={1.9} />
+            <Bell size={14} strokeWidth={1.8} />
             <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-ember-300 ring-2 ring-white" />
           </button>
         </div>
@@ -182,8 +183,11 @@ export default function Sidebar({
 function NavGroup({ label, items, activePage, onNavigate }) {
   return (
     <div>
-      <div className="px-2.5 mb-1.5 text-[10px] uppercase tracking-[0.18em] text-ink-500 font-semibold">
-        {label}
+      <div className="px-2.5 mb-2 flex items-center gap-2">
+        <span className="h-px w-3 bg-ink-200" />
+        <span className="text-[10px] uppercase tracking-[0.18em] text-ink-500 font-semibold">
+          {label}
+        </span>
       </div>
       <div className="space-y-0.5">
         {items.map((it) => (
@@ -215,7 +219,7 @@ function NavItem({ item, active, onClick }) {
       )}
       <Icon
         size={15}
-        strokeWidth={1.9}
+        strokeWidth={1.8}
         className={active ? 'text-sage-600' : 'text-ink-500 group-hover:text-ink-700'}
       />
       <span className="flex-1 text-left">{item.label}</span>
@@ -233,7 +237,7 @@ function NavItem({ item, active, onClick }) {
 function FooterLink({ icon: Icon, label }) {
   return (
     <button className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-xl text-[11.5px] text-ink-500 hover:text-ink-900 hover:bg-canvas-soft transition-all">
-      <Icon size={12} strokeWidth={1.9} />
+      <Icon size={12} strokeWidth={1.8} />
       <span>{label}</span>
     </button>
   );
