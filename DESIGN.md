@@ -1,7 +1,9 @@
 ---
-version: alpha
-name: Homewise
-description: A 2026 AI home command center for homeowners. The system is built on a warm cream canvas (#F6F4EF), near-black ink for primary surfaces and CTAs, and a tri-role color story — sage (trust), ember (caution), sky2026 (info). Type is sans-only (Geist) with editorial weight, capped at 52px because larger sans reads as shouty. Shadows are banned; cards rely on hairline borders, ring-1 surfaces, and background contrast for separation. The result reads as a calm, premium homeowner tool — closer to Notion / Linear's surface logic than a SaaS analytics dashboard, with a humanist warmth most AI brands skip.
+version: v1
+name: Hearth
+product: Homewise
+tagline: The warmth at the center of every home
+description: Hearth is the design system behind Homewise, a 2026 AI home command center for homeowners. Built on a warm cream canvas (#F6F4EF), near-black ink for primary surfaces and CTAs, and a tri-role color story · sage (trust), ember (caution), sky2026 (info). Type is sans-only (Geist) with editorial weight, capped at 52px because larger sans reads as shouty. Shadows are banned; cards rely on hairline borders, ring-1 surfaces, and background contrast for separation. The result reads as a calm, premium homeowner tool · closer to Notion / Linear's surface logic than a SaaS analytics dashboard, with a humanist warmth most AI brands skip.
 
 colors:
   # Canvas — warm off-white page surfaces

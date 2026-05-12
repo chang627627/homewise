@@ -16,6 +16,7 @@ import Pill from '../components/ui/Pill';
 import Card from '../components/ui/Card';
 import Confidence from '../components/ui/Confidence';
 import Rule from '../components/ui/Rule';
+import { pendingAdditions } from '../data/design-pending';
 
 // Visual reference for the Homewise design system.
 // Routed via /designsystem in App.jsx. Eats its own dog food · uses the
@@ -36,15 +37,15 @@ export default function DesignSystemPage() {
           <div className="flex items-center gap-2">
             <span className="h-px w-6 bg-ink-300" />
             <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
-              Homewise · Design System · v1.0
+              Hearth · v1 · Homewise Design System
             </span>
           </div>
           <h1 className="editorial text-[36px] md:text-[52px] leading-[1.05] text-ink-900 max-w-3xl">
-            How Homewise looks,
-            <span className="block text-ink-500">and why.</span>
+            Hearth.
+            <span className="block text-ink-500">The warmth at the center of every home.</span>
           </h1>
           <p className="max-w-2xl text-[15px] text-ink-500 leading-relaxed">
-            A warm-canvas system for a 2026 AI home command center. Sans-only, shadowless, with a tri-role color story (trust · caution · info) and a recurring rule-line brand gesture. This page visualizes every token + component in the system.
+            Hearth is the design system behind Homewise. A warm-canvas system for a 2026 AI home command center: sans-only, shadowless, with a tri-role color story (trust · caution · info) and a recurring rule-line brand gesture. This page visualizes every token + component in v1.
           </p>
           <div className="flex items-center gap-2 pt-1">
             <a
@@ -65,6 +66,9 @@ export default function DesignSystemPage() {
             </a>
           </div>
         </header>
+
+        {/* Pending review queue · proposals waiting for owner approval */}
+        {pendingAdditions.length > 0 && <PendingReviewSection items={pendingAdditions} />}
 
         {/* 01 Color */}
         <Section num="01" title="Color" sub="A warm canvas, near-black ink, and a tri-role accent story (sage = trust, ember = caution, sky2026 = info).">
@@ -345,9 +349,9 @@ export default function DesignSystemPage() {
 
         {/* Footer */}
         <footer className="pt-10 border-t border-ink-100/80">
-          <Rule width="sm" tone="strong" eyebrow="Homewise · Design System · v1.0" />
+          <Rule width="sm" tone="strong" eyebrow="Hearth · v1 · Homewise Design System" />
           <p className="mt-3 text-[12.5px] text-ink-500 max-w-2xl leading-relaxed">
-            Full token spec + component recipes + voice rules live in <a href="https://github.com/chang627627/homewise/blob/main/DESIGN.md" className="text-ink-900 underline underline-offset-2 hover:text-ink-700">DESIGN.md</a>. Drift is caught by <code className="figure text-[12px] bg-canvas-soft px-1.5 py-0.5 rounded-md ring-1 ring-ink-100">npm run design-check</code>.
+            Full token spec + component recipes + voice rules live in <a href="https://github.com/chang627627/homewise/blob/main/DESIGN.md" className="text-ink-900 underline underline-offset-2 hover:text-ink-700">DESIGN.md</a>. Drift is caught by <code className="figure text-[12px] bg-canvas-soft px-1.5 py-0.5 rounded-md ring-1 ring-ink-100">npm run design-check</code>. Propose new tokens via <code className="figure text-[12px] bg-canvas-soft px-1.5 py-0.5 rounded-md ring-1 ring-ink-100">src/data/design-pending.js</code>.
           </p>
         </footer>
       </div>
@@ -356,6 +360,93 @@ export default function DesignSystemPage() {
 }
 
 // ─── Subcomponents ──────────────────────────────────────────────────────────
+
+const TYPE_LABELS = {
+  color: 'Color',
+  type: 'Type',
+  component: 'Component',
+  pattern: 'Pattern',
+  hairline: 'Hairline',
+  texture: 'Texture',
+  other: 'Other',
+};
+
+function PendingReviewSection({ items }) {
+  return (
+    <section className="rounded-3xl bg-canvas-deep/40 hairline-inset px-6 lg:px-8 py-7 space-y-5">
+      <div className="flex items-center gap-3 flex-wrap">
+        <Pill tone="sage" live>Awaiting your approval</Pill>
+        <div className="flex items-center gap-2">
+          <span className="h-px w-3 bg-ink-300" />
+          <span className="figure text-[11px] uppercase tracking-[0.18em] text-ink-700 font-semibold">
+            Pending review · {items.length}
+          </span>
+        </div>
+      </div>
+      <p className="text-[13px] text-ink-500 leading-relaxed max-w-2xl">
+        Proposals from contributors land here first. Review each one, then move it into DESIGN.md + the relevant section of this page to approve. Remove from <code className="figure text-[11.5px] bg-white/70 px-1.5 py-0.5 rounded-md ring-1 ring-ink-100">src/data/design-pending.js</code> to clear the queue.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {items.map((item) => (
+          <PendingCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PendingCard({ item }) {
+  return (
+    <Card variant="flat" className="p-4 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Pill tone="neutral">{TYPE_LABELS[item.type] || item.type}</Pill>
+        <span className="figure text-[10.5px] text-ink-400">
+          {item.proposedDate} · {item.proposedBy}
+        </span>
+      </div>
+      <div className="space-y-1">
+        <div className="text-[14px] font-medium text-ink-900 tracking-[-0.010em]">
+          {item.name}
+        </div>
+        <p className="text-[12.5px] text-ink-500 leading-relaxed">
+          {item.description}
+        </p>
+      </div>
+      {item.preview && <PendingPreview preview={item.preview} />}
+    </Card>
+  );
+}
+
+function PendingPreview({ preview }) {
+  if (preview.kind === 'swatch') {
+    return (
+      <div className="flex items-center gap-2.5 rounded-xl bg-canvas-soft/60 ring-1 ring-ink-100 p-2">
+        <span
+          className="h-10 w-10 rounded-lg ring-1 ring-ink-100"
+          style={{ backgroundColor: preview.bg }}
+        />
+        {preview.hex && (
+          <span className="figure text-[11.5px] text-ink-700">{preview.hex}</span>
+        )}
+      </div>
+    );
+  }
+  if (preview.kind === 'text') {
+    return (
+      <div className="rounded-xl bg-canvas-soft/60 ring-1 ring-ink-100 p-3">
+        <div className="text-[14px] text-ink-900">{preview.text}</div>
+      </div>
+    );
+  }
+  if (preview.kind === 'component' && preview.cls) {
+    return (
+      <div className="rounded-xl bg-canvas-soft/60 ring-1 ring-ink-100 p-3">
+        <div className={preview.cls}>{preview.text || 'Preview'}</div>
+      </div>
+    );
+  }
+  return null;
+}
 
 function Section({ num, title, sub, children }) {
   return (

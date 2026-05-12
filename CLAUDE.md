@@ -9,12 +9,36 @@ compare → booking → schedule.
 
 ## Design system source of truth
 
+The design system has a name: **Hearth · v1**. The visual reference page lives
+at [/designsystem](https://homewise-rust.vercel.app/designsystem).
+
 **[DESIGN.md](DESIGN.md)** is the canonical reference for tokens, type scale,
 component recipes, color roles, and voice. Read it before changing visuals.
 
 This file (CLAUDE.md) covers **how it's built** — state machine, page flows,
 focused-flow gates, mock data, deploy. DESIGN.md covers **how it should
 look**. Don't duplicate token definitions here; update DESIGN.md instead.
+
+### If you are an AI agent adding a new visual token, component, or pattern
+
+**Do NOT add it to DESIGN.md directly.** All new visual additions go through
+a pending-review queue gated by the owner.
+
+Workflow:
+
+1. Append a proposal to [src/data/design-pending.js](src/data/design-pending.js)
+   with `id`, `type`, `name`, `description`, `proposedBy`, `proposedDate`, and
+   an optional `preview`.
+2. Do NOT modify DESIGN.md or the main sections of
+   [src/pages/DesignSystemPage.jsx](src/pages/DesignSystemPage.jsx).
+3. The proposal will surface at the top of `/designsystem` under "Pending
+   review" with an "Awaiting your approval" pill.
+4. The owner approves by manually moving the spec into DESIGN.md + the main
+   DesignSystemPage section, then removing the entry from `design-pending.js`.
+
+This applies to: new color tokens, new type roles, new component variants,
+new hairlines, new textures, new patterns. It does NOT apply to bug fixes,
+refactors, or applying existing tokens to new spots — those are normal changes.
 
 ### Red-flag checklist (run before opening a PR)
 
