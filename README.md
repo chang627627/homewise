@@ -12,14 +12,86 @@ A 2026 AI home command center prototype. Demonstrates a homeowner using an AI ag
 - **Hearth · v1** design system: tokens in [DESIGN.md](DESIGN.md), visual reference at [/designsystem](https://homewise-rust.vercel.app/designsystem), drift linter via `npm run design-check`
 - Pending-review gate for new design tokens (see [CONTRIBUTING.md](CONTRIBUTING.md))
 
-## Quickstart
+## Getting Started
+
+Please use the GitHub repo version of this project, not a downloaded ZIP. This keeps your local project connected to GitHub so `git pull` works, and you can always get the latest Homewise files, Hearth tokens, and design rules.
+
+### First-time setup
+
+1. Open Terminal.
+
+2. Clone the repo:
+   ```bash
+   git clone https://github.com/chang627627/homewise.git
+   ```
+
+3. Go into the project folder:
+   ```bash
+   cd homewise
+   ```
+
+4. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+5. Start the local preview:
+   ```bash
+   npm run dev
+   ```
+
+6. Open the app in your browser:
+   ```
+   http://localhost:5173
+   ```
+
+### Before every working session
+
+Pull the latest version:
 
 ```bash
-git clone https://github.com/chang627627/homewise.git
-cd homewise
-npm install
-npm run dev          # http://localhost:5173
+git pull
 ```
+
+This updates your local project with the latest Homewise files, Hearth design system tokens, and rules.
+
+### Working with Claude Code
+
+Start Claude Code inside the `homewise` repo folder. It automatically reads `CLAUDE.md` and `DESIGN.md`, so it already understands the Hearth design system.
+
+Describe the feature in plain English, not the visuals.
+
+Example:
+
+> Add a Documents page for receipt uploads.
+
+Claude Code will apply Hearth tokens, components, and voice rules automatically.
+
+### Before pushing
+
+Run the design check:
+
+```bash
+npm run design-check
+```
+
+This catches design drift such as raw hex values, banned shadows, or voice issues.
+
+### Submitting your work
+
+Please don't push directly to `main`. Work on your own branch and open a PR:
+
+```bash
+git checkout -b feature/your-name
+git add .
+git commit -m "Brief description"
+git push -u origin feature/your-name
+gh pr create
+```
+
+If `gh pr create` doesn't work, push your branch first, then open the PR directly on GitHub.
+
+After the PR is reviewed and merged, Vercel will automatically deploy the latest version.
 
 ## Project docs
 
