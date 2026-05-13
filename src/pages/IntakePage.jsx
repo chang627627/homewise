@@ -242,7 +242,7 @@ export default function IntakePage({ onNavigate }) {
               </button>
               <button
                 onClick={() => onNavigate?.('scope')}
-                className="group h-9 pl-3 pr-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all"
+                className="group h-9 pl-3 pr-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all"
               >
                 <Sparkles size={12} strokeWidth={2.2} />
                 Generate scope of work
@@ -255,7 +255,7 @@ export default function IntakePage({ onNavigate }) {
         {/* Pinned input dock — always present, ChatGPT-style */}
         <div className="shrink-0 border-t border-ink-100/80 px-4 py-3 flex items-center gap-2 bg-gradient-to-t from-canvas-soft/40 to-white">
           <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-            <Paperclip size={14} strokeWidth={1.9} />
+            <Paperclip size={14} strokeWidth={1.8} />
           </button>
           <input
             ref={inputRef}
@@ -264,7 +264,7 @@ export default function IntakePage({ onNavigate }) {
             className="flex-1 min-w-0 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
           />
           <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-            <Mic size={14} strokeWidth={1.9} />
+            <Mic size={14} strokeWidth={1.8} />
           </button>
         </div>
       </div>

@@ -46,7 +46,7 @@ function EmptySchedule({ onNavigate }) {
       />
       <div className="rounded-3xl border border-dashed border-ink-200 bg-canvas-soft/40 p-10 max-w-3xl flex flex-col md:flex-row md:items-center gap-5">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sage-600 ring-1 ring-sage-100 shrink-0">
-          <CalendarDays size={18} strokeWidth={1.9} />
+          <CalendarDays size={18} strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[15px] font-semibold text-ink-900 tracking-[-0.005em]">
@@ -58,7 +58,7 @@ function EmptySchedule({ onNavigate }) {
         </div>
         <button
           onClick={() => onNavigate?.('intake')}
-          className="group h-11 px-4 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all shrink-0"
+          className="group h-11 px-4 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all shrink-0"
         >
           Start your first task
           <ArrowRight
@@ -120,7 +120,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100">
-              <CalendarDays size={14} strokeWidth={1.9} />
+              <CalendarDays size={14} strokeWidth={1.8} />
             </span>
             <div className="leading-tight">
               <div className="text-[12.5px] font-semibold text-ink-900">
@@ -214,7 +214,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
         >
           <div className="flex items-start gap-4">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
-              <Wrench size={17} strokeWidth={1.9} />
+              <Wrench size={17} strokeWidth={1.8} />
             </span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -225,22 +225,22 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
                   {visit.statusPill.label}
                 </Pill>
               </div>
-              <h3 className="text-[16px] font-semibold text-ink-900 tracking-[-0.005em]">
+              <h3 className="text-[16px] font-medium text-ink-900 tracking-[-0.020em]">
                 {visit.title}
               </h3>
               <div className="mt-1.5 flex items-center gap-3 flex-wrap text-[12.5px] text-ink-500">
                 <span className="inline-flex items-center gap-1.5">
-                  <Wrench size={11} strokeWidth={1.9} />
+                  <Wrench size={11} strokeWidth={1.8} />
                   {visit.contractor}
                 </span>
                 <span className="text-ink-300">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock size={11} strokeWidth={1.9} />
+                  <Clock size={11} strokeWidth={1.8} />
                   {visit.durationLabel}
                 </span>
                 <span className="text-ink-300">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin size={11} strokeWidth={1.9} />
+                  <MapPin size={11} strokeWidth={1.8} />
                   {visit.location}
                 </span>
               </div>
@@ -248,7 +248,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
               {/* Status note */}
               <div className="mt-4 rounded-2xl bg-canvas-soft border border-ink-100 px-3.5 py-2.5 flex items-start gap-2">
                 {decisionHandled ? (
-                  <Bell size={12} className="text-sage-600 mt-0.5 shrink-0" strokeWidth={1.9} />
+                  <Bell size={12} className="text-sage-600 mt-0.5 shrink-0" strokeWidth={1.8} />
                 ) : (
                   <AlertCircle size={12} className="text-ember-500 mt-0.5 shrink-0" strokeWidth={2} />
                 )}
@@ -274,7 +274,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
                 ) : (
                   <button
                     onClick={() => onNavigate?.('quote-compare')}
-                    className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
+                    className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
                   >
                     Approve on quote page
                     <ArrowRight

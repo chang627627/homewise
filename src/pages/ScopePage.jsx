@@ -15,6 +15,7 @@ import {
   Box,
   HelpCircle,
   GitBranch,
+  Info,
   Lightbulb,
   Shield,
   CalendarDays,
@@ -119,16 +120,16 @@ export default function ScopePage({ onNavigate }) {
         </p>
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Download size={13} strokeWidth={1.9} />
+            <Download size={13} strokeWidth={1.8} />
             Export PDF
           </button>
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Pencil size={13} strokeWidth={1.9} />
+            <Pencil size={13} strokeWidth={1.8} />
             Edit scope
           </button>
           <button
             onClick={() => onNavigate?.('contractor-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
+            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
           >
             <Send size={13} strokeWidth={2} />
             Approve &amp; find contractors
@@ -186,7 +187,7 @@ export default function ScopePage({ onNavigate }) {
                       <Lightbulb size={11} strokeWidth={2.2} />
                     </span>
                     <span className="text-[10.5px] uppercase tracking-[0.16em] text-sage-600 font-semibold">
-                      Primary diagnosis · 92% confidence
+                      Most likely cause
                     </span>
                   </div>
                   <div className="text-[14px] font-semibold text-ink-900 leading-snug">
@@ -230,7 +231,7 @@ export default function ScopePage({ onNavigate }) {
                     key={t.n}
                     className="grid grid-cols-12 gap-3 px-4 py-3.5 hover:bg-canvas-soft/50 transition-colors"
                   >
-                    <div className="col-span-1 text-[12px] tabular-nums text-ink-400 font-semibold">
+                    <div className="figure col-span-1 text-[12px] text-ink-400">
                       {String(t.n).padStart(2, '0')}
                     </div>
                     <div className="col-span-9 min-w-0">
@@ -242,8 +243,8 @@ export default function ScopePage({ onNavigate }) {
                       </div>
                     </div>
                     <div className="col-span-2 text-right">
-                      <div className="inline-flex items-center gap-1 text-[12px] tabular-nums text-ink-700 font-semibold">
-                        <Clock size={11} className="text-ink-400" strokeWidth={1.9} />
+                      <div className="figure inline-flex items-center gap-1 text-[12px] text-ink-700">
+                        <Clock size={11} className="text-ink-400" strokeWidth={1.8} />
                         {t.hours} hr
                       </div>
                     </div>
@@ -269,17 +270,17 @@ export default function ScopePage({ onNavigate }) {
                     >
                       <div className="col-span-5 flex items-center gap-2">
                         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0">
-                          <Box size={12} strokeWidth={1.9} />
+                          <Box size={12} strokeWidth={1.8} />
                         </span>
                         <span className="text-[13px] font-semibold text-ink-900">
                           {m.item}
                         </span>
                       </div>
                       <div className="col-span-4 text-[12px] text-ink-500">{m.spec}</div>
-                      <div className="col-span-1 text-center text-[12.5px] text-ink-700 tabular-nums">
+                      <div className="figure col-span-1 text-center text-[12.5px] text-ink-700">
                         {m.qty}
                       </div>
-                      <div className="col-span-2 text-right text-[13px] font-semibold tabular-nums text-ink-900">
+                      <div className="figure col-span-2 text-right text-[13px] text-ink-900">
                         ${m.est}
                       </div>
                     </div>
@@ -359,7 +360,7 @@ export default function ScopePage({ onNavigate }) {
           </div>
 
           {/* Document footer / totals */}
-          <div className="px-7 md:px-9 py-6 border-t border-ink-100/80 bg-canvas-soft/30">
+          <div className="px-7 md:px-9 py-6 border-t border-ink-100/80 bg-canvas-deep/50 hairline-inset">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Total label="Labor" value={`$${laborTotal}`} sub={`${totalHours} hrs`} />
               <Total label="Materials" value={`$${totalMaterials}`} sub={`${materials.length} items`} />
@@ -388,10 +389,13 @@ function MetaCell({ label, value }) {
 function SectionBlock({ label, eyebrow, children }) {
   return (
     <section>
-      <div className="flex items-baseline justify-between gap-3 mb-3">
-        <h3 className="editorial text-[17px] leading-tight text-ink-900">
-          {label}
-        </h3>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2.5">
+          <span className="h-px w-4 bg-ink-200" />
+          <h3 className="editorial text-[17px] leading-tight text-ink-900">
+            {label}
+          </h3>
+        </div>
         {eyebrow && (
           <span className="text-[11px] text-ink-500">{eyebrow}</span>
         )}

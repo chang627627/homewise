@@ -145,6 +145,7 @@ const sharedRationale = [
 
 export default function ContractorComparePage({ onNavigate, jobCompleted, recommended }) {
   const [showcaseOpen, setShowcaseOpen] = useState(null); // contractor id or null
+  const aiPickIndex = contractors.findIndex((c) => c.aiPick);
   // After homeowner recommends Jason, his count bumps by 1
   const liveContractors = contractors.map((c) =>
     c.id === 'jason' && jobCompleted && recommended === 'yes'
@@ -181,16 +182,16 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
         </p>
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <X size={13} strokeWidth={1.9} />
+            <X size={13} strokeWidth={1.8} />
             Reject all 3
           </button>
           <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <RefreshCw size={13} strokeWidth={1.9} />
+            <RefreshCw size={13} strokeWidth={1.8} />
             Show 3 different
           </button>
           <button
             onClick={() => onNavigate?.('quote-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
+            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
           >
             <Send size={13} strokeWidth={2} />
             Approve all 3 &amp; send scope
@@ -198,6 +199,26 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           </button>
         </div>
       </header>
+
+      {/* Global flag note above the matrix — surfaces any insurance issues at a glance */}
+      {liveContractors.some((c) => !c.insurance.ok) && (
+        <div className="rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3 flex items-center gap-2.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
+            <AlertCircle size={12} strokeWidth={2} />
+          </span>
+          <div className="text-[12.5px] text-ink-700 leading-relaxed">
+            <strong className="text-ink-900 font-semibold">Heads up.</strong>{' '}
+            {liveContractors.filter((c) => !c.insurance.ok).length} of {liveContractors.length} contractors{' '}
+            {liveContractors.filter((c) => !c.insurance.ok).length === 1 ? 'has' : 'have'} flagged insurance.
+            See{' '}
+            {liveContractors
+              .filter((c) => !c.insurance.ok)
+              .map((c) => c.name.split(' ')[0])
+              .join(', ')}
+            's row before booking.
+          </div>
+        </div>
+      )}
 
       {/* Comparison matrix */}
       <section className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
@@ -216,7 +237,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
               transition={{ duration: 0.35, delay: idx * 0.06 }}
               className={`lg:col-span-3 rounded-2xl p-3 ${
                 c.aiPick
-                  ? 'bg-white border border-sage-200 ring-1 ring-sage-100'
+                  ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100'
                   : 'bg-white border border-ink-100'
               }`}
             >
@@ -244,6 +265,14 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
                         </span>
                       </div>
                     )}
+                    {!c.insurance.ok && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <AlertCircle size={10} className="text-ember-500" strokeWidth={2.4} />
+                        <span className="text-[10px] uppercase tracking-[0.14em] text-ember-500 font-bold">
+                          Insurance flagged
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button
@@ -259,13 +288,13 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
 
         {/* Comparison rows */}
         <div className="divide-y divide-ink-100">
-          <CompareRow label="Rating" sub="With number of reviews">
+          <CompareRow label="Rating" sub="With number of reviews" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellRating key={c.id} c={c.rating} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Years licensed" sub="Verified with state board">
+          <CompareRow label="Years licensed" sub="Verified with state board" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellSimple
                 key={c.id}
@@ -274,13 +303,13 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
             ))}
           </CompareRow>
 
-          <CompareRow label="License" sub="Verified ✓ or flagged">
+          <CompareRow label="License" sub="Verified ✓ or flagged" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellCheck key={c.id} ok={c.license.ok} text={c.license.label} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Insurance" sub="GL + workers comp current">
+          <CompareRow label="Insurance" sub="GL + workers comp current" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellCheck
                 key={c.id}
@@ -293,6 +322,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Relevant past work"
             sub="Same job type · 12 mo · pulled from permit records"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellRelevant key={c.id} v={c.relevantWork} />
@@ -302,13 +332,14 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Permit history"
             sub="Total permits pulled · 12 mo"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellPermits key={c.id} v={c.permitHistory} />
             ))}
           </CompareRow>
 
-          <CompareRow label="Earliest availability" sub="Stated availability for this scope">
+          <CompareRow label="Earliest availability" sub="Stated availability for this scope" aiPickIndex={aiPickIndex}>
             {liveContractors.map((c) => (
               <CellAvailability key={c.id} v={c.earliest} />
             ))}
@@ -317,6 +348,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           <CompareRow
             label="Recommended by Homewisers"
             sub="Real homeowners on completed Homewise jobs · tap to see work"
+            aiPickIndex={aiPickIndex}
           >
             {liveContractors.map((c) => (
               <CellRecommend
@@ -380,7 +412,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
   );
 }
 
-function CompareRow({ label, sub, children }) {
+function CompareRow({ label, sub, children, aiPickIndex }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 px-5 py-4">
       <div className="lg:col-span-3 min-w-0">
@@ -390,7 +422,14 @@ function CompareRow({ label, sub, children }) {
         {sub && <div className="text-[11px] text-ink-500 mt-0.5">{sub}</div>}
       </div>
       {React.Children.map(children, (child, i) => (
-        <div key={i} className="lg:col-span-3">
+        <div
+          key={i}
+          className={`lg:col-span-3 ${
+            i === aiPickIndex
+              ? 'lg:bg-sage-50/40 lg:-my-4 lg:py-4 lg:-mx-1.5 lg:px-1.5 lg:rounded-none'
+              : ''
+          }`}
+        >
           {child}
         </div>
       ))}
@@ -402,7 +441,7 @@ function CellRating({ c }) {
   return (
     <div className="flex items-center gap-1.5">
       <Star size={12} className="text-ember-300 fill-ember-300" strokeWidth={1.5} />
-      <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+      <span className="figure text-[15px] text-ink-900">
         {c.score}
       </span>
       <span className="text-[11.5px] text-ink-500">({c.reviews})</span>
@@ -415,29 +454,28 @@ function CellSimple({ value }) {
 }
 
 function CellCheck({ ok, text }) {
+  if (!ok) {
+    return (
+      <div className="inline-flex items-start gap-1.5 rounded-lg bg-ember-50 ring-1 ring-ember-200 px-2 py-1.5">
+        <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-white text-ember-500 ring-1 ring-ember-200 shrink-0">
+          <AlertCircle size={11} strokeWidth={2.4} />
+        </span>
+        <div className="min-w-0">
+          <div className="text-[12.5px] font-bold text-ember-500 uppercase tracking-[0.04em]">
+            Flagged
+          </div>
+          <div className="text-[11px] text-ink-700 leading-tight mt-0.5">{text}</div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex items-start gap-1.5">
-      <span
-        className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md ring-1 shrink-0 ${
-          ok
-            ? 'bg-sage-50 text-sage-600 ring-sage-100'
-            : 'bg-ember-50 text-ember-500 ring-ember-100'
-        }`}
-      >
-        {ok ? (
-          <CheckCircle2 size={11} strokeWidth={2.2} />
-        ) : (
-          <AlertCircle size={11} strokeWidth={2.2} />
-        )}
+      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md ring-1 shrink-0 bg-sage-50 text-sage-600 ring-sage-100">
+        <CheckCircle2 size={11} strokeWidth={2.2} />
       </span>
       <div className="min-w-0">
-        <div
-          className={`text-[12.5px] font-semibold ${
-            ok ? 'text-sage-700' : 'text-ember-500'
-          }`}
-        >
-          {ok ? 'Verified' : 'Flagged'}
-        </div>
+        <div className="text-[12.5px] font-semibold text-sage-700">Verified</div>
         <div className="text-[11px] text-ink-500 leading-tight mt-0.5">{text}</div>
       </div>
     </div>
@@ -458,7 +496,7 @@ function CellRelevant({ v }) {
 function CellPermits({ v }) {
   return (
     <div className="flex items-center gap-1.5">
-      <FileBadge size={12} className="text-ink-400" strokeWidth={1.9} />
+      <FileBadge size={12} className="text-ink-400" strokeWidth={1.8} />
       <span className="text-[13px] font-semibold text-ink-900 tabular-nums">
         {v.value}
       </span>
@@ -470,7 +508,7 @@ function CellPermits({ v }) {
 function CellAvailability({ v }) {
   return (
     <div className="inline-flex items-center gap-1.5 rounded-full bg-canvas-soft border border-ink-100 px-2.5 py-1">
-      <Clock size={11} className="text-ink-500" strokeWidth={1.9} />
+      <Clock size={11} className="text-ink-500" strokeWidth={1.8} />
       <span className="text-[12px] font-semibold text-ink-900">{v.value}</span>
       <span className="text-[10.5px] text-ink-500">· {v.label}</span>
     </div>
@@ -581,8 +619,11 @@ function ShowcaseDrawer({ contractor, onClose }) {
           </button>
         </div>
         <div className="px-6 py-5">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-            Recent recommended jobs · sorted by relevance to your scope
+          <div className="flex items-center gap-2 mb-3">
+            <span className="h-px w-3 bg-ink-200" />
+            <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Recent recommended jobs · sorted by relevance to your scope
+            </span>
           </div>
           <div className="space-y-2.5">
             {contractor.showcase.map((job, i) => (

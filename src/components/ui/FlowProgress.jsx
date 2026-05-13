@@ -20,7 +20,7 @@ export default function FlowProgress({ current, onNavigate }) {
 
         const containerCls = [
           'inline-flex items-center gap-2 h-8 pl-1.5 pr-3 rounded-xl transition-all',
-          isCurrent && 'bg-ink-900 text-canvas-soft',
+          isCurrent && 'bg-ink-900 text-canvas-soft hairline-on-dark grain-dark',
           isComplete && 'bg-white border border-ink-100 text-ink-700',
           clickable && 'hover:border-ink-300 hover:text-ink-900 cursor-pointer',
           isFuture && 'text-ink-400',

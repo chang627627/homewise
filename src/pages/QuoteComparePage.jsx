@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   Check,
@@ -13,6 +14,9 @@ import {
   MessageCircle,
   Clock,
   Hourglass,
+  Send,
+  Phone,
+  Star,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -38,6 +42,10 @@ const cols = [
     verdict: { tone: 'sage', label: 'Fair price' },
     status: 'received',
     received: '11:08 AM today',
+    bio: 'Family-run since 2012. 14 years licensed. Specializes in residential plumbing repairs and faucet replacements.',
+    rating: { score: 4.8, reviews: 168 },
+    responseTime: 'Usually replies within 2 hours',
+    phone: '(510) 555-0142',
     slots: [
       { id: 'fri-2', time: 'Fri 2 PM', window: 'weekday-pm' },
       { id: 'fri-4', time: 'Fri 4 PM', window: 'weekday-pm' },
@@ -53,6 +61,10 @@ const cols = [
     verdict: { tone: 'ember', label: 'Higher than market' },
     status: 'received',
     received: '2:42 PM today',
+    bio: 'Bayline has 9 years licensed and offers a 1-year workmanship warranty. Higher-end residential work.',
+    rating: { score: 4.6, reviews: 92 },
+    responseTime: 'Usually replies within 4 hours',
+    phone: '(510) 555-0291',
     slots: [
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
       { id: 'sat-1', time: 'Sat 1 PM', window: 'weekend' },
@@ -68,12 +80,24 @@ const cols = [
     verdict: { tone: 'ember', label: 'Low, missing details' },
     status: 'conversation',
     received: '4:15 PM today · clarifying',
+    bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
+    rating: { score: 4.5, reviews: 41 },
+    responseTime: 'Usually replies within 1 hour',
+    phone: '(510) 555-0463',
     slots: [
       { id: 'today-5', time: 'Today 5 PM', window: 'weekday-pm' },
       { id: 'tomorrow-9', time: 'Tomorrow 9 AM', window: 'weekday-am' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
   },
+];
+
+// Suggested pre-filled questions, shown as click-to-fill chips in the contact drawer
+const suggestedQuestions = [
+  'Can you confirm cost includes materials?',
+  'Will the area need to be cleared before you arrive?',
+  'How long do you expect the visit to take?',
+  'What happens if more work is needed once you start?',
 ];
 
 const statusMap = {
@@ -199,6 +223,8 @@ const accentBg = {
 export default function QuoteComparePage({ onNavigate }) {
   const [windows, setWindows] = useState(new Set(['weekday-pm', 'weekend']));
   const [picked, setPicked] = useState({ jason: 'fri-2', bayline: 'sat-10', quickfix: 'today-5' });
+  const [contactOpen, setContactOpen] = useState(null); // contractor id or null
+  const openContractor = cols.find((c) => c.id === contactOpen);
 
   const slotsFor = (c) => c.slots.filter((s) => windows.has(s.window));
   const pickedSlot = (c) => {
@@ -271,8 +297,8 @@ export default function QuoteComparePage({ onNavigate }) {
                 Reviewed
               </Pill>
             </div>
-            <p className="text-[16px] leading-relaxed text-ink-900 editorial italic">
-              "Jason is the cheapest <em className="not-italic font-normal text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
+            <p className="editorial-italic text-[16px] leading-relaxed text-ink-900">
+              "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
             </p>
           </div>
         </div>
@@ -405,7 +431,7 @@ export default function QuoteComparePage({ onNavigate }) {
         </div>
 
         {/* Total row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-deep/50 hairline-inset items-center">
           <div className="md:col-span-3">
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
               Total
@@ -439,7 +465,7 @@ export default function QuoteComparePage({ onNavigate }) {
                   onClick={() => toggleWindow(w.id)}
                   className={`h-8 px-3 rounded-full inline-flex items-center gap-1.5 text-[11.5px] font-medium transition-all ${
                     on
-                      ? 'bg-ink-900 text-canvas-soft'
+                      ? 'bg-ink-900 text-canvas-soft hairline-on-dark'
                       : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
                   }`}
                 >
@@ -481,7 +507,7 @@ export default function QuoteComparePage({ onNavigate }) {
                           onClick={() => setPicked((p) => ({ ...p, [c.id]: s.id }))}
                           className={`h-7 px-2.5 rounded-full inline-flex items-center gap-1 text-[11.5px] font-medium transition-all ${
                             on
-                              ? 'bg-sage-500 text-white ring-1 ring-sage-500'
+                              ? 'bg-sage-500 text-white ring-1 ring-sage-500 hairline-on-dark'
                               : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
                           }`}
                         >
@@ -492,6 +518,13 @@ export default function QuoteComparePage({ onNavigate }) {
                     })}
                   </div>
                 )}
+                <button
+                  onClick={() => setContactOpen(c.id)}
+                  className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+                >
+                  <Phone size={12} strokeWidth={2} />
+                  Ask {c.name.split(' ')[0]} before booking
+                </button>
                 <button
                   onClick={() =>
                     onNavigate?.({
@@ -505,7 +538,7 @@ export default function QuoteComparePage({ onNavigate }) {
                     noOverlap
                       ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
                       : c.aiPick
-                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft'
+                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
                       : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
                   }`}
                 >
@@ -519,7 +552,156 @@ export default function QuoteComparePage({ onNavigate }) {
         </div>
       </section>
 
+      {/* Contact drawer — message a contractor before committing */}
+      <AnimatePresence>
+        {openContractor && (
+          <ContactDrawer
+            contractor={openContractor}
+            onClose={() => setContactOpen(null)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
+  );
+}
+
+function ContactDrawer({ contractor, onClose }) {
+  // Lock body scroll while open
+  useEffect(() => {
+    const body = document.body;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) body.style.paddingRight = `${scrollBarWidth}px`;
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+    };
+  }, []);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-ink-900/30 backdrop-blur-[2px]"
+      />
+      <motion.aside
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 right-0 z-50 h-screen w-full max-w-[480px] bg-white border-l border-ink-100 overflow-y-auto flex flex-col"
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 px-6 py-5 border-b border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className={`relative h-9 w-9 rounded-2xl bg-gradient-to-br ${accentBg[contractor.accent]} ring-1 flex items-center justify-center shrink-0`}
+            >
+              <span className="editorial text-[13px]">{contractor.initials}</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-ink-900 truncate">
+                {contractor.name}
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-ink-500">
+                <Star size={10} className="text-ember-300 fill-ember-300" strokeWidth={0} />
+                <span className="figure text-ink-700">{contractor.rating.score}</span>
+                <span>({contractor.rating.reviews})</span>
+                <span className="mx-1 text-ink-300">·</span>
+                <span>{contractor.responseTime}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+          >
+            <X size={13} strokeWidth={2} />
+          </button>
+        </div>
+
+        <div className="flex-1 px-6 py-5 space-y-5">
+          {/* About */}
+          <section>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                About
+              </span>
+            </div>
+            <p className="text-[13px] text-ink-700 leading-relaxed">{contractor.bio}</p>
+          </section>
+
+          {/* Direct contact — primary action */}
+          {contractor.phone && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="h-px w-3 bg-ink-200" />
+                <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                  Direct contact
+                </span>
+              </div>
+              <a
+                href={`tel:${contractor.phone.replace(/\D/g, '')}`}
+                className="group flex items-center justify-between gap-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark px-4 py-3 transition-all"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft/15 text-canvas-soft shrink-0">
+                    <Phone size={14} strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-[13.5px] font-semibold tabular-nums">
+                      {contractor.phone}
+                    </div>
+                    <div className="text-[11px] text-canvas-soft/70">
+                      Call {contractor.name.split(' ')[0]} directly
+                    </div>
+                  </div>
+                </div>
+                <ArrowRight
+                  size={13}
+                  className="opacity-70 group-hover:translate-x-0.5 transition-all shrink-0"
+                  strokeWidth={2}
+                />
+              </a>
+            </section>
+          )}
+
+          {/* Suggested questions — static reference for the call */}
+          <section>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-px w-3 bg-ink-200" />
+              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                Things to ask when you call
+              </span>
+            </div>
+            <ul className="space-y-1.5">
+              {suggestedQuestions.map((q, i) => (
+                <li
+                  key={q}
+                  className="flex items-start gap-2 text-[12.5px] text-ink-700 leading-snug"
+                >
+                  <span className="shrink-0 mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-canvas-soft text-ink-500 text-[10px] font-bold tabular-nums">
+                    {i + 1}
+                  </span>
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </motion.aside>
+    </>,
+    document.body
   );
 }
 

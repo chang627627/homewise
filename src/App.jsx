@@ -11,6 +11,7 @@ import QuoteComparePage from './pages/QuoteComparePage';
 import ConversationPage from './pages/ConversationPage';
 import OnboardingPage from './pages/OnboardingPage';
 import CompletionPage from './pages/CompletionPage';
+import DesignSystemPage from './pages/DesignSystemPage';
 
 const pageMap = {
   overview: OverviewPage,
@@ -39,6 +40,13 @@ export default function App() {
   const [recommended, setRecommended] = useState(null);
   const [photosShared, setPhotosShared] = useState(false);
   const Page = pageMap[page] || OverviewPage;
+
+  // URL-based escape hatch for the design system reference page.
+  // SPA rewrites in vercel.json serve index.html for any path, so we
+  // detect /designsystem here and bypass the whole app shell.
+  if (typeof window !== 'undefined' && window.location.pathname === '/designsystem') {
+    return <DesignSystemPage />;
+  }
 
   if (!hasOnboarded) {
     return <OnboardingPage onComplete={() => setHasOnboarded(true)} />;

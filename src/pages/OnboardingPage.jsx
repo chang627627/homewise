@@ -174,7 +174,7 @@ export default function OnboardingPage({ onComplete }) {
       <header className="px-6 lg:px-10 py-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10">
-            <Home size={14} strokeWidth={1.9} />
+            <Home size={14} strokeWidth={1.8} />
           </span>
           <span className="editorial text-[17px] tracking-tight text-ink-900">Homewise</span>
         </div>
@@ -263,7 +263,7 @@ function SignupScreen({ onContinue }) {
         </button>
         <button
           onClick={onContinue}
-          className="w-full h-12 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="w-full h-12 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           <img src={appleLogo} alt="" className="h-[15px] w-[15px] invert" />
           Continue with Apple
@@ -282,13 +282,13 @@ function SignupScreen({ onContinue }) {
         onClick={onContinue}
         className="w-full h-12 rounded-2xl bg-white border border-ink-200 hover:border-ink-300 text-ink-700 hover:text-ink-900 inline-flex items-center justify-center gap-2.5 text-[13.5px] font-medium transition-all"
       >
-        <Mail size={14} strokeWidth={1.9} />
+        <Mail size={14} strokeWidth={1.8} />
         Continue with email
       </button>
 
       <div className="mt-8 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
         <ShieldCheck size={12} className="text-sage-500" strokeWidth={2} />
-        End-to-end encrypted · No contractor sees your home until you ask
+        No contractor sees your home until you ask
       </div>
       <p className="mt-2 text-[11px] text-ink-400 text-center leading-relaxed">
         By continuing you agree to Homewise's terms and privacy policy.
@@ -426,7 +426,7 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
       <div className="pt-2 flex items-center gap-3">
         <button
           onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           Show my maintenance plan
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
@@ -441,9 +441,10 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
 function Question({ num, label, sub, children }) {
   return (
     <section>
-      <div className="flex items-baseline gap-3 mb-3 flex-wrap">
+      <div className="flex items-center gap-2.5 mb-3 flex-wrap">
         <span className="text-[11px] tabular-nums text-ink-400 font-bold">{num}</span>
-        <h3 className="text-[13px] font-semibold text-ink-900">{label}</h3>
+        <span className="h-px w-4 bg-ink-200" />
+        <h3 className="text-[13px] font-medium text-ink-900 tracking-[-0.010em]">{label}</h3>
         {sub && <span className="text-[11px] text-ink-500">{sub}</span>}
       </div>
       <div className="ml-7">{children}</div>
@@ -516,7 +517,7 @@ function MaintenanceScreen({ items, onBack, onContinue }) {
               <span
                 className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent]}`}
               >
-                <Icon size={14} strokeWidth={1.9} />
+                <Icon size={14} strokeWidth={1.8} />
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3">
@@ -544,7 +545,7 @@ function MaintenanceScreen({ items, onBack, onContinue }) {
       <div className="pt-2 flex items-center gap-3 flex-wrap">
         <button
           onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
