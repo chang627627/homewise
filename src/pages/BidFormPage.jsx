@@ -90,10 +90,10 @@ export default function BidFormPage() {
     notes: '',
   });
 
-  // Running sum of line items, and a mismatch flag for the warning below.
-  // We don't block submission on mismatch — round-number totals are valid
-  // bids — but we surface the gap so the contractor can spot a math error
-  // before Mara sees it.
+  // Running sum of line items vs the total bid. Mismatch blocks submission
+  // so what reaches Mara always reconciles · she shouldn't have to do the
+  // math, and the AI's apples-to-apples comparison depends on the per-line
+  // breakdown being a true breakdown of the total.
   const lineItemsSum = Object.values(form.lineItems)
     .map((v) => parseFloat(v) || 0)
     .reduce((s, v) => s + v, 0);
@@ -104,11 +104,13 @@ export default function BidFormPage() {
     allLineItemsFilled &&
     Math.abs(lineItemsSum - totalNum) > 0.01;
 
-  const canSubmit =
+  const allRequiredFilled =
     form.totalPrice &&
-    Object.values(form.lineItems).every(Boolean) &&
+    allLineItemsFilled &&
     form.earliestStart &&
     form.estimatedCompletion;
+
+  const canSubmit = allRequiredFilled && !showMismatch;
 
   const handleSubmit = (e) => {
     e?.preventDefault?.();
@@ -210,7 +212,7 @@ export default function BidFormPage() {
                     <div className="text-[12.5px] text-ink-700 leading-relaxed">
                       Line items add up to{' '}
                       <span className="figure text-ink-900">${formatMoney(lineItemsSum)}</span>, but your total bid is{' '}
-                      <span className="figure text-ink-900">${formatMoney(totalNum)}</span>. Adjust either side so they match before submitting.
+                      <span className="figure text-ink-900">${formatMoney(totalNum)}</span>. Adjust either side so they match · we can't submit a bid that doesn't reconcile.
                     </div>
                   </div>
                 )}
@@ -317,6 +319,8 @@ export default function BidFormPage() {
             <p className="text-[11.5px] text-ink-500 max-w-md leading-relaxed">
               {canSubmit
                 ? 'You can edit your bid until Mara reviews it. We\'ll email you when she does.'
+                : showMismatch
+                ? 'Line items need to add up to your total bid before this submits.'
                 : 'Fill in your total, all 4 line items, and both dates to submit.'}
             </p>
           </div>
