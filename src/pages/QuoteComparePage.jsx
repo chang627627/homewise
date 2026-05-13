@@ -17,6 +17,7 @@ import {
   Send,
   Phone,
   Star,
+  Calendar,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -51,6 +52,11 @@ const cols = [
       { id: 'fri-4', time: 'Fri 4 PM', window: 'weekday-pm' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
+    schedule: {
+      earliestStart: 'Fri Apr 25',
+      estimatedCompletion: 'Fri Apr 25',
+      duration: 'Same day · ~2 hr',
+    },
     note: "Price assumes a Moen 1225 cartridge. If it turns out to be Delta, I'll confirm before scheduling so I source the right part.",
   },
   {
@@ -71,6 +77,11 @@ const cols = [
       { id: 'sat-1', time: 'Sat 1 PM', window: 'weekend' },
       { id: 'mon-9', time: 'Mon 9 AM', window: 'weekday-am' },
     ],
+    schedule: {
+      earliestStart: 'Sat Apr 26',
+      estimatedCompletion: 'Mon Apr 28',
+      duration: '2 days · warranty follow-up visit',
+    },
     note: "Includes a 1-yr workmanship warranty on this job. The $75 service fee is my standard for residential calls, waived only on same-day emergencies.",
   },
   {
@@ -91,6 +102,11 @@ const cols = [
       { id: 'tomorrow-9', time: 'Tomorrow 9 AM', window: 'weekday-am' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
+    schedule: {
+      earliestStart: 'Today · Apr 23',
+      estimatedCompletion: 'Today · Apr 23',
+      duration: 'Same day · ~2 hr',
+    },
     note: "Quote is labor only. Materials TBD pending site visit. I can confirm same-day if you book this week.",
   },
 ];
@@ -349,6 +365,16 @@ export default function QuoteComparePage({ onNavigate }) {
                 <div className="text-[10.5px] text-ink-500 mt-0.5">total</div>
               </div>
             </div>
+            {c.schedule && (
+              <div className="mt-2.5 flex items-center gap-1.5 text-[11.5px] text-ink-500">
+                <Calendar size={11} strokeWidth={1.8} className="text-ink-400 shrink-0" />
+                <span className="truncate">
+                  Start <span className="figure text-ink-700">{c.schedule.earliestStart}</span>
+                  <span className="text-ink-300 mx-1">·</span>
+                  {c.schedule.duration}
+                </span>
+              </div>
+            )}
             {c.note && (
               <div className="mt-3 pt-3 border-t border-ink-100/80 space-y-1.5">
                 <div className="flex items-center gap-2">
@@ -443,6 +469,47 @@ export default function QuoteComparePage({ onNavigate }) {
                 );
               })}
             </motion.div>
+          ))}
+        </div>
+
+        {/* Schedule row */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-start">
+          <div className="md:col-span-3">
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Schedule
+            </div>
+            <div className="text-[11.5px] text-ink-500 mt-0.5">
+              Start, completion, duration
+            </div>
+          </div>
+          {cols.map((c) => (
+            <div key={c.id} className="md:col-span-3 space-y-1">
+              {c.schedule ? (
+                <>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">
+                      Start
+                    </span>
+                    <span className="figure text-[13px] text-ink-900">
+                      {c.schedule.earliestStart}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">
+                      Done
+                    </span>
+                    <span className="figure text-[13px] text-ink-700">
+                      {c.schedule.estimatedCompletion}
+                    </span>
+                  </div>
+                  <div className="text-[11.5px] text-ink-500 leading-snug">
+                    {c.schedule.duration}
+                  </div>
+                </>
+              ) : (
+                <span className="text-[12px] text-ink-400">Not provided</span>
+              )}
+            </div>
           ))}
         </div>
 
