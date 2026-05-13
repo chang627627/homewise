@@ -7,6 +7,14 @@ compare → booking → schedule.
 
 **Live:** https://homewise-rust.vercel.app
 
+## Research & Source of Truth
+
+Reference these files before making any design proposal, suggesting new components, or writing user-facing copy. Do not rely solely on decisions already in this file, the research may contain context that changes the reasoning.
+
+- /docs/Homewise-VOC Synthesis-8 Interview.pdf and /docs/Homewise-VOC Synthesis 4 Interviews.pdf  — raw findings and quotes, use for copy and reasoning about new screens
+- /docs/Homewise-Testing Synthesis Round 1.pdf — T1–T5 trust hypotheses, per-screen findings, what changed and why
+- /docs/individual-interviews/ — raw interview notes, use when you need specific participant quotes or to challenge a generalized finding
+
 ## Design system source of truth
 
 The design system has a name: **Hearth · v1**. The visual reference page lives
