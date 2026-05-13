@@ -361,8 +361,8 @@ export default function ScopePage({ onNavigate }) {
               Ready to send
             </span>
           </div>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="max-w-xl space-y-1.5">
+          <div className="space-y-6">
+            <div className="max-w-2xl space-y-1.5">
               <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
                 Approve the scope and we'll reach out to 3 vetted contractors.
               </h3>
@@ -370,7 +370,7 @@ export default function ScopePage({ onNavigate }) {
                 Each gets the exact same brief. You'll see apples-to-apples bids within 5 days · nothing is final until you pick.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2">
               <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
                 <Download size={13} strokeWidth={1.8} />
                 Export PDF
