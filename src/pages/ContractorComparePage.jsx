@@ -180,24 +180,6 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
           Same criteria for everyone. Approve all three to send your scope and get quotes back, or swap any one for the next-best match.
         </p>
-        <div className="mt-5 flex items-center gap-2 flex-wrap">
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <X size={13} strokeWidth={1.8} />
-            Reject all 3
-          </button>
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <RefreshCw size={13} strokeWidth={1.8} />
-            Show 3 different
-          </button>
-          <button
-            onClick={() => onNavigate?.('quote-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
-          >
-            <Send size={13} strokeWidth={2} />
-            Approve all 3 &amp; send scope
-            <ChevronRight size={13} className="opacity-60 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
       </header>
 
       {/* Global flag note above the matrix — surfaces any insurance issues at a glance */}
@@ -408,6 +390,46 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
           </div>
         </div>
       </motion.section>
+
+      {/* What's next · primary decisions live here after the matrix + rationale */}
+      <section className="mt-10 pt-8 border-t border-ink-100">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="h-px w-6 bg-ink-300" />
+          <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
+            Ready to proceed
+          </span>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="max-w-xl space-y-1.5">
+            <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
+              Approve all three to send the scope and gather bids.
+            </h3>
+            <p className="text-[13px] text-ink-500 leading-relaxed">
+              Each contractor gets the same brief. Bids come back within 5 days · you'll compare them apples-to-apples before booking anyone.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+              <X size={13} strokeWidth={1.8} />
+              Reject all 3
+            </button>
+            <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+              <RefreshCw size={13} strokeWidth={1.8} />
+              Show 3 different
+            </button>
+            <button
+              onClick={() => onNavigate?.('quote-compare')}
+              className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+            >
+              <Send size={14} strokeWidth={2} />
+              Approve all 3 &amp; send scope
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
+                <ChevronRight size={14} strokeWidth={2.2} />
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

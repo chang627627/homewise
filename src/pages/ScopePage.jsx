@@ -118,24 +118,6 @@ export default function ScopePage({ onNavigate }) {
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
           Apples-to-apples scope so every contractor bids on the same job. You can edit, ask questions, or have Homewise revise. Nothing is sent until you approve.
         </p>
-        <div className="mt-5 flex items-center gap-2 flex-wrap">
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Download size={13} strokeWidth={1.8} />
-            Export PDF
-          </button>
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Pencil size={13} strokeWidth={1.8} />
-            Edit scope
-          </button>
-          <button
-            onClick={() => onNavigate?.('contractor-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
-          >
-            <Send size={13} strokeWidth={2} />
-            Approve &amp; find contractors
-            <ChevronRight size={13} className="opacity-60 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
       </header>
 
       {/* AI disclaimer banner */}
@@ -369,6 +351,47 @@ export default function ScopePage({ onNavigate }) {
             </div>
           </div>
         </article>
+
+        {/* What's next · all actions live here after the document so the user
+            never has to scroll back up to the header to act */}
+        <section className="mt-10 pt-8 border-t border-ink-100">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="h-px w-6 bg-ink-300" />
+            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
+              Ready to send
+            </span>
+          </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="max-w-xl space-y-1.5">
+              <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
+                Approve the scope and we'll reach out to 3 vetted contractors.
+              </h3>
+              <p className="text-[13px] text-ink-500 leading-relaxed">
+                Each gets the exact same brief. You'll see apples-to-apples bids within 5 days · nothing is final until you pick.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+                <Download size={13} strokeWidth={1.8} />
+                Export PDF
+              </button>
+              <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+                <Pencil size={13} strokeWidth={1.8} />
+                Edit scope
+              </button>
+              <button
+                onClick={() => onNavigate?.('contractor-compare')}
+                className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+              >
+                <Send size={14} strokeWidth={2} />
+                Approve &amp; find contractors
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
+                  <ChevronRight size={14} strokeWidth={2.2} />
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
 
       </div>
     </div>
