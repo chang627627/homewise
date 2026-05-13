@@ -271,7 +271,7 @@ export default function BidFormPage() {
             <div className="mt-3 flex items-start gap-2 text-[11.5px] text-ink-500 leading-relaxed">
               <Calendar size={12} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-400" />
               <span>
-                {homeowner.name.split(' ')[0]} will be asked for her availability. We'll match overlapping slots before booking · no need to commit to a specific time here.
+                These give {homeowner.name.split(' ')[0]} your scheduling envelope · earliest you could start, and how long you'd need. She'll pick the specific time slot from your offered times when she books.
               </span>
             </div>
           </FormSection>

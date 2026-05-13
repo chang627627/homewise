@@ -479,31 +479,28 @@ export default function QuoteComparePage({ onNavigate }) {
               Schedule
             </div>
             <div className="text-[11.5px] text-ink-500 mt-0.5">
-              Start, completion, duration
+              Earliest start, duration
             </div>
           </div>
           {cols.map((c) => (
-            <div key={c.id} className="md:col-span-3 space-y-1">
+            <div key={c.id} className="md:col-span-3 space-y-1.5">
               {c.schedule ? (
                 <>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">
-                      Start
-                    </span>
-                    <span className="figure text-[13px] text-ink-900">
+                  <div>
+                    <div className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400 font-semibold">
+                      Earliest start
+                    </div>
+                    <div className="figure text-[13px] text-ink-900 mt-0.5">
                       {c.schedule.earliestStart}
-                    </span>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">
-                      Done
-                    </span>
-                    <span className="figure text-[13px] text-ink-700">
-                      {c.schedule.estimatedCompletion}
-                    </span>
-                  </div>
-                  <div className="text-[11.5px] text-ink-500 leading-snug">
-                    {c.schedule.duration}
+                  <div>
+                    <div className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400 font-semibold">
+                      Duration
+                    </div>
+                    <div className="text-[12.5px] text-ink-700 leading-snug mt-0.5">
+                      {c.schedule.duration}
+                    </div>
                   </div>
                 </>
               ) : (
