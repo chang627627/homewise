@@ -12,6 +12,7 @@ import {
   Lock,
   Calendar,
   Send,
+  AlertCircle,
 } from 'lucide-react';
 import Pill from '../components/ui/Pill';
 
@@ -70,6 +71,13 @@ const scope = {
 
 const TOTAL_LABOR_HOURS = scope.tasks.reduce((s, t) => s + t.hours, 0);
 
+// Format a number as a price string. Drops trailing ".00" so "$220" stays
+// clean and "$220.50" still reads correctly.
+function formatMoney(n) {
+  const fixed = (Math.round(n * 100) / 100).toFixed(2);
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed;
+}
+
 export default function BidFormPage() {
   const [scopeOpen, setScopeOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -81,6 +89,20 @@ export default function BidFormPage() {
     estimatedCompletion: '',
     notes: '',
   });
+
+  // Running sum of line items, and a mismatch flag for the warning below.
+  // We don't block submission on mismatch — round-number totals are valid
+  // bids — but we surface the gap so the contractor can spot a math error
+  // before Mara sees it.
+  const lineItemsSum = Object.values(form.lineItems)
+    .map((v) => parseFloat(v) || 0)
+    .reduce((s, v) => s + v, 0);
+  const totalNum = parseFloat(form.totalPrice) || 0;
+  const allLineItemsFilled = Object.values(form.lineItems).every(Boolean);
+  const showMismatch =
+    totalNum > 0 &&
+    allLineItemsFilled &&
+    Math.abs(lineItemsSum - totalNum) > 0.01;
 
   const canSubmit =
     form.totalPrice &&
@@ -182,6 +204,16 @@ export default function BidFormPage() {
                     />
                   ))}
                 </div>
+                {showMismatch && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3">
+                    <AlertCircle size={14} strokeWidth={1.8} className="text-ember-500 mt-0.5 shrink-0" />
+                    <div className="text-[12.5px] text-ink-700 leading-relaxed">
+                      Line items add up to{' '}
+                      <span className="figure text-ink-900">${formatMoney(lineItemsSum)}</span>, but your total bid is{' '}
+                      <span className="figure text-ink-900">${formatMoney(totalNum)}</span>. Adjust either side so they match before submitting.
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
