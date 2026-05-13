@@ -12,6 +12,7 @@ import ConversationPage from './pages/ConversationPage';
 import OnboardingPage from './pages/OnboardingPage';
 import CompletionPage from './pages/CompletionPage';
 import DesignSystemPage from './pages/DesignSystemPage';
+import BidFormPage from './pages/BidFormPage';
 
 const pageMap = {
   overview: OverviewPage,
@@ -41,11 +42,15 @@ export default function App() {
   const [photosShared, setPhotosShared] = useState(false);
   const Page = pageMap[page] || OverviewPage;
 
-  // URL-based escape hatch for the design system reference page.
+  // URL-based escape hatches for pages that bypass the app shell.
   // SPA rewrites in vercel.json serve index.html for any path, so we
-  // detect /designsystem here and bypass the whole app shell.
-  if (typeof window !== 'undefined' && window.location.pathname === '/designsystem') {
-    return <DesignSystemPage />;
+  // detect the path here and short-circuit before onboarding + sidebar.
+  if (typeof window !== 'undefined') {
+    const path = window.location.pathname;
+    if (path === '/designsystem') return <DesignSystemPage />;
+    // /bidform is the contractor-facing magic-link bid submission flow.
+    // No login, no sidebar — the homeowner app doesn't apply here.
+    if (path === '/bidform' || path.startsWith('/bid/')) return <BidFormPage />;
   }
 
   if (!hasOnboarded) {

@@ -51,6 +51,7 @@ const cols = [
       { id: 'fri-4', time: 'Fri 4 PM', window: 'weekday-pm' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
+    note: "Price assumes a Moen 1225 cartridge. If it turns out to be Delta, I'll confirm before scheduling so I source the right part.",
   },
   {
     id: 'bayline',
@@ -70,6 +71,7 @@ const cols = [
       { id: 'sat-1', time: 'Sat 1 PM', window: 'weekend' },
       { id: 'mon-9', time: 'Mon 9 AM', window: 'weekday-am' },
     ],
+    note: "Includes a 1-yr workmanship warranty on this job. The $75 service fee is my standard for residential calls, waived only on same-day emergencies.",
   },
   {
     id: 'quickfix',
@@ -89,6 +91,7 @@ const cols = [
       { id: 'tomorrow-9', time: 'Tomorrow 9 AM', window: 'weekday-am' },
       { id: 'sat-10', time: 'Sat 10 AM', window: 'weekend' },
     ],
+    note: "Quote is labor only. Materials TBD pending site visit. I can confirm same-day if you book this week.",
   },
 ];
 
@@ -346,6 +349,19 @@ export default function QuoteComparePage({ onNavigate }) {
                 <div className="text-[10.5px] text-ink-500 mt-0.5">total</div>
               </div>
             </div>
+            {c.note && (
+              <div className="mt-3 pt-3 border-t border-ink-100/80 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="h-px w-3 bg-ink-200" />
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-ink-500 font-semibold">
+                    Note from {c.name.split(' ')[0]}
+                  </span>
+                </div>
+                <p className="editorial-italic text-[12.5px] leading-relaxed text-ink-700">
+                  &ldquo;{c.note}&rdquo;
+                </p>
+              </div>
+            )}
           </motion.div>
         ))}
       </section>
