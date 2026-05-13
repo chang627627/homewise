@@ -280,16 +280,11 @@ export default function BidFormPage() {
           <FormSection num="03" title="Notes" optional>
             <Field
               label="Scope clarifications or assumptions"
-              hint="Anything Mara should know about your pricing, scope reading, materials, or constraints."
+              hint={`Anything Mara should know about your pricing, scope reading, materials, or constraints. Keep it short · she'll see this right under your quote total on her dashboard.`}
             >
-              <textarea
+              <NotesField
                 value={form.notes}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, notes: e.target.value }))
-                }
-                rows={4}
-                placeholder="e.g. price assumes faucet cartridge is a Moen 1225. If it turns out to be a Delta, please confirm before scheduling so I can source the right part."
-                className="w-full px-3.5 py-3 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] leading-relaxed placeholder:text-ink-400 focus:outline-none focus:border-ink-300 resize-none"
+                onChange={(v) => setForm((p) => ({ ...p, notes: v }))}
               />
             </Field>
           </FormSection>
@@ -609,6 +604,39 @@ function Field({ label, hint, required = false, children }) {
       )}
       <div className="pt-0.5">{children}</div>
     </label>
+  );
+}
+
+// 200 chars fits comfortably under each quote card on Quote Compare
+// without breaking the layout · Mara reads this on her dashboard right
+// under the bid total, so we keep contractor notes short by design.
+const NOTES_MAX = 200;
+
+function NotesField({ value, onChange }) {
+  const len = value.length;
+  const remaining = NOTES_MAX - len;
+  const atLimit = remaining <= 0;
+  const nearLimit = remaining <= 20 && !atLimit;
+  const counterCls = atLimit
+    ? 'text-ember-500'
+    : nearLimit
+    ? 'text-ember-400'
+    : 'text-ink-400';
+
+  return (
+    <div className="space-y-1.5">
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, NOTES_MAX))}
+        rows={4}
+        maxLength={NOTES_MAX}
+        placeholder="e.g. price assumes faucet cartridge is a Moen 1225. If it turns out to be a Delta, please confirm before scheduling."
+        className="w-full px-3.5 py-3 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] leading-relaxed placeholder:text-ink-400 focus:outline-none focus:border-ink-300 resize-none"
+      />
+      <div className={`figure text-[11px] text-right ${counterCls}`}>
+        {len} / {NOTES_MAX}
+      </div>
+    </div>
   );
 }
 
