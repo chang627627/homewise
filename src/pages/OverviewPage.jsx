@@ -1,42 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  Sparkles,
-  ArrowRight,
-  MessagesSquare,
-  FileText,
-  Users,
-  TrendingUp,
-} from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import OverviewCards from '../components/OverviewCards';
 import ActiveTasks from '../components/ActiveTasks';
 
-const steps = [
-  {
-    n: '01',
-    icon: MessagesSquare,
-    title: 'Describe what happened',
-    detail: 'Talk to Homewise like a friend. Drop a photo. The AI asks the same clarifying questions a senior contractor would.',
-  },
-  {
-    n: '02',
-    icon: FileText,
-    title: 'Get a contractor-ready scope',
-    detail: 'AI generates an itemized scope of work: labor, materials, exclusions, unit pricing for anything uncertain.',
-  },
-  {
-    n: '03',
-    icon: Users,
-    title: 'Compare 3 verified contractors',
-    detail: 'Side-by-side: rating, license, insurance, recent similar work. Why each was picked, in plain English.',
-  },
-  {
-    n: '04',
-    icon: TrendingUp,
-    title: 'See quotes apples-to-apples',
-    detail: 'Same scope, every contractor. AI flags scope deviations and outlier pricing so you decide with confidence.',
-  },
-];
+const accentMap = {
+  sage:  'bg-sage-50 text-sage-700 ring-sage-100',
+  sky:   'bg-sky2026-50 text-sky2026-700 ring-sky2026-100',
+  ember: 'bg-ember-50 text-ember-500 ring-ember-100',
+};
 
 export default function OverviewPage({
   onNavigate,
@@ -45,9 +17,10 @@ export default function OverviewPage({
   jobCompleted,
   recommended,
   hasStartedFirstTask,
+  maintenanceItems = [],
 }) {
   if (!hasStartedFirstTask) {
-    return <EmptyOverview onNavigate={onNavigate} />;
+    return <EmptyOverview onNavigate={onNavigate} maintenanceItems={maintenanceItems} />;
   }
   return (
     <PopulatedOverview
@@ -60,7 +33,7 @@ export default function OverviewPage({
   );
 }
 
-function EmptyOverview({ onNavigate }) {
+function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
   return (
     <div className="space-y-16 lg:space-y-24">
       {/* Hero / empty state */}
@@ -97,15 +70,6 @@ function EmptyOverview({ onNavigate }) {
             <span className="block text-ink-500">Tell it what happened.</span>
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.12 }}
-            className="mt-5 text-[14px] md:text-[15px] text-ink-500 max-w-xl leading-relaxed"
-          >
-            Homewise vets contractors, drafts the scope, gathers quotes, and explains the trade-offs. You stop searching, comparing, and chasing, and only step in when a real decision needs you.
-          </motion.p>
-
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,46 +93,52 @@ function EmptyOverview({ onNavigate }) {
         </div>
       </section>
 
-      {/* How it works. 4 steps */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="h-px w-6 bg-ink-300" />
-          <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
-            How it works
-          </span>
-        </div>
-        <h2 className="editorial text-[22px] md:text-[26px] leading-[1.15] text-ink-900 tracking-tight max-w-2xl mb-8">
-          Four steps from problem to a contractor you trust.
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {steps.map((s, i) => (
-            <motion.button
-              key={s.n}
-              onClick={() => onNavigate?.('intake')}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] }}
-              className="group text-left rounded-3xl bg-white border border-ink-100/80 p-6 hover: hover:border-ink-200 transition-all"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 group-hover:bg-sage-50 group-hover:text-sage-600 group-hover:ring-sage-100 transition-all">
-                  <s.icon size={15} strokeWidth={1.8} />
-                </span>
-                <span className="editorial text-[15px] text-ink-300 leading-none tabular-nums">
-                  {s.n}
-                </span>
-              </div>
-              <div className="text-[14px] font-semibold text-ink-900 tracking-[-0.005em] leading-snug">
-                {s.title}
-              </div>
-              <p className="mt-1.5 text-[12px] text-ink-500 leading-relaxed">
-                {s.detail}
-              </p>
-            </motion.button>
-          ))}
-        </div>
-      </section>
+      {maintenanceItems.length > 0 && (
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <span className="h-px w-6 bg-ink-300" />
+            <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
+              Your home's watchlist
+            </span>
+          </div>
+          <div className="space-y-2">
+            {maintenanceItems.map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: 0.05 * i }}
+                  className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
+                >
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent] || 'bg-canvas-soft text-ink-700 ring-ink-100'}`}>
+                    <Icon size={14} strokeWidth={1.8} />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
+                          {item.title}
+                        </div>
+                        <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
+                      </div>
+                      {item.source && (
+                        <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
+                          {item.source}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
+                      {item.detail}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
