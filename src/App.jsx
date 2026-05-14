@@ -37,6 +37,7 @@ export default function App() {
   const [scheduledSlot, setScheduledSlot] = useState(null);
   const [hasStartedFirstTask, setHasStartedFirstTask] = useState(false);
   const [hasOnboarded, setHasOnboarded] = useState(false);
+  const [maintenanceItems, setMaintenanceItems] = useState([]);
   const [jobCompleted, setJobCompleted] = useState(false);
   const [recommended, setRecommended] = useState(null);
   const [photosShared, setPhotosShared] = useState(false);
@@ -54,7 +55,7 @@ export default function App() {
   }
 
   if (!hasOnboarded) {
-    return <OnboardingPage onComplete={() => setHasOnboarded(true)} />;
+    return <OnboardingPage onComplete={(items) => { setHasOnboarded(true); setMaintenanceItems(items || []); }} />;
   }
 
   const handleNavigate = (id, opts = {}) => {
@@ -124,6 +125,7 @@ export default function App() {
                   recommended={recommended}
                   photosShared={photosShared}
                   hasStartedFirstTask={hasStartedFirstTask}
+                  maintenanceItems={maintenanceItems}
                 />
               </motion.div>
             </AnimatePresence>

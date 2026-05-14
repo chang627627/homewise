@@ -178,12 +178,7 @@ export default function OnboardingPage({ onComplete }) {
           </span>
           <span className="editorial text-[17px] tracking-tight text-ink-900">Homewise</span>
         </div>
-        {step > 0 && (
-          <span className="text-[11px] uppercase tracking-[0.22em] text-ink-400 font-semibold">
-            Step {step} of 2
-          </span>
-        )}
-      </header>
+        </header>
 
       <main className="px-6 lg:px-10 pb-16">
         <AnimatePresence mode="wait">
@@ -197,15 +192,7 @@ export default function OnboardingPage({ onComplete }) {
               setProfile={setProfile}
               toggle={toggle}
               onBack={() => setStep(0)}
-              onContinue={() => setStep(2)}
-            />
-          )}
-          {step === 2 && (
-            <MaintenanceScreen
-              key="maintenance"
-              items={items}
-              onBack={() => setStep(1)}
-              onContinue={onComplete}
+              onContinue={() => onComplete(items)}
             />
           )}
         </AnimatePresence>
@@ -250,7 +237,7 @@ function SignupScreen({ onContinue }) {
       </h1>
 
       <p className="mt-3 text-[13.5px] text-ink-500 leading-relaxed">
-        Two minutes. Then your home's first plan, ready when you are.
+        Two minutes. Then your home's watchlist, ready when you are.
       </p>
 
       <div className="mt-10 space-y-2">
@@ -320,7 +307,7 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
           Five questions, then we plan.
         </h1>
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
-          Each is skippable. Homewise uses these to suggest the right baseline maintenance for your home.
+          Each is skippable. Your answers build the watchlist on your home page.
         </p>
       </header>
 
@@ -428,7 +415,7 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
           onClick={onContinue}
           className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
-          Show my maintenance plan
+          Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
             <ArrowRight size={14} strokeWidth={2.2} />
           </span>
@@ -471,89 +458,3 @@ function Chip({ selected, onClick, children }) {
   );
 }
 
-function MaintenanceScreen({ items, onBack, onContinue }) {
-  const accentMap = {
-    sage: 'bg-sage-50 text-sage-700 ring-sage-100',
-    sky: 'bg-sky2026-50 text-sky2026-700 ring-sky2026-100',
-    ember: 'bg-ember-50 text-ember-500 ring-ember-100',
-  };
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.4 }}
-      className="max-w-2xl mx-auto pt-6 lg:pt-10 space-y-8"
-    >
-      <BackLink onClick={onBack} label="Edit my answers" />
-      <header>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft">
-            <Sparkles size={13} strokeWidth={2.2} />
-          </span>
-          <span className="text-[11px] uppercase tracking-[0.22em] text-sage-600 font-semibold">
-            Your home's baseline plan
-          </span>
-        </div>
-        <h1 className="editorial text-[28px] md:text-[34px] leading-[1.05] text-ink-900 tracking-tight">
-          Here's what's on your radar.
-        </h1>
-        <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
-          Homewise will quietly track these, ping you ahead of seasonal windows, and find pros when you're ready.
-        </p>
-      </header>
-
-      <div className="space-y-2.5">
-        {items.map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.05 * i }}
-              className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
-            >
-              <span
-                className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent]}`}
-              >
-                <Icon size={14} strokeWidth={1.8} />
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
-                      {item.title}
-                    </div>
-                    <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
-                  </div>
-                  {item.source && (
-                    <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
-                      {item.source}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
-                  {item.detail}
-                </p>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      <div className="pt-2 flex items-center gap-3 flex-wrap">
-        <button
-          onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
-        >
-          Continue to your home
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
-            <ArrowRight size={14} strokeWidth={2.2} />
-          </span>
-        </button>
-        <span className="text-[12px] text-ink-500">You can edit any of this anytime.</span>
-      </div>
-    </motion.div>
-  );
-}
