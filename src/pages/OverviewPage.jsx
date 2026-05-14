@@ -119,9 +119,6 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
                 <ArrowRight size={14} strokeWidth={2.2} />
               </span>
             </button>
-            <span className="inline-flex items-center rounded-full border border-ink-200 bg-canvas-soft px-3 py-1 text-[11px] font-medium text-ink-500 tracking-wide">
-              Takes about 2 minutes. No contractor sees anything until you approve.
-            </span>
           </motion.div>
 
         </div>
