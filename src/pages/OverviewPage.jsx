@@ -176,7 +176,7 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
               Your home's watchlist
             </span>
           </div>
-          <p className="text-[13px] text-ink-500 leading-relaxed max-w-xl mb-5">
+          <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
             Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
           </p>
           <div className="space-y-2">
