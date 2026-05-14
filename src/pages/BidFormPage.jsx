@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import Pill from '../components/ui/Pill';
+import { ScopePhotoStrip } from './ScopePage';
 
 // ──────────────────────────────────────────────────────────────────────────
 // /bidform · contractor-facing magic-link form.
@@ -93,8 +94,12 @@ export default function BidFormPage() {
   const [scopeOpen, setScopeOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    totalPrice: '',
-    lineItems: { 1: '', 2: '', 3: '', 4: '' },
+    // Per-line: contractor types their hourly rate; hours default from the
+    // scope but stay editable so they can adjust if a task will take longer.
+    // Total is derived from the sum of rate × hours per line + filled add-ons.
+    lineItems: Object.fromEntries(
+      scope.tasks.map((t) => [t.n, { rate: '', hours: t.hours }])
+    ),
     addOns: { 0: '', 1: '' },
     duration: '',
     slots: [
@@ -105,29 +110,29 @@ export default function BidFormPage() {
     notes: '',
   });
 
-  // Running sum of line items vs the total bid. Mismatch blocks submission
-  // so what reaches Mara always reconciles · she shouldn't have to do the
-  // math, and the AI's apples-to-apples comparison depends on the per-line
-  // breakdown being a true breakdown of the total.
-  const lineItemsSum = Object.values(form.lineItems)
+  // Per-line and overall totals are derived; the contractor never types
+  // the bid total directly. This forces transparency in the breakdown.
+  const lineItemValues = Object.entries(form.lineItems);
+  const lineTotal = (item) =>
+    (parseFloat(item.rate) || 0) * (parseFloat(item.hours) || 0);
+  const labourSum = lineItemValues.reduce(
+    (s, [, item]) => s + lineTotal(item),
+    0
+  );
+  const addOnSum = Object.values(form.addOns)
     .map((v) => parseFloat(v) || 0)
     .reduce((s, v) => s + v, 0);
-  const totalNum = parseFloat(form.totalPrice) || 0;
-  const allLineItemsFilled = Object.values(form.lineItems).every(Boolean);
-  const showMismatch =
-    totalNum > 0 &&
-    allLineItemsFilled &&
-    Math.abs(lineItemsSum - totalNum) > 0.01;
+  const computedTotal = labourSum + addOnSum;
+  const allLineRatesFilled = lineItemValues.every(
+    ([, item]) => item.rate && item.hours
+  );
 
   const allSlotsFilled = form.slots.every((s) => s.date && s.time);
 
-  const allRequiredFilled =
-    form.totalPrice &&
-    allLineItemsFilled &&
+  const canSubmit =
+    allLineRatesFilled &&
     form.duration &&
     allSlotsFilled;
-
-  const canSubmit = allRequiredFilled && !showMismatch;
 
   const handleSubmit = (e) => {
     e?.preventDefault?.();
@@ -139,7 +144,7 @@ export default function BidFormPage() {
   };
 
   if (submitted) {
-    return <ConfirmationView form={form} />;
+    return <ConfirmationView form={form} computedTotal={computedTotal} />;
   }
 
   return (
@@ -193,46 +198,28 @@ export default function BidFormPage() {
           {/* 01 · Pricing */}
           <FormSection num="01" title="Pricing">
             <div className="space-y-5">
-              <Field label="Your total bid" required hint="All labor + materials, sales tax included.">
-                <PriceInput
-                  value={form.totalPrice}
-                  onChange={(v) => setForm((p) => ({ ...p, totalPrice: v }))}
-                  placeholder="220"
-                />
-              </Field>
-
               <div className="space-y-2">
                 <div className="text-[12.5px] font-medium text-ink-900">
-                  Line-item pricing
+                  Per-task rate &amp; hours
                 </div>
-                <div className="text-[11.5px] text-ink-500">
-                  Break the total down by scope task. Helps {homeowner.name.split(' ')[0]} compare bids fairly.
+                <div className="text-[11.5px] text-ink-500 max-w-lg">
+                  Enter your hourly rate for each task. Hours are pre-filled from the scope · adjust if you think it will take longer or shorter. Your total bid sums automatically.
                 </div>
                 <div className="mt-3 rounded-2xl border border-ink-100 bg-white overflow-hidden divide-y divide-ink-100">
                   {scope.tasks.map((t) => (
                     <LineItemRow
                       key={t.n}
                       task={t}
-                      value={form.lineItems[t.n]}
-                      onChange={(v) =>
+                      item={form.lineItems[t.n]}
+                      onChange={(next) =>
                         setForm((p) => ({
                           ...p,
-                          lineItems: { ...p.lineItems, [t.n]: v },
+                          lineItems: { ...p.lineItems, [t.n]: next },
                         }))
                       }
                     />
                   ))}
                 </div>
-                {showMismatch && (
-                  <div className="mt-3 flex items-start gap-2.5 rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3">
-                    <AlertCircle size={14} strokeWidth={1.8} className="text-ember-500 mt-0.5 shrink-0" />
-                    <div className="text-[12.5px] text-ink-700 leading-relaxed">
-                      Line items add up to{' '}
-                      <span className="figure text-ink-900">${formatMoney(lineItemsSum)}</span>, but your total bid is{' '}
-                      <span className="figure text-ink-900">${formatMoney(totalNum)}</span>. Adjust either side so they match · we can't submit a bid that doesn't reconcile.
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -240,7 +227,7 @@ export default function BidFormPage() {
                   Unit-priced add-ons
                 </div>
                 <div className="text-[11.5px] text-ink-500 max-w-lg">
-                  Pre-agreed pricing in case scope expands during the job. Optional · leave blank if not applicable.
+                  Pre-agreed pricing in case scope expands during the job. Optional, leave blank if not applicable.
                 </div>
                 <div className="mt-3 rounded-2xl border border-ember-100 bg-ember-50/30 overflow-hidden divide-y divide-ember-100">
                   {scope.unitPriced.map((u) => (
@@ -256,6 +243,23 @@ export default function BidFormPage() {
                       }
                     />
                   ))}
+                </div>
+              </div>
+
+              {/* Auto-summed total, read-only · tier-3 surface mirrors the Quote
+                  Compare totals row treatment so the contractor sees what Mara
+                  will see */}
+              <div className="rounded-2xl bg-canvas-deep/50 hairline-inset px-4 py-4 flex items-center justify-between">
+                <div>
+                  <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                    Your bid total
+                  </div>
+                  <div className="text-[11.5px] text-ink-500 mt-0.5">
+                    Sum of labor + add-ons. Updates as you fill in rates.
+                  </div>
+                </div>
+                <div className="editorial text-[24px] leading-none text-ink-900 tabular-nums">
+                  ${formatMoney(computedTotal)}
                 </div>
               </div>
             </div>
@@ -355,9 +359,7 @@ export default function BidFormPage() {
             <p className="text-[11.5px] text-ink-500 max-w-md leading-relaxed">
               {canSubmit
                 ? 'You can edit your bid until Mara reviews it. We\'ll email you when she does.'
-                : showMismatch
-                ? 'Line items need to add up to your total bid before this submits.'
-                : 'Fill in your total, all 4 line items, and both dates to submit.'}
+                : 'Fill in a rate for each task, pick a duration, and offer 3 time slots to submit.'}
             </p>
           </div>
         </form>
@@ -381,7 +383,7 @@ export default function BidFormPage() {
 
 // ─── Confirmation state ────────────────────────────────────────────────────
 
-function ConfirmationView({ form }) {
+function ConfirmationView({ form, computedTotal }) {
   return (
     <div className="min-h-screen bg-canvas text-ink-900">
       <header className="border-b border-ink-100 bg-white/70 backdrop-blur-sm">
@@ -435,7 +437,7 @@ function ConfirmationView({ form }) {
                   Total
                 </div>
                 <div className="figure text-[20px] text-ink-900 mt-1">
-                  ${form.totalPrice || '–'}
+                  ${formatMoney(computedTotal)}
                 </div>
               </div>
               <div>
@@ -543,6 +545,7 @@ function ScopeSummary({ open, onToggle }) {
                 <p className="text-[12.5px] text-ink-700 leading-relaxed">
                   {scope.diagnosis}
                 </p>
+                <ScopePhotoStrip />
               </div>
 
               {/* Tasks */}
@@ -724,25 +727,70 @@ function PriceInput({ value, onChange, placeholder }) {
   );
 }
 
-function LineItemRow({ task, value, onChange }) {
+function LineItemRow({ task, item, onChange }) {
+  const total = (parseFloat(item.rate) || 0) * (parseFloat(item.hours) || 0);
   return (
-    <div className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-canvas-soft/40 transition-colors">
+    <div className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-canvas-soft/40 transition-colors">
       <div className="figure col-span-1 text-[11.5px] text-ink-400">
         {String(task.n).padStart(2, '0')}
       </div>
-      <div className="col-span-7 min-w-0">
-        <div className="text-[13px] font-medium text-ink-900">{task.title}</div>
-        <div className="figure text-[11.5px] text-ink-500 mt-0.5">
-          {task.hours} hr suggested
-        </div>
+      <div className="col-span-4 min-w-0">
+        <div className="text-[13px] font-medium text-ink-900 leading-snug">{task.title}</div>
       </div>
-      <div className="col-span-4">
-        <PriceInput
-          value={value}
-          onChange={onChange}
-          placeholder="–"
+      <div className="col-span-3">
+        <RateInput
+          value={item.rate}
+          onChange={(v) => onChange({ ...item, rate: v })}
+          placeholder="95"
         />
       </div>
+      <div className="col-span-2">
+        <HoursInput
+          value={item.hours}
+          onChange={(v) => onChange({ ...item, hours: v })}
+        />
+      </div>
+      <div className="figure col-span-2 text-right text-[13px] text-ink-900">
+        ${formatMoney(total)}
+      </div>
+    </div>
+  );
+}
+
+function RateInput({ value, onChange, placeholder }) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 figure text-[13px] text-ink-400 pointer-events-none">
+        $
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
+        placeholder={placeholder}
+        className="figure w-full h-10 pl-6 pr-10 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+      />
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-400 pointer-events-none">
+        /hr
+      </span>
+    </div>
+  );
+}
+
+function HoursInput({ value, onChange }) {
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
+        className="figure w-full h-10 pl-3 pr-8 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+      />
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-400 pointer-events-none">
+        hr
+      </span>
     </div>
   );
 }

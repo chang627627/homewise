@@ -91,6 +91,50 @@ const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
 const labor = 95;
 const laborTotal = Math.round(totalHours * labor);
 
+// Photos captured during intake + AI-tagged. Surfaced here on the scope
+// document so the contractor has visual context to bid against, and so
+// the homeowner reviewing the scope can see what was sent. Matches the
+// data shape used in IntakePage / ConversationPage.
+export const scopePhotos = [
+  { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
+  { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
+  { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
+];
+
+const photoToneMap = {
+  sage: 'from-sage-200 to-sage-300',
+  sky: 'from-sky2026-100 to-sky2026-300',
+  ember: 'from-ember-100 to-ember-200',
+};
+
+export function ScopePhotoStrip({ photos = scopePhotos }) {
+  return (
+    <div className="mt-4 grid grid-cols-3 gap-2">
+      {photos.map((p, i) => (
+        <div
+          key={i}
+          className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${photoToneMap[p.tone]}`} />
+          <div className="absolute inset-0 dot-grid opacity-30" />
+          <div className="absolute top-2 left-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-ink-700 ring-1 ring-ink-100">
+              <ImageIcon size={9} strokeWidth={2.2} />
+              {p.label}
+            </span>
+          </div>
+          <div className="absolute bottom-2 left-2 right-2">
+            <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-canvas-soft">
+              <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
+              AI: {p.tag}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ScopePage({ onNavigate }) {
   return (
     <div className="space-y-8">
@@ -178,6 +222,7 @@ export default function ScopePage({ onNavigate }) {
                   <p className="mt-1.5 text-[12.5px] text-ink-500 leading-relaxed">
                     Standing water under the trap and the slow drip at the spout base are unrelated. Photo of the supply line behind the cabinet rules out a higher-pressure leak.
                   </p>
+                  <ScopePhotoStrip />
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
