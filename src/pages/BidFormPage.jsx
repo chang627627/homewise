@@ -78,6 +78,17 @@ function formatMoney(n) {
   return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed;
 }
 
+// Format a slot {date, time} for human display: "Fri Apr 25 · 2 PM".
+// Date parsing uses local time (the date input gives "YYYY-MM-DD").
+function formatSlot({ date, time }) {
+  if (!date || !time) return '';
+  const [y, m, d] = date.split('-').map(Number);
+  const local = new Date(y, m - 1, d);
+  const day = local.toLocaleDateString('en-US', { weekday: 'short' });
+  const month = local.toLocaleDateString('en-US', { month: 'short' });
+  return `${day} ${month} ${d} · ${time}`;
+}
+
 export default function BidFormPage() {
   const [scopeOpen, setScopeOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -85,8 +96,12 @@ export default function BidFormPage() {
     totalPrice: '',
     lineItems: { 1: '', 2: '', 3: '', 4: '' },
     addOns: { 0: '', 1: '' },
-    earliestStart: '',
-    estimatedCompletion: '',
+    duration: '',
+    slots: [
+      { date: '', time: '' },
+      { date: '', time: '' },
+      { date: '', time: '' },
+    ],
     notes: '',
   });
 
@@ -104,11 +119,13 @@ export default function BidFormPage() {
     allLineItemsFilled &&
     Math.abs(lineItemsSum - totalNum) > 0.01;
 
+  const allSlotsFilled = form.slots.every((s) => s.date && s.time);
+
   const allRequiredFilled =
     form.totalPrice &&
     allLineItemsFilled &&
-    form.earliestStart &&
-    form.estimatedCompletion;
+    form.duration &&
+    allSlotsFilled;
 
   const canSubmit = allRequiredFilled && !showMismatch;
 
@@ -246,33 +263,57 @@ export default function BidFormPage() {
 
           {/* 02 · Schedule */}
           <FormSection num="02" title="Schedule">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Earliest start date" required>
-                <input
-                  type="date"
-                  value={form.earliestStart}
+            <div className="space-y-5">
+              <Field label="Estimated duration" required hint="How long the job takes once you start. Surfaces alongside your bid on Mara's dashboard.">
+                <select
+                  value={form.duration}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, earliestStart: e.target.value }))
+                    setForm((p) => ({ ...p, duration: e.target.value }))
                   }
-                  className="figure w-full h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] focus:outline-none focus:border-ink-300"
-                />
+                  className="figure w-full h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] focus:outline-none focus:border-ink-300 appearance-none"
+                >
+                  <option value="">Pick a duration…</option>
+                  {DURATIONS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               </Field>
-              <Field label="Estimated completion" required>
-                <input
-                  type="date"
-                  value={form.estimatedCompletion}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, estimatedCompletion: e.target.value }))
-                  }
-                  className="figure w-full h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] focus:outline-none focus:border-ink-300"
-                />
-              </Field>
-            </div>
-            <div className="mt-3 flex items-start gap-2 text-[11.5px] text-ink-500 leading-relaxed">
-              <Calendar size={12} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-400" />
-              <span>
-                These give {homeowner.name.split(' ')[0]} your scheduling envelope · earliest you could start, and how long you'd need. She'll pick the specific time slot from your offered times when she books.
-              </span>
+
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-[12.5px] font-medium text-ink-900">
+                    Times you can come
+                  </span>
+                  <span className="text-[10.5px] text-ember-500 font-medium">
+                    Required
+                  </span>
+                </div>
+                <div className="text-[11.5px] text-ink-500 leading-relaxed max-w-lg">
+                  Pick 3 specific slots you're available. {homeowner.name.split(' ')[0]} will filter these by her own availability and book one.
+                </div>
+                <div className="mt-3 rounded-2xl border border-ink-100 bg-white overflow-hidden divide-y divide-ink-100">
+                  {form.slots.map((slot, i) => (
+                    <SlotRow
+                      key={i}
+                      index={i}
+                      slot={slot}
+                      onChange={(next) =>
+                        setForm((p) => ({
+                          ...p,
+                          slots: p.slots.map((s, idx) => (idx === i ? next : s)),
+                        }))
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 text-[11.5px] text-ink-500 leading-relaxed">
+                <Calendar size={12} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-400" />
+                <span>
+                  These give {homeowner.name.split(' ')[0]} three specific slots to choose from. She picks one when she books · you don't commit to a single time here.
+                </span>
+              </div>
             </div>
           </FormSection>
 
@@ -399,21 +440,26 @@ function ConfirmationView({ form }) {
               </div>
               <div>
                 <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-                  Earliest start
+                  Duration
                 </div>
-                <div className="figure text-[14px] text-ink-900 mt-1">
-                  {form.earliestStart || '–'}
+                <div className="text-[13px] text-ink-900 mt-1 leading-snug">
+                  {form.duration || '–'}
                 </div>
               </div>
-              <div>
+              <div className="col-span-2">
                 <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-                  Estimated completion
+                  Slots offered
                 </div>
-                <div className="figure text-[14px] text-ink-900 mt-1">
-                  {form.estimatedCompletion || '–'}
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {form.slots.filter((s) => s.date && s.time).map((s, i) => (
+                    <span key={i} className="figure inline-flex items-center gap-1.5 rounded-full bg-white ring-1 ring-ink-100 px-2.5 py-1 text-[12px] text-ink-700">
+                      <Calendar size={11} strokeWidth={1.8} className="text-ink-400" />
+                      {formatSlot(s)}
+                    </span>
+                  ))}
                 </div>
               </div>
-              <div>
+              <div className="col-span-2">
                 <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
                   Bid reference
                 </div>
@@ -612,6 +658,26 @@ function Field({ label, hint, required = false, children }) {
 // under the bid total, so we keep contractor notes short by design.
 const NOTES_MAX = 200;
 
+// Duration options the contractor picks from. Renders as a typed-feel
+// pill row on the form and surfaces verbatim in Quote Compare's
+// Schedule row + the per-card schedule chip.
+const DURATIONS = [
+  'Same day · ~2 hr',
+  'Same day · half day',
+  '1 day',
+  '2 days',
+  '3–5 days',
+  '1–2 weeks',
+  'Multi-week',
+];
+
+// Hourly time options for the slot picker. Covers a typical service
+// window (8 AM through 7 PM).
+const SLOT_TIMES = [
+  '8 AM', '9 AM', '10 AM', '11 AM', '12 PM',
+  '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM',
+];
+
 function NotesField({ value, onChange }) {
   const len = value.length;
   const remaining = NOTES_MAX - len;
@@ -676,6 +742,36 @@ function LineItemRow({ task, value, onChange }) {
           onChange={onChange}
           placeholder="–"
         />
+      </div>
+    </div>
+  );
+}
+
+function SlotRow({ index, slot, onChange }) {
+  return (
+    <div className="grid grid-cols-12 gap-3 items-center px-4 py-3 hover:bg-canvas-soft/40 transition-colors">
+      <div className="figure col-span-1 text-[11.5px] text-ink-400">
+        {String(index + 1).padStart(2, '0')}
+      </div>
+      <div className="col-span-7">
+        <input
+          type="date"
+          value={slot.date}
+          onChange={(e) => onChange({ ...slot, date: e.target.value })}
+          className="figure w-full h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] focus:outline-none focus:border-ink-300"
+        />
+      </div>
+      <div className="col-span-4">
+        <select
+          value={slot.time}
+          onChange={(e) => onChange({ ...slot, time: e.target.value })}
+          className="figure w-full h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] focus:outline-none focus:border-ink-300 appearance-none"
+        >
+          <option value="">Time…</option>
+          {SLOT_TIMES.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
