@@ -170,12 +170,15 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
 
       {maintenanceItems.length > 0 && (
         <section>
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-2">
             <span className="h-px w-6 bg-ink-300" />
             <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
               Your home's watchlist
             </span>
           </div>
+          <p className="text-[13px] text-ink-500 leading-relaxed max-w-xl mb-5">
+            Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
+          </p>
           <div className="space-y-2">
             {maintenanceItems.map((item, i) => {
               const Icon = item.icon;
