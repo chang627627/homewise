@@ -138,16 +138,15 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {steps.map((s, i) => (
-            <motion.button
+            <motion.div
               key={s.n}
-              onClick={() => onNavigate?.('intake')}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] }}
-              className="group text-left rounded-3xl bg-white border border-ink-100/80 p-6 hover:border-ink-200 transition-all"
+              className="rounded-3xl bg-white border border-ink-100/80 p-6"
             >
               <div className="flex items-start justify-between mb-4">
-                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 group-hover:bg-sage-50 group-hover:text-sage-600 group-hover:ring-sage-100 transition-all">
+                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100">
                   <s.icon size={15} strokeWidth={1.8} />
                 </span>
                 <span className="editorial text-[15px] text-ink-300 leading-none tabular-nums">
@@ -160,7 +159,7 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
               <p className="mt-1.5 text-[12px] text-ink-500 leading-relaxed">
                 {s.detail}
               </p>
-            </motion.button>
+            </motion.div>
           ))}
         </div>
       </section>
