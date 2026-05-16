@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import OverviewPage from './pages/OverviewPage';
@@ -30,17 +30,33 @@ const pageMap = {
 // Pages that hide the footer (so the chat input pins to the viewport bottom without page scroll competing)
 const fullViewportPages = new Set(['intake', 'conversation']);
 
+const SESSION_KEY = 'hw-state';
+function loadSession() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}'); }
+  catch { return {}; }
+}
+
 export default function App() {
-  const [page, setPage] = useState('overview');
-  const [conversationId, setConversationId] = useState('sink');
-  const [decisionHandled, setDecisionHandled] = useState(false);
-  const [scheduledSlot, setScheduledSlot] = useState(null);
-  const [hasStartedFirstTask, setHasStartedFirstTask] = useState(false);
-  const [hasOnboarded, setHasOnboarded] = useState(false);
+  const s = loadSession();
+  const [page, setPage] = useState(() => (s.page && pageMap[s.page]) ? s.page : 'overview');
+  const [conversationId, setConversationId] = useState(s.conversationId || 'sink');
+  const [decisionHandled, setDecisionHandled] = useState(s.decisionHandled || false);
+  const [scheduledSlot, setScheduledSlot] = useState(s.scheduledSlot || null);
+  const [hasStartedFirstTask, setHasStartedFirstTask] = useState(s.hasStartedFirstTask || false);
+  const [hasOnboarded, setHasOnboarded] = useState(s.hasOnboarded || false);
   const [maintenanceItems, setMaintenanceItems] = useState([]);
-  const [jobCompleted, setJobCompleted] = useState(false);
-  const [recommended, setRecommended] = useState(null);
-  const [photosShared, setPhotosShared] = useState(false);
+  const [jobCompleted, setJobCompleted] = useState(s.jobCompleted || false);
+  const [recommended, setRecommended] = useState(s.recommended || null);
+  const [photosShared, setPhotosShared] = useState(s.photosShared || false);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        page, conversationId, decisionHandled, scheduledSlot,
+        hasStartedFirstTask, hasOnboarded, jobCompleted, recommended, photosShared,
+      }));
+    } catch {}
+  }, [page, conversationId, decisionHandled, scheduledSlot, hasStartedFirstTask, hasOnboarded, jobCompleted, recommended, photosShared]);
   const Page = pageMap[page] || OverviewPage;
 
   // URL-based escape hatches for pages that bypass the app shell.

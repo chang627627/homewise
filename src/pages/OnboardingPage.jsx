@@ -141,14 +141,14 @@ function buildMaintenance(profile) {
 }
 
 export default function OnboardingPage({ onComplete }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() => sessionStorage.getItem('onboarding-step') === '1' ? 1 : 0);
   const [profile, setProfile] = useState({
-    homeType: 'house',
-    yearBuilt: '1980-2000',
-    address: '124 Maple St, Oakland, CA',
-    zip: '94609',
-    outdoor: new Set(['yard', 'trees']),
-    systems: new Set(['central-hvac', 'water-heater']),
+    homeType: '',
+    yearBuilt: '',
+    address: '',
+    zip: '',
+    outdoor: new Set(),
+    systems: new Set(),
   });
 
   const toggle = (key, id) => {
@@ -163,7 +163,7 @@ export default function OnboardingPage({ onComplete }) {
   const items = buildMaintenance(profile);
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-900 selection:bg-sage-200/40 relative">
+    <div className="min-h-screen bg-canvas text-ink-900 selection:bg-sage-200/40 relative flex flex-col">
       {/* Ambient backdrop, matching main app */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-sage-100 opacity-50 blur-3xl" />
@@ -180,10 +180,10 @@ export default function OnboardingPage({ onComplete }) {
         </div>
         </header>
 
-      <main className="px-6 lg:px-10 pb-16">
+      <main className={`px-6 lg:px-10 py-10 flex-1 flex flex-col${step === 1 ? ' justify-center' : ''}`}>
         <AnimatePresence mode="wait">
           {step === 0 && (
-            <SignupScreen key="signup" onContinue={() => setStep(1)} />
+            <SignupScreen key="signup" onContinue={() => { sessionStorage.setItem('onboarding-step', '1'); setStep(1); }} />
           )}
           {step === 1 && (
             <ProfileScreen
@@ -191,8 +191,8 @@ export default function OnboardingPage({ onComplete }) {
               profile={profile}
               setProfile={setProfile}
               toggle={toggle}
-              onBack={() => setStep(0)}
-              onContinue={() => onComplete(items)}
+              onBack={() => { sessionStorage.removeItem('onboarding-step'); setStep(0); }}
+              onContinue={() => { sessionStorage.removeItem('onboarding-step'); onComplete(items); }}
             />
           )}
         </AnimatePresence>
@@ -285,13 +285,28 @@ function SignupScreen({ onContinue }) {
 }
 
 function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
+  const toggleOutdoor = (id) => {
+    setProfile((p) => {
+      const next = new Set(p.outdoor);
+      if (id === 'none') {
+        if (next.has('none')) { next.delete('none'); }
+        else { next.clear(); next.add('none'); }
+      } else {
+        next.delete('none');
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
+      return { ...p, outdoor: next };
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.4 }}
-      className="max-w-2xl mx-auto pt-6 lg:pt-10 space-y-10"
+      className="max-w-2xl mx-auto space-y-10"
     >
       <BackLink onClick={onBack} label="Back" />
       <header>
@@ -312,10 +327,11 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
       </header>
 
       <Question num="01" label="Home type">
-        <ChipRow>
+        <ChipRow stretch>
           {HOME_TYPES.map((o) => (
             <Chip
               key={o.id}
+              stretch
               selected={profile.homeType === o.id}
               onClick={() => setProfile((p) => ({ ...p, homeType: o.id }))}
             >
@@ -326,10 +342,11 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
       </Question>
 
       <Question num="02" label="Year built">
-        <ChipRow>
+        <ChipRow stretch>
           {YEAR_BUCKETS.map((o) => (
             <Chip
               key={o.id}
+              stretch
               selected={profile.yearBuilt === o.id}
               onClick={() => setProfile((p) => ({ ...p, yearBuilt: o.id }))}
             >
@@ -340,7 +357,7 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
       </Question>
 
       <Question num="03" label="Where you live" sub="For matching local contractors">
-        <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={profile.address}
@@ -349,7 +366,7 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
             }
             placeholder="123 Maple St, Oakland, CA"
             autoComplete="street-address"
-            className="flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+            className="flex-1 h-10 px-3.5 rounded-2xl bg-white border border-ink-200 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
           />
           <input
             type="text"
@@ -363,23 +380,26 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
             placeholder="94609"
             inputMode="numeric"
             autoComplete="postal-code"
-            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
+            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-white border border-ink-200 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
           />
         </div>
       </Question>
 
       <Question num="04" label="Outdoor features" sub="Multi-select, optional">
-        <ChipRow>
+        <ChipRow stretch>
           {OUTDOOR.map((o) => {
             const on = profile.outdoor.has(o.id);
+            const noneActive = profile.outdoor.has('none');
+            const otherActive = profile.outdoor.size > 0 && !noneActive;
+            const disabled = (o.id !== 'none' && noneActive) || (o.id === 'none' && otherActive);
             const Icon = o.icon;
             return (
-              <Chip key={o.id} selected={on} onClick={() => toggle('outdoor', o.id)}>
+              <Chip key={o.id} stretch selected={on} disabled={disabled} onClick={() => toggleOutdoor(o.id)}>
                 {Icon && (
                   <Icon
                     size={11}
                     strokeWidth={2}
-                    className={on ? 'opacity-90' : 'text-ink-400'}
+                    className={disabled ? 'text-ink-200' : on ? 'opacity-90' : 'text-ink-400'}
                   />
                 )}
                 {o.label}
@@ -390,12 +410,12 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
       </Question>
 
       <Question num="05" label="Major systems" sub="Multi-select">
-        <ChipRow>
+        <div className="grid grid-cols-5 gap-1.5">
           {SYSTEMS.map((o) => {
             const on = profile.systems.has(o.id);
             const Icon = o.icon;
             return (
-              <Chip key={o.id} selected={on} onClick={() => toggle('systems', o.id)}>
+              <Chip key={o.id} fill selected={on} onClick={() => toggle('systems', o.id)}>
                 {Icon && (
                   <Icon
                     size={11}
@@ -407,13 +427,13 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
               </Chip>
             );
           })}
-        </ChipRow>
+        </div>
       </Question>
 
-      <div className="pt-2 flex items-center gap-3">
+      <div className="pt-4 flex items-center justify-center gap-3">
         <button
           onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="group w-full h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
@@ -439,16 +459,23 @@ function Question({ num, label, sub, children }) {
   );
 }
 
-function ChipRow({ children }) {
-  return <div className="flex flex-wrap gap-1.5">{children}</div>;
+function ChipRow({ children, stretch }) {
+  return <div className={`flex gap-1.5 ${stretch ? '' : 'flex-wrap'}`}>{children}</div>;
 }
 
-function Chip({ selected, onClick, children }) {
+function Chip({ selected, disabled, dimmed, stretch, wrapStretch, fill, onClick, children }) {
   return (
     <button
-      onClick={onClick}
-      className={`h-9 px-3.5 rounded-full inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all whitespace-nowrap ${
-        selected
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`h-9 px-3.5 rounded-full inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all ${
+        fill ? 'w-full justify-center whitespace-nowrap' : stretch ? 'flex-1 min-w-0 justify-center' : wrapStretch ? 'flex-1 justify-center whitespace-nowrap' : 'whitespace-nowrap'
+      } ${
+        disabled
+          ? 'bg-canvas-soft border border-ink-100 text-ink-300 cursor-not-allowed'
+          : dimmed
+          ? 'bg-white border border-ink-100 text-ink-300'
+          : selected
           ? 'bg-ink-900 text-canvas-soft'
           : 'bg-white border border-ink-200 hover:border-ink-300 text-ink-700 hover:text-ink-900'
       }`}
