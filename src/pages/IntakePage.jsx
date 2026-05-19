@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Sparkles,
   Camera,
+  Pencil,
   Paperclip,
   Mic,
   ArrowRight,
@@ -55,6 +56,11 @@ const script = [
     text: 'Looking at your photos…',
   },
   {
+    type: 'agent',
+    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base. Two separate problems.',
+    time: '10:30 AM',
+  },
+  {
     type: 'agent-urgency',
     text: 'Quick check, how active is this right now? It changes how fast I push for a contractor.',
     options: [
@@ -71,7 +77,7 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Standard 5-day quote window. I can already see standing water around the P-trap and a slow drip at the faucet base. . Usually two separate problems. Two quick things and I can scope this:",
+    text: "Standard 5-day quote window. Two quick things and I can scope this:",
     follow: [
       "Can you send the cabinet-panel photo now? I want to confirm the supply line is dry.",
       'Is the faucet a single-handle or two-handle?',
@@ -119,6 +125,7 @@ export default function IntakePage({ onNavigate }) {
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const messagesRef = React.useRef(null);
   const inputRef = React.useRef(null);
 
@@ -126,7 +133,7 @@ export default function IntakePage({ onNavigate }) {
     if (step >= script.length) return;
     // Gate auto-advance on user actions
     if (step === 3 && !photosUploaded) return;
-    if (step === 7 && !urgencyChosen) return;
+    if (step === 8 && !urgencyChosen) return;
     const m = script[step];
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
@@ -197,7 +204,16 @@ export default function IntakePage({ onNavigate }) {
               const text = i === 7 ? urgencyReplies[urgency] : m.text;
               return <UserMessage key={i} m={{ ...m, text }} />;
             }
-            if (m.type === 'photos') return <PhotoStrip key={i} m={m} />;
+            if (m.type === 'photos') return (
+              <PhotoStrip
+                key={i}
+                m={m}
+                onCorrect={(label) => {
+                  setInputValue(`Actually, the "${label.toLowerCase()}" photo shows `);
+                  inputRef.current?.focus();
+                }}
+              />
+            );
             if (m.type === 'agent-thinking') return <Thinking key={i} m={m} />;
             if (m.type === 'agent-urgency')
               return (
@@ -238,7 +254,7 @@ export default function IntakePage({ onNavigate }) {
                 onClick={() => inputRef.current?.focus()}
                 className="h-9 px-3.5 rounded-full bg-white border border-ink-200 hover:border-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12.5px] font-medium transition-all"
               >
-                I have more to add
+                Add or correct something
               </button>
               <button
                 onClick={() => onNavigate?.('scope')}
@@ -260,6 +276,8 @@ export default function IntakePage({ onNavigate }) {
           <input
             ref={inputRef}
             type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="Reply to Homewise…"
             className="flex-1 min-w-0 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
           />
@@ -295,7 +313,7 @@ function UserMessage({ m }) {
   );
 }
 
-function PhotoStrip({ m }) {
+function PhotoStrip({ m, onCorrect }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -324,6 +342,15 @@ function PhotoStrip({ m }) {
               AI: {p.tag}
             </span>
           </div>
+          {onCorrect && (
+            <button
+              onClick={() => onCorrect(p.label)}
+              className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-white/90 backdrop-blur ring-1 ring-ink-100 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-colors"
+              title="Correct this"
+            >
+              <Pencil size={9} strokeWidth={2.2} />
+            </button>
+          )}
         </div>
       ))}
     </motion.div>
