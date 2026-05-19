@@ -16,7 +16,6 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
-import Pill from '../components/ui/Pill';
 
 // Conversation script. staged
 const script = [
@@ -120,6 +119,20 @@ const urgencyReplies = {
   flexible: 'Just an annoyance. Whenever convenient.',
 };
 
+function getConversationState(step, photosUploaded, urgencyChosen, done) {
+  if (done) return { label: 'Scoped', pulse: false };
+  if (step === 0) return { label: null, pulse: false };
+  if (step === 3 && !photosUploaded) return { label: 'Photos needed', pulse: false };
+  if (step === 8 && !urgencyChosen) return { label: 'Your call', pulse: false };
+  if (step >= 5 && step <= 6) return { label: 'Analyzing photos', pulse: true };
+  if (step >= 12) return { label: 'Building scope', pulse: true };
+  const last = script[step - 1];
+  if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
+    return { label: 'Working on it', pulse: true };
+  }
+  return { label: 'Working on it', pulse: false };
+}
+
 export default function IntakePage({ onNavigate }) {
   const [step, setStep] = useState(0);
   const [urgency, setUrgency] = useState('soon');
@@ -152,32 +165,33 @@ export default function IntakePage({ onNavigate }) {
 
   const visible = script.slice(0, step);
   const done = step >= script.length;
+  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-[820px] mx-auto">
       <BackBar
         onBack={() => onNavigate?.('overview')}
-        label="Back to overview"
-        context="New AI task · Intake"
+        label="Back to home"
       />
 
       {/* Conversation card. fills available height, input pinned at bottom */}
       <div className="flex-1 min-h-0 rounded-3xl bg-white border border-ink-100/80 overflow-hidden flex flex-col">
         {/* Card header */}
-        <div className="shrink-0 px-6 py-4 border-b border-ink-100/80 flex items-center justify-between bg-gradient-to-b from-white to-canvas-soft/20">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
-            </span>
-            <span className="text-[12px] font-semibold text-ink-900 truncate">
-              Intake conversation
-            </span>
-            <span className="text-[11px] text-ink-500 truncate">· started 10:28 AM</span>
-          </div>
-          <Pill tone="sage" icon={CheckCircle2}>
-            Photos auto-analyzed
-          </Pill>
+        <div className="shrink-0 px-6 py-4 border-b border-ink-100/80 flex items-center gap-2 bg-gradient-to-b from-white to-canvas-soft/20">
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className={`absolute inset-0 rounded-full bg-sage-300 ${pulse ? 'animate-pulseDot' : ''}`} />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
+          </span>
+          {stateLabel && (
+            <span className="text-[12px] font-medium text-ink-500">{stateLabel}</span>
+          )}
+          <button
+            onClick={() => onNavigate?.('intake')}
+            className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-ink-700 transition-colors"
+          >
+            <Plus size={11} strokeWidth={2} />
+            New issue
+          </button>
         </div>
 
         {/* Messages. scrolls internally */}
@@ -185,19 +199,9 @@ export default function IntakePage({ onNavigate }) {
           ref={messagesRef}
           className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-gradient-to-b from-canvas-soft/30 to-white scroll-smooth"
         >
-          {/* Slim editorial intro at top of thread */}
-          <div className="text-center pb-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-canvas-soft border border-ink-100 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-              <Sparkles size={10} className="text-sage-500" />
-              Live intake · Homewise is listening
-            </div>
-            <h1 className="editorial text-[17px] md:text-[22px] leading-tight text-ink-900 tracking-tight">
-              Tell Homewise what happened.
-            </h1>
-            <p className="mt-2 text-[12.5px] text-ink-500 max-w-md mx-auto leading-relaxed">
-              The AI asks the same clarifying questions a senior contractor would, before reaching out to anyone.
-            </p>
-          </div>
+          {step === 0 && (
+            <p className="text-center editorial text-[20px] text-ink-400 py-4">What's happening at home?</p>
+          )}
 
           {visible.map((m, i) => {
             if (m.type === 'user') {
@@ -247,9 +251,6 @@ export default function IntakePage({ onNavigate }) {
               transition={{ duration: 0.4, delay: 0.15 }}
               className="pt-1 flex flex-wrap items-center gap-2 justify-end"
             >
-              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-400 font-semibold mr-1">
-                Suggested
-              </span>
               <button
                 onClick={() => inputRef.current?.focus()}
                 className="h-9 px-3.5 rounded-full bg-white border border-ink-200 hover:border-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12.5px] font-medium transition-all"
