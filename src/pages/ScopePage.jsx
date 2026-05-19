@@ -91,6 +91,50 @@ const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
 const labor = 95;
 const laborTotal = Math.round(totalHours * labor);
 
+// Photos captured during intake + AI-tagged. Surfaced here on the scope
+// document so the contractor has visual context to bid against, and so
+// the homeowner reviewing the scope can see what was sent. Matches the
+// data shape used in IntakePage / ConversationPage.
+export const scopePhotos = [
+  { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
+  { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
+  { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
+];
+
+const photoToneMap = {
+  sage: 'from-sage-200 to-sage-300',
+  sky: 'from-sky2026-100 to-sky2026-300',
+  ember: 'from-ember-100 to-ember-200',
+};
+
+export function ScopePhotoStrip({ photos = scopePhotos }) {
+  return (
+    <div className="mt-4 grid grid-cols-3 gap-2">
+      {photos.map((p, i) => (
+        <div
+          key={i}
+          className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${photoToneMap[p.tone]}`} />
+          <div className="absolute inset-0 dot-grid opacity-30" />
+          <div className="absolute top-2 left-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-ink-700 ring-1 ring-ink-100">
+              <ImageIcon size={9} strokeWidth={2.2} />
+              {p.label}
+            </span>
+          </div>
+          <div className="absolute bottom-2 left-2 right-2">
+            <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-canvas-soft">
+              <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
+              AI: {p.tag}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ScopePage({ onNavigate }) {
   return (
     <div className="space-y-8">
@@ -118,24 +162,6 @@ export default function ScopePage({ onNavigate }) {
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
           Apples-to-apples scope so every contractor bids on the same job. You can edit, ask questions, or have Homewise revise. Nothing is sent until you approve.
         </p>
-        <div className="mt-5 flex items-center gap-2 flex-wrap">
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Download size={13} strokeWidth={1.8} />
-            Export PDF
-          </button>
-          <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-            <Pencil size={13} strokeWidth={1.8} />
-            Edit scope
-          </button>
-          <button
-            onClick={() => onNavigate?.('contractor-compare')}
-            className="group h-10 pl-4 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2 text-[12.5px] font-semibold transition-all"
-          >
-            <Send size={13} strokeWidth={2} />
-            Approve &amp; find contractors
-            <ChevronRight size={13} className="opacity-60 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
       </header>
 
       {/* AI disclaimer banner */}
@@ -196,6 +222,7 @@ export default function ScopePage({ onNavigate }) {
                   <p className="mt-1.5 text-[12.5px] text-ink-500 leading-relaxed">
                     Standing water under the trap and the slow drip at the spout base are unrelated. Photo of the supply line behind the cabinet rules out a higher-pressure leak.
                   </p>
+                  <ScopePhotoStrip />
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -369,6 +396,47 @@ export default function ScopePage({ onNavigate }) {
             </div>
           </div>
         </article>
+
+        {/* What's next · all actions live here after the document so the user
+            never has to scroll back up to the header to act */}
+        <section className="mt-10 pt-8 border-t border-ink-100">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="h-px w-6 bg-ink-300" />
+            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
+              Ready to send
+            </span>
+          </div>
+          <div className="space-y-6">
+            <div className="max-w-2xl space-y-1.5">
+              <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
+                Approve the scope and we'll reach out to 3 vetted contractors.
+              </h3>
+              <p className="text-[13px] text-ink-500 leading-relaxed">
+                Each gets the exact same brief. You'll see apples-to-apples bids within 5 days · nothing is final until you pick.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+                <Download size={13} strokeWidth={1.8} />
+                Export PDF
+              </button>
+              <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
+                <Pencil size={13} strokeWidth={1.8} />
+                Edit scope
+              </button>
+              <button
+                onClick={() => onNavigate?.('contractor-compare')}
+                className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+              >
+                <Send size={14} strokeWidth={2} />
+                Approve &amp; find contractors
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
+                  <ChevronRight size={14} strokeWidth={2.2} />
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
 
       </div>
     </div>
