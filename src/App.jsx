@@ -32,6 +32,7 @@ const fullViewportPages = new Set(['intake', 'conversation']);
 
 export default function App() {
   const [page, setPage] = useState('overview');
+  const [intakeKey, setIntakeKey] = useState(0);
   const [conversationId, setConversationId] = useState('sink');
   const [decisionHandled, setDecisionHandled] = useState(false);
   const [scheduledSlot, setScheduledSlot] = useState(null);
@@ -65,6 +66,7 @@ export default function App() {
       id = opts.page;
     }
     if (!pageMap[id]) return;
+    if (id === 'intake') setIntakeKey(k => k + 1);
     if (opts.conversationId) setConversationId(opts.conversationId);
     // Reaching scope means the AI has produced something tangible — populate the dashboard
     if (id === 'scope') setHasStartedFirstTask(true);
@@ -110,7 +112,7 @@ export default function App() {
           <div className="flex-1">
             <AnimatePresence mode="wait">
               <motion.div
-                key={page}
+                key={page === 'intake' ? `intake-${intakeKey}` : page}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
