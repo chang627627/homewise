@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import {
   Sparkles,
   Camera,
+  Pencil,
   Paperclip,
   Mic,
   ArrowRight,
   Image as ImageIcon,
-  Plus,
+  RotateCcw,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -15,10 +16,14 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
-import Pill from '../components/ui/Pill';
 
 // Conversation script. staged
 const script = [
+  {
+    type: 'agent',
+    text: "What's happening at home?",
+    time: '10:28 AM',
+  },
   {
     type: 'user',
     text: 'My bathroom sink is leaking and I need someone this week.',
@@ -55,6 +60,11 @@ const script = [
     text: 'Looking at your photos…',
   },
   {
+    type: 'agent',
+    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base. Two separate problems.',
+    time: '10:30 AM',
+  },
+  {
     type: 'agent-urgency',
     text: 'Quick check, how active is this right now? It changes how fast I push for a contractor.',
     options: [
@@ -71,7 +81,7 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Standard 5-day quote window. I can already see standing water around the P-trap and a slow drip at the faucet base. . Usually two separate problems. Two quick things and I can scope this:",
+    text: "Standard 5-day quote window. Two quick things and I can scope this:",
     follow: [
       "Can you send the cabinet-panel photo now? I want to confirm the supply line is dry.",
       'Is the faucet a single-handle or two-handle?',
@@ -114,19 +124,34 @@ const urgencyReplies = {
   flexible: 'Just an annoyance. Whenever convenient.',
 };
 
+function getConversationState(step, photosUploaded, urgencyChosen, done) {
+  if (done) return { label: 'Scoped', pulse: false };
+  if (step <= 1) return { label: null, pulse: false };
+  if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
+  if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
+  if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
+  if (step >= 13) return { label: 'Building scope', pulse: true };
+  const last = script[step - 1];
+  if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
+    return { label: 'Working on it', pulse: true };
+  }
+  return { label: 'Working on it', pulse: false };
+}
+
 export default function IntakePage({ onNavigate }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const messagesRef = React.useRef(null);
   const inputRef = React.useRef(null);
 
   useEffect(() => {
     if (step >= script.length) return;
     // Gate auto-advance on user actions
-    if (step === 3 && !photosUploaded) return;
-    if (step === 7 && !urgencyChosen) return;
+    if (step === 4 && !photosUploaded) return;
+    if (step === 9 && !urgencyChosen) return;
     const m = script[step];
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
@@ -145,32 +170,33 @@ export default function IntakePage({ onNavigate }) {
 
   const visible = script.slice(0, step);
   const done = step >= script.length;
+  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-[820px] mx-auto">
       <BackBar
         onBack={() => onNavigate?.('overview')}
-        label="Back to overview"
-        context="New AI task · Intake"
+        label="Back to home"
       />
 
       {/* Conversation card. fills available height, input pinned at bottom */}
       <div className="flex-1 min-h-0 rounded-3xl bg-white border border-ink-100/80 overflow-hidden flex flex-col">
         {/* Card header */}
-        <div className="shrink-0 px-6 py-4 border-b border-ink-100/80 flex items-center justify-between bg-gradient-to-b from-white to-canvas-soft/20">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
-            </span>
-            <span className="text-[12px] font-semibold text-ink-900 truncate">
-              Intake conversation
-            </span>
-            <span className="text-[11px] text-ink-500 truncate">· started 10:28 AM</span>
-          </div>
-          <Pill tone="sage" icon={CheckCircle2}>
-            Photos auto-analyzed
-          </Pill>
+        <div className="shrink-0 px-6 py-4 border-b border-ink-100/80 flex items-center gap-2 bg-gradient-to-b from-white to-canvas-soft/20">
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className={`absolute inset-0 rounded-full bg-sage-300 ${pulse ? 'animate-pulseDot' : ''}`} />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
+          </span>
+          {stateLabel && (
+            <span className="text-[12px] font-medium text-ink-500">{stateLabel}</span>
+          )}
+          <button
+            onClick={() => onNavigate?.('intake')}
+            className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-ink-700 transition-colors"
+          >
+            <RotateCcw size={11} strokeWidth={2} />
+            Start over
+          </button>
         </div>
 
         {/* Messages. scrolls internally */}
@@ -178,26 +204,21 @@ export default function IntakePage({ onNavigate }) {
           ref={messagesRef}
           className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-gradient-to-b from-canvas-soft/30 to-white scroll-smooth"
         >
-          {/* Slim editorial intro at top of thread */}
-          <div className="text-center pb-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-canvas-soft border border-ink-100 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-3">
-              <Sparkles size={10} className="text-sage-500" />
-              Live intake · Homewise is listening
-            </div>
-            <h1 className="editorial text-[17px] md:text-[22px] leading-tight text-ink-900 tracking-tight">
-              Tell Homewise what happened.
-            </h1>
-            <p className="mt-2 text-[12.5px] text-ink-500 max-w-md mx-auto leading-relaxed">
-              The AI asks the same clarifying questions a senior contractor would, before reaching out to anyone.
-            </p>
-          </div>
-
           {visible.map((m, i) => {
             if (m.type === 'user') {
-              const text = i === 7 ? urgencyReplies[urgency] : m.text;
+              const text = i === 9 ? urgencyReplies[urgency] : m.text;
               return <UserMessage key={i} m={{ ...m, text }} />;
             }
-            if (m.type === 'photos') return <PhotoStrip key={i} m={m} />;
+            if (m.type === 'photos') return (
+              <PhotoStrip
+                key={i}
+                m={m}
+                onCorrect={(label) => {
+                  setInputValue(`Actually, the "${label.toLowerCase()}" photo shows `);
+                  inputRef.current?.focus();
+                }}
+              />
+            );
             if (m.type === 'agent-thinking') return <Thinking key={i} m={m} />;
             if (m.type === 'agent-urgency')
               return (
@@ -218,7 +239,7 @@ export default function IntakePage({ onNavigate }) {
                   key={i}
                   m={m}
                   uploaded={photosUploaded}
-                  onUploadPhotos={i === 2 ? () => setPhotosUploaded(true) : undefined}
+                  onUploadPhotos={i === 3 ? () => setPhotosUploaded(true) : undefined}
                 />
               );
             return null;
@@ -231,14 +252,11 @@ export default function IntakePage({ onNavigate }) {
               transition={{ duration: 0.4, delay: 0.15 }}
               className="pt-1 flex flex-wrap items-center gap-2 justify-end"
             >
-              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-400 font-semibold mr-1">
-                Suggested
-              </span>
               <button
                 onClick={() => inputRef.current?.focus()}
                 className="h-9 px-3.5 rounded-full bg-white border border-ink-200 hover:border-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12.5px] font-medium transition-all"
               >
-                I have more to add
+                Add or correct something
               </button>
               <button
                 onClick={() => onNavigate?.('scope')}
@@ -260,6 +278,8 @@ export default function IntakePage({ onNavigate }) {
           <input
             ref={inputRef}
             type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="Reply to Homewise…"
             className="flex-1 min-w-0 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
           />
@@ -295,7 +315,7 @@ function UserMessage({ m }) {
   );
 }
 
-function PhotoStrip({ m }) {
+function PhotoStrip({ m, onCorrect }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -324,6 +344,15 @@ function PhotoStrip({ m }) {
               AI: {p.tag}
             </span>
           </div>
+          {onCorrect && (
+            <button
+              onClick={() => onCorrect(p.label)}
+              className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-white/90 backdrop-blur ring-1 ring-ink-100 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-colors"
+              title="Correct this"
+            >
+              <Pencil size={9} strokeWidth={2.2} />
+            </button>
+          )}
         </div>
       ))}
     </motion.div>
@@ -438,7 +467,7 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                     key={i}
                     className="flex items-start gap-2 text-[13px] text-ink-700 leading-snug"
                   >
-                    <span className="shrink-0 mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 text-[10px] font-bold tabular-nums">
+                    <span className="shrink-0 inline-flex h-[18px] w-[18px] items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 text-[10px] font-bold tabular-nums">
                       {i + 1}
                     </span>
                     <span>{s}</span>

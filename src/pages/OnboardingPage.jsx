@@ -178,6 +178,29 @@ export default function OnboardingPage({ onComplete }) {
     });
   };
 
+  // Outdoor is multi-select with one mutually-exclusive option ("None").
+  // Picking "None" clears the other selections; picking any other option
+  // removes "None" from the set. Both directions stay clickable, no
+  // disabled state.
+  const toggleOutdoor = (id) => {
+    setProfile((p) => {
+      const next = new Set(p.outdoor);
+      if (id === 'none') {
+        if (next.has('none')) {
+          next.delete('none');
+        } else {
+          next.clear();
+          next.add('none');
+        }
+      } else {
+        next.delete('none');
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
+      return { ...p, outdoor: next };
+    });
+  };
+
   const items = buildMaintenance(profile);
 
   return (
