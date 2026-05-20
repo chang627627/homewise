@@ -8,7 +8,7 @@ import {
   Mic,
   ArrowRight,
   Image as ImageIcon,
-  Plus,
+  RotateCcw,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -19,6 +19,11 @@ import BackBar from '../components/ui/BackBar';
 
 // Conversation script. staged
 const script = [
+  {
+    type: 'agent',
+    text: "What's happening at home?",
+    time: '10:28 AM',
+  },
   {
     type: 'user',
     text: 'My bathroom sink is leaking and I need someone this week.',
@@ -121,11 +126,11 @@ const urgencyReplies = {
 
 function getConversationState(step, photosUploaded, urgencyChosen, done) {
   if (done) return { label: 'Scoped', pulse: false };
-  if (step === 0) return { label: null, pulse: false };
-  if (step === 3 && !photosUploaded) return { label: 'Photos needed', pulse: false };
-  if (step === 8 && !urgencyChosen) return { label: 'Your call', pulse: false };
-  if (step >= 5 && step <= 6) return { label: 'Analyzing photos', pulse: true };
-  if (step >= 12) return { label: 'Building scope', pulse: true };
+  if (step <= 1) return { label: null, pulse: false };
+  if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
+  if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
+  if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
+  if (step >= 13) return { label: 'Building scope', pulse: true };
   const last = script[step - 1];
   if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
     return { label: 'Working on it', pulse: true };
@@ -134,7 +139,7 @@ function getConversationState(step, photosUploaded, urgencyChosen, done) {
 }
 
 export default function IntakePage({ onNavigate }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
@@ -145,8 +150,8 @@ export default function IntakePage({ onNavigate }) {
   useEffect(() => {
     if (step >= script.length) return;
     // Gate auto-advance on user actions
-    if (step === 3 && !photosUploaded) return;
-    if (step === 8 && !urgencyChosen) return;
+    if (step === 4 && !photosUploaded) return;
+    if (step === 9 && !urgencyChosen) return;
     const m = script[step];
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
@@ -189,8 +194,8 @@ export default function IntakePage({ onNavigate }) {
             onClick={() => onNavigate?.('intake')}
             className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-ink-700 transition-colors"
           >
-            <Plus size={11} strokeWidth={2} />
-            New issue
+            <RotateCcw size={11} strokeWidth={2} />
+            Start over
           </button>
         </div>
 
@@ -199,13 +204,9 @@ export default function IntakePage({ onNavigate }) {
           ref={messagesRef}
           className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-gradient-to-b from-canvas-soft/30 to-white scroll-smooth"
         >
-          {step === 0 && (
-            <p className="text-center editorial text-[20px] text-ink-400 py-4">What's happening at home?</p>
-          )}
-
           {visible.map((m, i) => {
             if (m.type === 'user') {
-              const text = i === 7 ? urgencyReplies[urgency] : m.text;
+              const text = i === 9 ? urgencyReplies[urgency] : m.text;
               return <UserMessage key={i} m={{ ...m, text }} />;
             }
             if (m.type === 'photos') return (
@@ -238,7 +239,7 @@ export default function IntakePage({ onNavigate }) {
                   key={i}
                   m={m}
                   uploaded={photosUploaded}
-                  onUploadPhotos={i === 2 ? () => setPhotosUploaded(true) : undefined}
+                  onUploadPhotos={i === 3 ? () => setPhotosUploaded(true) : undefined}
                 />
               );
             return null;
@@ -466,7 +467,7 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                     key={i}
                     className="flex items-start gap-2 text-[13px] text-ink-700 leading-snug"
                   >
-                    <span className="shrink-0 mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 text-[10px] font-bold tabular-nums">
+                    <span className="shrink-0 inline-flex h-[18px] w-[18px] items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 text-[10px] font-bold tabular-nums">
                       {i + 1}
                     </span>
                     <span>{s}</span>
