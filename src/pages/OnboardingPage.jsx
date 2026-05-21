@@ -143,12 +143,12 @@ function buildMaintenance(profile) {
 export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState({
-    homeType: 'house',
-    yearBuilt: '1980-2000',
-    address: '124 Maple St, Oakland, CA',
-    zip: '94609',
-    outdoor: new Set(['yard', 'trees']),
-    systems: new Set(['central-hvac', 'water-heater']),
+    homeType: '',
+    yearBuilt: '',
+    address: '',
+    zip: '',
+    outdoor: new Set(),
+    systems: new Set(),
   });
 
   const toggle = (key, id) => {
@@ -309,6 +309,14 @@ function SignupScreen({ onContinue }) {
 }
 
 function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onContinue }) {
+  // Q04 Outdoor stays optional. Q01, Q02, Q03 (address + ZIP), Q05 all required.
+  const canContinue =
+    profile.homeType !== '' &&
+    profile.yearBuilt !== '' &&
+    profile.address.trim() !== '' &&
+    profile.zip !== '' &&
+    profile.systems.size > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -437,7 +445,8 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
       <div className="pt-2 flex items-center gap-3">
         <button
           onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          disabled={!canContinue}
+          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
         >
           Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
