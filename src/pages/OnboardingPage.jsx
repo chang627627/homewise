@@ -309,12 +309,16 @@ function SignupScreen({ onContinue }) {
 }
 
 function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onContinue }) {
-  // Q04 Outdoor stays optional. Q01, Q02, Q03 (address + ZIP), Q05 all required.
+  // All 5 questions required. Q04 Outdoor uses the "None" chip as the
+  // explicit "no outdoor features" affordance (per the toggleOutdoor
+  // logic in the parent), so the gate is satisfied either by a real
+  // selection (yard/pool/trees/etc.) or by picking "None".
   const canContinue =
     profile.homeType !== '' &&
     profile.yearBuilt !== '' &&
     profile.address.trim() !== '' &&
     profile.zip !== '' &&
+    profile.outdoor.size > 0 &&
     profile.systems.size > 0;
 
   return (
@@ -400,7 +404,7 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
         </div>
       </Question>
 
-      <Question num="04" label="Outdoor features" sub="Multi-select, optional">
+      <Question num="04" label="Outdoor features" sub="Multi-select">
         <ChipRow>
           {OUTDOOR.map((o) => {
             const on = profile.outdoor.has(o.id);
