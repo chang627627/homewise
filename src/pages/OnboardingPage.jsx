@@ -313,11 +313,23 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
   // explicit "no outdoor features" affordance (per the toggleOutdoor
   // logic in the parent), so the gate is satisfied either by a real
   // selection (yard/pool/trees/etc.) or by picking "None".
+  //
+  // Q03 address: must look like a street address — has a digit, a letter,
+  // a space, and is at least 5 chars. Catches typos like "home" or "x"
+  // without needing a geocoding service.
+  const addrTrimmed = profile.address.trim();
+  const addressValid =
+    addrTrimmed.length >= 5 &&
+    /\d/.test(addrTrimmed) &&
+    /[a-zA-Z]/.test(addrTrimmed) &&
+    addrTrimmed.includes(' ');
+  const addressWarning = addrTrimmed.length > 0 && !addressValid;
+
   const canContinue =
     profile.homeType !== '' &&
     profile.yearBuilt !== '' &&
-    profile.address.trim() !== '' &&
-    profile.zip !== '' &&
+    addressValid &&
+    profile.zip.length === 5 &&
     profile.outdoor.size > 0 &&
     profile.systems.size > 0;
 
@@ -402,6 +414,11 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
           />
         </div>
+        {addressWarning && (
+          <p className="mt-1.5 text-[11px] text-ember-500">
+            Please type a valid street address.
+          </p>
+        )}
       </Question>
 
       <Question num="04" label="Outdoor features" sub="Multi-select">
