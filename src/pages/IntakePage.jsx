@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Flame,
   CalendarDays,
+  Loader2,
+  ArrowUp,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 
@@ -143,20 +145,28 @@ export default function IntakePage({ onNavigate }) {
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
+  const [failedStep, setFailedStep] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [sendFailed, setSendFailed] = useState(false);
+  const [failedText, setFailedText] = useState('');
+  const [paperclipUploading, setPaperclipUploading] = useState(false);
+  const [paperclipFormatError, setPaperclipFormatError] = useState(false);
   const messagesRef = React.useRef(null);
   const inputRef = React.useRef(null);
+  const paperclipInputRef = useRef(null);
 
   useEffect(() => {
     if (step >= script.length) return;
     // Gate auto-advance on user actions
     if (step === 4 && !photosUploaded) return;
     if (step === 9 && !urgencyChosen) return;
+    // Gate auto-advance while a thinking step has failed
+    if (failedStep !== null) return;
     const m = script[step];
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
     return () => clearTimeout(t);
-  }, [step, photosUploaded, urgencyChosen]);
+  }, [step, photosUploaded, urgencyChosen, failedStep]);
 
   // Auto-scroll the messages container (not the page) when new messages arrive
   useEffect(() => {
@@ -171,6 +181,52 @@ export default function IntakePage({ onNavigate }) {
   const visible = script.slice(0, step);
   const done = step >= script.length;
   const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done);
+
+  function handleSend() {
+    const text = inputValue.trim();
+    if (!text) return;
+    setSendFailed(false);
+    setFailedText('');
+    setInputValue('');
+    // Simulate a failed send (no real backend)
+    setTimeout(() => {
+      setSendFailed(true);
+      setFailedText(text);
+    }, 800);
+  }
+
+  function handleRetrySend() {
+    const text = failedText;
+    setSendFailed(false);
+    setFailedText('');
+    setTimeout(() => {
+      setSendFailed(true);
+      setFailedText(text);
+    }, 800);
+  }
+
+  function handlePaperclipClick() {
+    if (paperclipUploading || photosUploaded) return;
+    paperclipInputRef.current?.click();
+  }
+
+  function handlePaperclipFileChange(e) {
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+
+    if (files.some((f) => !ALLOWED_TYPES.has(f.type))) {
+      setPaperclipFormatError(true);
+      return;
+    }
+
+    setPaperclipFormatError(false);
+    setPaperclipUploading(true);
+    setTimeout(() => {
+      setPaperclipUploading(false);
+      setPhotosUploaded(true);
+    }, 1500);
+  }
 
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-[820px] mx-auto">
@@ -219,7 +275,14 @@ export default function IntakePage({ onNavigate }) {
                 }}
               />
             );
-            if (m.type === 'agent-thinking') return <Thinking key={i} m={m} />;
+            if (m.type === 'agent-thinking') return (
+              <Thinking
+                key={i}
+                m={m}
+                failed={failedStep === i}
+                onRetry={() => setFailedStep(null)}
+              />
+            );
             if (m.type === 'agent-urgency')
               return (
                 <UrgencyPick
@@ -271,21 +334,89 @@ export default function IntakePage({ onNavigate }) {
         </div>
 
         {/* Pinned input dock — always present, ChatGPT-style */}
-        <div className="shrink-0 border-t border-ink-100/80 px-4 py-3 flex items-center gap-2 bg-gradient-to-t from-canvas-soft/40 to-white">
-          <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-            <Paperclip size={14} strokeWidth={1.8} />
-          </button>
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Reply to Homewise…"
-            className="flex-1 min-w-0 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
-          />
-          <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-            <Mic size={14} strokeWidth={1.8} />
-          </button>
+        <div className="shrink-0 border-t border-ink-100/80 px-4 py-3 flex flex-col gap-2 bg-gradient-to-t from-canvas-soft/40 to-white">
+          <div className="flex items-center gap-2">
+            <input
+              ref={paperclipInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePaperclipFileChange}
+            />
+            <button
+              onClick={handlePaperclipClick}
+              disabled={paperclipUploading || photosUploaded}
+              className={`h-10 w-10 rounded-2xl ring-1 flex items-center justify-center transition-all shrink-0 ${
+                photosUploaded
+                  ? 'ring-sage-100 bg-sage-50 text-sage-600'
+                  : paperclipUploading
+                  ? 'ring-ink-100 text-ink-400 cursor-wait'
+                  : 'ring-ink-100 hover:ring-ink-200 text-ink-500 hover:text-ink-900'
+              }`}
+            >
+              {photosUploaded ? (
+                <CheckCircle2 size={14} strokeWidth={1.8} />
+              ) : paperclipUploading ? (
+                <Loader2 size={14} strokeWidth={1.8} className="animate-spin" />
+              ) : (
+                <Paperclip size={14} strokeWidth={1.8} />
+              )}
+            </button>
+            <div className="relative flex-1 min-w-0">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Reply to Homewise…"
+                className="w-full h-10 pl-3.5 pr-10 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim()}
+                className={`absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-xl flex items-center justify-center transition-all ${
+                  inputValue.trim()
+                    ? 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
+                    : 'text-ink-300'
+                }`}
+              >
+                <ArrowUp size={13} strokeWidth={2} />
+              </button>
+            </div>
+            <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
+              <Mic size={14} strokeWidth={1.8} />
+            </button>
+          </div>
+          {paperclipFormatError && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1.5 pl-12"
+            >
+              <AlertCircle size={11} strokeWidth={2} className="shrink-0 text-ember-500" />
+              <span className="text-[11.5px] text-ember-600">Unsupported file format. Please upload a JPG, PNG, GIF, or WEBP image.</span>
+            </motion.div>
+          )}
+          {sendFailed && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1.5 pl-12"
+            >
+              <AlertCircle size={11} strokeWidth={2} className="shrink-0 text-ember-500" />
+              <span className="text-[11.5px] text-ember-600">Message failed to send.</span>
+              <button
+                onClick={handleRetrySend}
+                className="text-[11.5px] text-ink-500 hover:text-ink-900 transition-colors"
+              >
+                Try again
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
@@ -359,7 +490,7 @@ function PhotoStrip({ m, onCorrect }) {
   );
 }
 
-function Thinking({ m }) {
+function Thinking({ m, failed, onRetry }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -371,12 +502,25 @@ function Thinking({ m }) {
         <Sparkles size={13} strokeWidth={2.2} />
       </span>
       <div className="rounded-2xl rounded-tl-md bg-canvas-soft border border-ink-100 px-3.5 py-2.5">
-        <div className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" />
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.2s' }} />
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.4s' }} />
-          <span className="ml-2 text-[12px] text-ink-500 italic">{m.text}</span>
-        </div>
+        {failed ? (
+          <div className="flex items-center gap-2">
+            <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+            <span className="text-[12px] text-ink-700">Something went wrong.</span>
+            <button
+              onClick={onRetry}
+              className="text-[12px] text-ink-500 hover:text-ink-900 transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.2s' }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.4s' }} />
+            <span className="ml-2 text-[12px] text-ink-500 italic">{m.text}</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -441,7 +585,37 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
   );
 }
 
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
 function AgentMessage({ m, onUploadPhotos, uploaded }) {
+  const [uploading, setUploading] = useState(false);
+  const [formatError, setFormatError] = useState(false);
+  const fileInputRef = useRef(null);
+
+  function handleButtonClick() {
+    if (!onUploadPhotos || uploaded || uploading) return;
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e) {
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+
+    if (files.some((f) => !ALLOWED_TYPES.has(f.type))) {
+      setFormatError(true);
+      return;
+    }
+
+    setFormatError(false);
+    setUploading(true);
+    // Simulate processing the selected files (no real upload endpoint)
+    setTimeout(() => {
+      setUploading(false);
+      onUploadPhotos();
+    }, 1500);
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -474,12 +648,22 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </li>
                 ))}
               </ul>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
               <button
-                onClick={onUploadPhotos}
-                disabled={uploaded || !onUploadPhotos}
+                onClick={handleButtonClick}
+                disabled={uploaded || uploading || !onUploadPhotos}
                 className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-xl transition-all text-[12.5px] font-semibold ${
                   uploaded
                     ? 'bg-sage-50 text-sage-700 ring-1 ring-sage-100'
+                    : uploading
+                    ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait'
                     : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
                 }`}
               >
@@ -488,6 +672,11 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                     <CheckCircle2 size={13} strokeWidth={2.2} />
                     Photos uploaded
                   </>
+                ) : uploading ? (
+                  <>
+                    <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
+                    Uploading...
+                  </>
                 ) : (
                   <>
                     <Camera size={13} strokeWidth={2} />
@@ -495,6 +684,12 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </>
                 )}
               </button>
+              {formatError && (
+                <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-ember-600">
+                  <AlertCircle size={11} strokeWidth={2.2} className="shrink-0" />
+                  Unsupported file format. Please upload a JPG, PNG, GIF, or WEBP image.
+                </p>
+              )}
             </div>
           )}
           {m.follow && (
