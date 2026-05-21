@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
@@ -9,6 +8,7 @@ import {
   Mail,
   Wind,
   Droplet,
+  TreePine,
   Flame,
   Wrench,
   Bell,
@@ -34,19 +34,20 @@ const YEAR_BUCKETS = [
 ];
 
 const OUTDOOR = [
-  { id: 'yard', label: 'Yard', emoji: '🌿' },
-  { id: 'irrigation', label: 'Irrigation', emoji: '💧' },
-  { id: 'pool', label: 'Pool', emoji: '🏊' },
-  { id: 'trees', label: 'Mature trees', emoji: '🌳' },
+  { id: 'yard', label: 'Yard', icon: TreePine },
+  { id: 'irrigation', label: 'Irrigation', icon: Droplet },
+  { id: 'pool', label: 'Pool', icon: Droplet },
+  { id: 'trees', label: 'Mature trees', icon: TreePine },
+  { id: 'none', label: 'None' },
 ];
 
 const SYSTEMS = [
-  { id: 'central-hvac', label: 'Central HVAC', emoji: '❄️' },
-  { id: 'gas-furnace', label: 'Gas furnace', emoji: '🔥' },
-  { id: 'electric-heat', label: 'Electric heating', emoji: '⚡' },
-  { id: 'water-heater', label: 'Water heater', emoji: '🚿' },
-  { id: 'fireplace', label: 'Fireplace', emoji: '🪵' },
-  { id: 'septic', label: 'Septic', emoji: '🔧' },
+  { id: 'central-hvac', label: 'Central HVAC', icon: Wind },
+  { id: 'gas-furnace', label: 'Gas furnace', icon: Flame },
+  { id: 'electric-heat', label: 'Electric heating', icon: Wind },
+  { id: 'water-heater', label: 'Water heater', icon: Droplet },
+  { id: 'fireplace', label: 'Fireplace', icon: Flame },
+  { id: 'septic', label: 'Septic', icon: Droplet },
 ];
 
 function buildMaintenance(profile) {
@@ -140,34 +141,15 @@ function buildMaintenance(profile) {
 }
 
 export default function OnboardingPage({ onComplete }) {
-  const [step, setStep] = useState(() => sessionStorage.getItem('onboarding-step') === '1' ? 1 : 0);
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = sessionStorage.getItem('onboarding-profile');
-      if (saved) {
-        const p = JSON.parse(saved);
-        return {
-          homeType: p.homeType || '',
-          yearBuilt: p.yearBuilt || '',
-          address: p.address || '',
-          zip: p.zip || '',
-          outdoor: new Set(Array.isArray(p.outdoor) ? p.outdoor : []),
-          systems: new Set(Array.isArray(p.systems) ? p.systems : []),
-        };
-      }
-    } catch {}
-    return { homeType: '', yearBuilt: '', address: '', zip: '', outdoor: new Set(), systems: new Set() };
+  const [step, setStep] = useState(0);
+  const [profile, setProfile] = useState({
+    homeType: '',
+    yearBuilt: '',
+    address: '',
+    zip: '',
+    outdoor: new Set(),
+    systems: new Set(),
   });
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('onboarding-profile', JSON.stringify({
-        ...profile,
-        outdoor: [...profile.outdoor],
-        systems: [...profile.systems],
-      }));
-    } catch {}
-  }, [profile]);
 
   const toggle = (key, id) => {
     setProfile((p) => {
@@ -180,8 +162,7 @@ export default function OnboardingPage({ onComplete }) {
 
   // Outdoor is multi-select with one mutually-exclusive option ("None").
   // Picking "None" clears the other selections; picking any other option
-  // removes "None" from the set. Both directions stay clickable, no
-  // disabled state.
+  // removes "None" from the set.
   const toggleOutdoor = (id) => {
     setProfile((p) => {
       const next = new Set(p.outdoor);
@@ -204,7 +185,7 @@ export default function OnboardingPage({ onComplete }) {
   const items = buildMaintenance(profile);
 
   return (
-    <div className={`${step === 0 ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-canvas text-ink-900 selection:bg-sage-200/40 relative flex flex-col`}>
+    <div className="min-h-screen bg-canvas text-ink-900 selection:bg-sage-200/40 relative">
       {/* Ambient backdrop, matching main app */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-sage-100 opacity-50 blur-3xl" />
@@ -219,12 +200,12 @@ export default function OnboardingPage({ onComplete }) {
           </span>
           <span className="editorial text-[17px] tracking-tight text-ink-900">Homewise</span>
         </div>
-        </header>
+      </header>
 
-      <main className={`px-6 lg:px-10 py-6 flex-1 flex flex-col${step === 0 ? ' justify-center' : ''}`}>
+      <main className="px-6 lg:px-10 pb-16">
         <AnimatePresence mode="wait">
           {step === 0 && (
-            <SignupScreen key="signup" onContinue={() => { sessionStorage.setItem('onboarding-step', '1'); setStep(1); }} />
+            <SignupScreen key="signup" onContinue={() => setStep(1)} />
           )}
           {step === 1 && (
             <ProfileScreen
@@ -232,13 +213,9 @@ export default function OnboardingPage({ onComplete }) {
               profile={profile}
               setProfile={setProfile}
               toggle={toggle}
-              onBack={() => {
-                sessionStorage.removeItem('onboarding-step');
-                sessionStorage.removeItem('onboarding-profile');
-                setProfile({ homeType: '', yearBuilt: '', address: '', zip: '', outdoor: new Set(), systems: new Set() });
-                setStep(0);
-              }}
-              onContinue={() => { sessionStorage.removeItem('onboarding-step'); sessionStorage.removeItem('onboarding-profile'); onComplete(items); }}
+              toggleOutdoor={toggleOutdoor}
+              onBack={() => setStep(0)}
+              onContinue={() => onComplete(items)}
             />
           )}
         </AnimatePresence>
@@ -268,7 +245,7 @@ function SignupScreen({ onContinue }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.4 }}
-      className="max-w-md mx-auto"
+      className="max-w-md mx-auto pt-12 lg:pt-20"
     >
       <div className="flex items-center gap-2 mb-4">
         <span className="h-px w-6 bg-sage-300" />
@@ -277,33 +254,33 @@ function SignupScreen({ onContinue }) {
         </span>
       </div>
 
-      <h1 className="editorial text-[32px] md:text-[38px] leading-[1.05] text-ink-900 tracking-tight">
+      <h1 className="editorial text-[36px] md:text-[44px] leading-[1.05] text-ink-900 tracking-tight">
         Start with your home.
         <span className="block text-ink-500">Take it from there.</span>
       </h1>
 
-      <p className="mt-2 text-[13.5px] text-ink-500 leading-relaxed">
+      <p className="mt-3 text-[13.5px] text-ink-500 leading-relaxed">
         Two minutes. Then your home's watchlist, ready when you are.
       </p>
 
-      <div className="mt-7 max-w-sm mx-auto space-y-1.5">
+      <div className="mt-10 space-y-2">
         <button
           onClick={onContinue}
-          className="w-full h-11 rounded-2xl bg-white border border-ink-200 hover:border-ink-300 text-ink-900 inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="w-full h-12 rounded-2xl bg-white border border-ink-200 hover:border-ink-300 text-ink-900 inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           <img src={googleLogo} alt="" className="h-4 w-4" />
           Continue with Google
         </button>
         <button
           onClick={onContinue}
-          className="w-full h-11 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          className="w-full h-12 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
         >
           <img src={appleLogo} alt="" className="h-[15px] w-[15px] invert" />
           Continue with Apple
         </button>
       </div>
 
-      <div className="my-4 max-w-sm mx-auto flex items-center gap-3">
+      <div className="my-5 flex items-center gap-3">
         <span className="flex-1 h-px bg-ink-100" />
         <span className="text-[10.5px] uppercase tracking-[0.18em] text-ink-400 font-semibold">
           or
@@ -311,17 +288,15 @@ function SignupScreen({ onContinue }) {
         <span className="flex-1 h-px bg-ink-100" />
       </div>
 
-      <div className="max-w-sm mx-auto">
       <button
         onClick={onContinue}
-        className="w-full h-11 rounded-2xl bg-white border border-ink-200 hover:border-ink-300 text-ink-700 hover:text-ink-900 inline-flex items-center justify-center gap-2.5 text-[13.5px] font-medium transition-all"
+        className="w-full h-12 rounded-2xl bg-white border border-ink-200 hover:border-ink-300 text-ink-700 hover:text-ink-900 inline-flex items-center justify-center gap-2.5 text-[13.5px] font-medium transition-all"
       >
         <Mail size={14} strokeWidth={1.8} />
         Continue with email
       </button>
-      </div>
 
-      <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
+      <div className="mt-8 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
         <ShieldCheck size={12} className="text-sage-500" strokeWidth={2} />
         No contractor sees your home until you ask
       </div>
@@ -332,65 +307,39 @@ function SignupScreen({ onContinue }) {
   );
 }
 
-function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
-  const [confirmBack, setConfirmBack] = useState(false);
+function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onContinue }) {
+  // All 5 questions required. Q04 Outdoor uses the "None" chip as the
+  // explicit "no outdoor features" affordance (per the toggleOutdoor
+  // logic in the parent), so the gate is satisfied either by a real
+  // selection (yard/pool/trees/etc.) or by picking "None".
+  //
+  // Q03 address: must look like a street address — has a digit, a letter,
+  // a space, and is at least 5 chars.
+  const addrTrimmed = profile.address.trim();
+  const addressValid =
+    addrTrimmed.length >= 5 &&
+    /\d/.test(addrTrimmed) &&
+    /[a-zA-Z]/.test(addrTrimmed) &&
+    addrTrimmed.includes(' ');
+  const addressWarning = addrTrimmed.length > 0 && !addressValid;
 
-  const toggleOutdoor = (id) => {
-    setProfile((p) => {
-      const next = new Set(p.outdoor);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { ...p, outdoor: next };
-    });
-  };
-
-  const hasProgress =
-    profile.homeType !== '' ||
-    profile.yearBuilt !== '' ||
-    profile.address !== '' ||
-    profile.zip !== '' ||
-    profile.outdoor.size > 0 ||
+  const canContinue =
+    profile.homeType !== '' &&
+    profile.yearBuilt !== '' &&
+    addressValid &&
+    profile.zip.length === 5 &&
+    profile.outdoor.size > 0 &&
     profile.systems.size > 0;
 
-  const handleBack = () => {
-    if (hasProgress) setConfirmBack(true);
-    else onBack();
-  };
-
-  const addrTrimmed = profile.address.trim();
-  const addressWarning =
-    addrTrimmed.length >= 3 && (
-      !/[a-zA-Z]/.test(addrTrimmed) ||
-      (!addrTrimmed.includes(' ') && addrTrimmed.length > 4) ||
-      new Set(addrTrimmed.replace(/\s+/g, '').toLowerCase()).size < 3
-    );
-
-  const answeredCount = [
-    profile.homeType !== '',
-    profile.yearBuilt !== '',
-    addrTrimmed.length > 0 && !addressWarning,
-    profile.outdoor.size > 0,
-    profile.systems.size > 0,
-  ].filter(Boolean).length;
-
   return (
-    <>
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.4 }}
-      className="w-full max-w-2xl mx-auto space-y-6 md:space-y-10"
+      className="max-w-2xl mx-auto pt-6 lg:pt-10 space-y-10"
     >
-      <div className="flex items-center justify-between">
-        <BackLink onClick={handleBack} label="Back" />
-        <button
-          onClick={onContinue}
-          className="h-9 px-3.5 rounded-full bg-white/20 border border-ink-200/20 inline-flex items-center text-[12px] text-ink-700 underline decoration-1 underline-offset-2 hover:bg-white/60 hover:border-ink-200/60 transition-colors"
-        >
-          Skip
-        </button>
-      </div>
+      <BackLink onClick={onBack} label="Back" />
       <header>
         <div className="flex items-center gap-2 mb-3">
           <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft">
@@ -400,130 +349,123 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
             Quick setup · about a minute
           </span>
         </div>
-        <h1 className="editorial text-[22px] sm:text-[28px] md:text-[34px] leading-[1.05] text-ink-900 tracking-tight">
+        <h1 className="editorial text-[28px] md:text-[34px] leading-[1.05] text-ink-900 tracking-tight">
           Five questions, then we plan.
         </h1>
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
           Each is skippable. Your answers build the watchlist on your home page.
         </p>
-        <div className="mt-4 flex items-center gap-2.5">
-          <div className="flex flex-1 gap-1">
-            {Array.from({ length: 5 }, (_, i) => (
-              <span
-                key={i}
-                className={`flex-1 h-1 rounded-full transition-colors duration-300 ${i < answeredCount ? 'bg-sage-500' : 'bg-ink-100'}`}
-              />
-            ))}
-          </div>
-          <span className="text-[11px] text-ink-400 tabular-nums shrink-0">{answeredCount} / 5</span>
-        </div>
       </header>
 
       <Question num="01" label="Home type">
-        <p className="text-[11px] text-ink-500 -mt-[10px] mb-2.5">Enables contractor to select appropriate materials</p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        <ChipRow>
           {HOME_TYPES.map((o) => (
             <Chip
               key={o.id}
-              fill
               selected={profile.homeType === o.id}
               onClick={() => setProfile((p) => ({ ...p, homeType: o.id }))}
             >
               {o.label}
             </Chip>
           ))}
-        </div>
+        </ChipRow>
       </Question>
 
       <Question num="02" label="Year built">
-        <p className="text-[11px] text-ink-500 -mt-[10px] mb-2.5">Enables contractor to assess structural integrity</p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        <ChipRow>
           {YEAR_BUCKETS.map((o) => (
             <Chip
               key={o.id}
-              fill
               selected={profile.yearBuilt === o.id}
               onClick={() => setProfile((p) => ({ ...p, yearBuilt: o.id }))}
             >
               {o.label}
             </Chip>
           ))}
-        </div>
+        </ChipRow>
       </Question>
 
-      <Question num="03" label="Where you live">
-        <p className="text-[11px] text-ink-500 -mt-[10px] mb-2.5">Helps match you with local contractors in your area</p>
-        <div className="flex flex-col sm:flex-row gap-2 items-start">
-          <div className="flex-1 w-full flex flex-col gap-1">
-            <input
-              type="text"
-              value={profile.address}
-              onChange={(e) =>
-                setProfile((p) => ({ ...p, address: e.target.value.slice(0, 100) }))
-              }
-              maxLength={100}
-              placeholder="123 Maple St, Oakland, CA"
-              autoComplete="street-address"
-              className="w-full h-10 px-3.5 rounded-2xl bg-white border border-ink-200 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
-            />
-            {addressWarning && (
-              <p className="text-[11px] text-ember-500 px-1">This doesn't look like a street address.</p>
-            )}
-            <span className="text-[11px] text-ink-400 tabular-nums px-1">{profile.address.length}/100</span>
-          </div>
-          <div className="w-full sm:w-28 flex flex-col gap-1">
-            <input
-              type="text"
-              value={profile.zip}
-              onChange={(e) =>
-                setProfile((p) => ({
-                  ...p,
-                  zip: e.target.value.replace(/\D/g, '').slice(0, 10),
-                }))
-              }
-              maxLength={10}
-              placeholder="94609"
-              inputMode="numeric"
-              autoComplete="postal-code"
-              className="w-full h-10 px-3.5 rounded-2xl bg-white border border-ink-200 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
-            />
-            <span className="text-[11px] text-ink-400 tabular-nums px-1">{profile.zip.length}/10</span>
-          </div>
+      <Question num="03" label="Where you live" sub="For matching local contractors">
+        <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+          <input
+            type="text"
+            value={profile.address}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, address: e.target.value }))
+            }
+            placeholder="123 Maple St, Oakland, CA"
+            autoComplete="street-address"
+            className="flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+          />
+          <input
+            type="text"
+            value={profile.zip}
+            onChange={(e) =>
+              setProfile((p) => ({
+                ...p,
+                zip: e.target.value.replace(/\D/g, '').slice(0, 5),
+              }))
+            }
+            placeholder="94609"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
+          />
         </div>
+        {addressWarning && (
+          <p className="mt-1.5 text-[11px] text-ember-500">
+            Please type a valid street address.
+          </p>
+        )}
       </Question>
 
-      <Question num="04" label="Outdoor features" sub="Multi-select, optional">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+      <Question num="04" label="Outdoor features" sub="Multi-select">
+        <ChipRow>
           {OUTDOOR.map((o) => {
             const on = profile.outdoor.has(o.id);
+            const Icon = o.icon;
             return (
-              <Chip key={o.id} fill selected={on} onClick={() => toggleOutdoor(o.id)}>
-                <span className="text-[13px] leading-none">{o.emoji}</span>
+              <Chip key={o.id} selected={on} onClick={() => toggleOutdoor(o.id)}>
+                {Icon && (
+                  <Icon
+                    size={11}
+                    strokeWidth={2}
+                    className={on ? 'opacity-90' : 'text-ink-400'}
+                  />
+                )}
                 {o.label}
               </Chip>
             );
           })}
-        </div>
+        </ChipRow>
       </Question>
 
       <Question num="05" label="Major systems" sub="Multi-select">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        <ChipRow>
           {SYSTEMS.map((o) => {
             const on = profile.systems.has(o.id);
+            const Icon = o.icon;
             return (
-              <Chip key={o.id} fill selected={on} onClick={() => toggle('systems', o.id)}>
-                <span className="text-[13px] leading-none">{o.emoji}</span>
+              <Chip key={o.id} selected={on} onClick={() => toggle('systems', o.id)}>
+                {Icon && (
+                  <Icon
+                    size={11}
+                    strokeWidth={2}
+                    className={on ? 'opacity-90' : 'text-ink-400'}
+                  />
+                )}
                 {o.label}
               </Chip>
             );
           })}
-        </div>
+        </ChipRow>
       </Question>
 
-      <div className="pt-4">
+      <div className="pt-2 flex items-center gap-3">
         <button
           onClick={onContinue}
-          className="group w-full h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          disabled={!canContinue}
+          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
         >
           Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
@@ -532,69 +474,33 @@ function ProfileScreen({ profile, setProfile, toggle, onBack, onContinue }) {
         </button>
       </div>
     </motion.div>
-
-    {confirmBack && createPortal(
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-ink-900/30">
-        <div className="bg-white rounded-3xl p-6 max-w-xs w-full ring-1 ring-ink-100">
-          <h2 className="text-[15px] font-semibold text-ink-900 mb-1.5">Go back?</h2>
-          <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
-            Your answers on this page will be cleared.
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setConfirmBack(false)}
-              className="flex-1 h-10 rounded-xl border border-ink-200 text-[13px] text-ink-700 hover:border-ink-300 hover:text-ink-900 transition-colors"
-            >
-              Keep editing
-            </button>
-            <button
-              onClick={onBack}
-              className="flex-1 h-10 rounded-xl bg-ink-900 hover:bg-ink-700 text-[13px] text-canvas-soft transition-colors"
-            >
-              Go back
-            </button>
-          </div>
-        </div>
-      </div>,
-      document.body
-    )}
-    </>
   );
 }
 
 function Question({ num, label, sub, children }) {
   return (
-    <section className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-3">
-      <div className="flex items-center gap-2.5 self-center">
+    <section>
+      <div className="flex items-center gap-2.5 mb-3 flex-wrap">
         <span className="text-[11px] tabular-nums text-ink-400 font-bold">{num}</span>
         <span className="h-px w-4 bg-ink-200" />
-      </div>
-      <div className="flex items-center gap-2.5 flex-wrap self-center">
         <h3 className="text-[13px] font-medium text-ink-900 tracking-[-0.010em]">{label}</h3>
         {sub && <span className="text-[11px] text-ink-500">{sub}</span>}
       </div>
-      <div className="col-start-2">{children}</div>
+      <div className="ml-7">{children}</div>
     </section>
   );
 }
 
-function ChipRow({ children, stretch }) {
-  return <div className={`flex gap-1.5 ${stretch ? '' : 'flex-wrap'}`}>{children}</div>;
+function ChipRow({ children }) {
+  return <div className="flex flex-wrap gap-1.5">{children}</div>;
 }
 
-function Chip({ selected, disabled, dimmed, stretch, wrapStretch, fill, onClick, children }) {
+function Chip({ selected, onClick, children }) {
   return (
     <button
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      className={`h-9 px-3.5 rounded-full inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all ${
-        fill ? 'w-full justify-center whitespace-nowrap' : stretch ? 'flex-1 min-w-0 justify-center' : wrapStretch ? 'flex-1 justify-center whitespace-nowrap' : 'whitespace-nowrap'
-      } ${
-        disabled
-          ? 'bg-canvas-soft border border-ink-100 text-ink-300 cursor-not-allowed'
-          : dimmed
-          ? 'bg-white border border-ink-100 text-ink-300'
-          : selected
+      onClick={onClick}
+      className={`h-9 px-3.5 rounded-full inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all whitespace-nowrap ${
+        selected
           ? 'bg-ink-900 text-canvas-soft'
           : 'bg-white border border-ink-200 hover:border-ink-300 text-ink-700 hover:text-ink-900'
       }`}
@@ -603,4 +509,3 @@ function Chip({ selected, disabled, dimmed, stretch, wrapStretch, fill, onClick,
     </button>
   );
 }
-
