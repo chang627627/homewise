@@ -141,26 +141,18 @@ export default function ScopePage({ onNavigate }) {
       <BackBar
         onBack={() => onNavigate?.('intake')}
         label="Back to intake"
-        context="Scope of work · v1 · auto-generated"
+        context="Scope of work · draft"
       />
 
       <FlowProgress current="scope" onNavigate={onNavigate} />
 
       {/* Header */}
       <header>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft">
-            <Sparkles size={13} strokeWidth={2.2} />
-          </span>
-          <span className="text-[11px] uppercase tracking-[0.22em] text-sage-600 font-semibold">
-            AI-generated scope · review before sending
-          </span>
-        </div>
         <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
           Kitchen sink leak &amp; drip repair.
         </h1>
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
-          Apples-to-apples scope so every contractor bids on the same job. You can edit, ask questions, or have Homewise revise. Nothing is sent until you approve.
+          Apples-to-apples scope so every contractor bids on the same job.
         </p>
       </header>
 
@@ -241,9 +233,9 @@ export default function ScopePage({ onNavigate }) {
             </SectionBlock>
 
             {/* 02 Summary */}
-            <SectionBlock label="02 · Job summary" eyebrow="Plain language">
+            <SectionBlock label="02 · Job summary">
               <p className="text-[14px] leading-relaxed text-ink-700">
-                Standing water and a slow drip at the single-handle kitchen faucet. Photo analysis confirms the supply line behind the cabinet is dry, isolating the issue to the <strong className="text-ink-900 font-semibold">P-trap assembly</strong> and the <strong className="text-ink-900 font-semibold">faucet cartridge</strong>. No drywall, cabinet, or supply work is anticipated.
+                <strong className="text-ink-900 font-semibold">P-trap assembly</strong> and <strong className="text-ink-900 font-semibold">faucet cartridge</strong> replacement. No drywall, cabinet, or supply work anticipated.
               </p>
             </SectionBlock>
 
@@ -317,7 +309,7 @@ export default function ScopePage({ onNavigate }) {
             </SectionBlock>
 
             {/* 05 Exclusions */}
-            <SectionBlock label="05 · Exclusions" eyebrow="What this scope does NOT include">
+            <SectionBlock label="05 · Exclusions">
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {exclusions.map((e) => (
                   <li
@@ -340,9 +332,6 @@ export default function ScopePage({ onNavigate }) {
               label="06 · Unit-priced add-ons"
               eyebrow="Pre-agreed pricing if scope expands during the job"
             >
-              <p className="text-[12.5px] text-ink-500 leading-relaxed mb-3 max-w-xl">
-                If the contractor finds something only visible after starting (rare here, but documented), these prices are agreed upfront so there's no surprise change order.
-              </p>
               <div className="rounded-2xl border border-ember-100 bg-ember-50/30 overflow-hidden">
                 {unitPriced.map((c, i) => (
                   <div
@@ -372,7 +361,7 @@ export default function ScopePage({ onNavigate }) {
             </SectionBlock>
 
             {/* 07 Acceptance criteria */}
-            <SectionBlock label="07 · Acceptance criteria" eyebrow="What 'done' looks like">
+            <SectionBlock label="07 · Acceptance criteria">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -400,19 +389,13 @@ export default function ScopePage({ onNavigate }) {
         {/* What's next · all actions live here after the document so the user
             never has to scroll back up to the header to act */}
         <section className="mt-10 pt-8 border-t border-ink-100">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
-              Ready to send
-            </span>
-          </div>
           <div className="space-y-6">
             <div className="max-w-2xl space-y-1.5">
               <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
-                Approve the scope and we'll reach out to 3 vetted contractors.
+                Approve the scope and we'll reach out to 3 contractors.
               </h3>
               <p className="text-[13px] text-ink-500 leading-relaxed">
-                Each gets the exact same brief. You'll see apples-to-apples bids within 5 days · nothing is final until you pick.
+                Each contractor bids on the same scope.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
