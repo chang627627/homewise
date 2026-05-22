@@ -435,6 +435,14 @@ export default function ScopePage({ onNavigate }) {
                 </span>
               </button>
             </div>
+            <div className="pt-1">
+              <button
+                onClick={() => onNavigate?.('overview')}
+                className="text-[12px] text-ink-400 hover:text-ink-700 transition-colors"
+              >
+                Not right now
+              </button>
+            </div>
           </div>
         </section>
 
