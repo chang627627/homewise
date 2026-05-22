@@ -90,6 +90,8 @@ const totalHours = tasks.reduce((s, t) => s + t.hours, 0);
 const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
 const labor = 95;
 const laborTotal = Math.round(totalHours * labor);
+// Max triggerable add-on: item 1 ($58 labor + $18 valve). Item 2 is TBD/out-of-scope.
+const maxAddOnCost = 76;
 
 // Photos captured during intake + AI-tagged. Surfaced here on the scope
 // document so the contractor has visual context to bid against, and so
@@ -327,41 +329,8 @@ export default function ScopePage({ onNavigate }) {
               </ul>
             </SectionBlock>
 
-            {/* 06 Unit-priced add-ons */}
-            <SectionBlock
-              label="06 · Unit-priced add-ons"
-              eyebrow="Pre-agreed pricing if scope expands during the job"
-            >
-              <div className="rounded-2xl border border-ember-100 bg-ember-50/30 overflow-hidden">
-                {unitPriced.map((c, i) => (
-                  <div
-                    key={i}
-                    className={`grid grid-cols-12 gap-3 px-4 py-3.5 ${i > 0 ? 'border-t border-ember-100' : ''}`}
-                  >
-                    <div className="col-span-1">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100">
-                        <AlertCircle size={12} strokeWidth={2} />
-                      </span>
-                    </div>
-                    <div className="col-span-7 min-w-0">
-                      <div className="text-[13px] font-semibold text-ink-900">
-                        {c.if}
-                      </div>
-                      <div className="text-[12px] text-ink-500 mt-0.5">{c.add}</div>
-                      <div className="text-[10.5px] text-ink-500 mt-1 uppercase tracking-[0.14em] font-semibold">
-                        Likelihood: {c.likelihood}
-                      </div>
-                    </div>
-                    <div className="col-span-4 text-right text-[14px] font-semibold tabular-nums text-ember-500">
-                      {c.cost}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </SectionBlock>
-
-            {/* 07 Acceptance criteria */}
-            <SectionBlock label="07 · Acceptance criteria">
+            {/* 06 Acceptance criteria */}
+            <SectionBlock label="06 · Acceptance criteria">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -377,11 +346,14 @@ export default function ScopePage({ onNavigate }) {
 
           {/* Document footer / totals */}
           <div className="px-7 md:px-9 py-6 border-t border-ink-100/80 bg-canvas-deep/50 hairline-inset">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Total label="Labor" value={`$${laborTotal}`} sub={`${totalHours} hrs`} />
               <Total label="Materials" value={`$${totalMaterials}`} sub={`${materials.length} items`} />
-              <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. unit add-ons" highlight />
+              <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. add-ons" highlight />
               <Total label="Local benchmark" value="$180–$320" sub="Inside range" tone="sage" />
+              <div className="col-span-2 md:col-span-1">
+                <Total label="If add-ons triggered" value={`up to +$${maxAddOnCost}`} sub="pre-agreed rate" tone="ember" />
+              </div>
             </div>
           </div>
         </article>
@@ -468,11 +440,11 @@ function Total({ label, value, sub, highlight = false, tone }) {
   const valueCls = highlight
     ? 'editorial text-[24px]'
     : 'editorial text-[18px]';
-  const colorCls = tone === 'sage' ? 'text-sage-600' : 'text-ink-900';
+  const colorCls = tone === 'sage' ? 'text-sage-600' : tone === 'ember' ? 'text-ember-500' : 'text-ink-900';
   return (
     <div
       className={`rounded-2xl px-3.5 py-3 ${
-        highlight ? 'bg-ink-900 text-canvas-soft' : 'bg-white border border-ink-100'
+        highlight ? 'bg-ink-900 text-canvas-soft' : tone === 'ember' ? 'bg-ember-50/60 border border-ember-100' : 'bg-white border border-ink-100'
       }`}
     >
       <div
