@@ -228,7 +228,7 @@ export default function ScopePage({ onNavigate }) {
                     </span>
                   </div>
                   <div className="text-[12.5px] text-ink-700 leading-relaxed">
-                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see unit pricing in section 06.
+                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see add-on pricing in the totals below.
                   </div>
                 </div>
               </div>
@@ -310,27 +310,8 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 05 Exclusions */}
-            <SectionBlock label="05 · Exclusions">
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {exclusions.map((e) => (
-                  <li
-                    key={e}
-                    className="flex items-start gap-2 rounded-xl bg-canvas-soft border border-ink-100 px-3 py-2"
-                  >
-                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-white text-ink-400 ring-1 ring-ink-100">
-                      ✕
-                    </span>
-                    <span className="text-[12.5px] text-ink-700 leading-snug">
-                      {e}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </SectionBlock>
-
-            {/* 06 Acceptance criteria */}
-            <SectionBlock label="06 · Acceptance criteria">
+            {/* 05 Acceptance criteria */}
+            <SectionBlock label="05 · Acceptance criteria">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
