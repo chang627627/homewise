@@ -430,11 +430,11 @@ export default function ScopePage({ onNavigate }) {
                 Edit scope
               </button>
               <button
-                onClick={() => onNavigate?.('overview')}
+                onClick={() => onNavigate?.({ page: 'overview', resetTask: true })}
                 className="h-12 px-4 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-2 text-[13.5px] font-medium transition-all"
               >
-                <Bookmark size={14} strokeWidth={1.8} />
-                Save for later
+                <Clock size={14} strokeWidth={1.8} />
+                Not now
               </button>
               <button
                 onClick={() => onNavigate?.('contractor-compare')}
