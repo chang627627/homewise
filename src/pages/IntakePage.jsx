@@ -503,9 +503,11 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
 }
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const REQUIRED_PHOTOS = 3;
 
 function AgentMessage({ m, onUploadPhotos, uploaded }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadedCount, setUploadedCount] = useState(0);
   const [formatError, setFormatError] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -531,9 +533,17 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
     // the upload feel like a real product moment.
     setTimeout(() => {
       setUploading(false);
-      onUploadPhotos();
+      const newCount = Math.min(uploadedCount + files.length, REQUIRED_PHOTOS);
+      setUploadedCount(newCount);
+      // Only advance the conversation once all 3 shots are in.
+      if (newCount >= REQUIRED_PHOTOS) {
+        onUploadPhotos();
+      }
     }, 1500);
   }
+
+  const remaining = Math.max(REQUIRED_PHOTOS - uploadedCount, 0);
+  const showProgress = !uploaded && uploadedCount > 0 && uploadedCount < REQUIRED_PHOTOS;
 
   return (
     <motion.div
@@ -575,6 +585,14 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                 className="hidden"
                 onChange={handleFileChange}
               />
+              {showProgress && (
+                <p className="mt-3 flex items-center gap-1.5 text-[11px] text-ink-500">
+                  <CheckCircle2 size={11} strokeWidth={2.2} className="shrink-0 text-sage-600" />
+                  <span className="tabular-nums">{uploadedCount} of {REQUIRED_PHOTOS} uploaded</span>
+                  <span className="text-ink-400">·</span>
+                  <span>{remaining} to go</span>
+                </p>
+              )}
               <button
                 onClick={handleUploadClick}
                 disabled={uploaded || uploading || !onUploadPhotos}
@@ -595,6 +613,11 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   <>
                     <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
                     Uploading…
+                  </>
+                ) : uploadedCount > 0 ? (
+                  <>
+                    <Camera size={13} strokeWidth={2} />
+                    Add {remaining} more
                   </>
                 ) : (
                   <>
