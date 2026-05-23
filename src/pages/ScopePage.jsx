@@ -19,6 +19,7 @@ import {
   Lightbulb,
   Shield,
   CalendarDays,
+  Bookmark,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -57,11 +58,15 @@ const materials = [
   { item: 'Plumber\'s tape & misc.', spec: 'Sealant, washers', qty: 1, est: 8 },
 ];
 
+// Evidence-based exclusions: each one cites what the AI saw in the
+// photos, then states what's not included. Reframes the section from a
+// defensive disclaimer ("we won't do these") into a positive trust
+// signal ("we checked these and ruled them out").
 const exclusions = [
-  'Drywall repair (none anticipated)',
-  'Faucet body replacement (only cartridge)',
-  'Cabinet refinishing or interior repair',
-  'Mold remediation (no mold visible in photos)',
+  { evidence: 'No drywall damage visible', excluded: 'Drywall repair not included' },
+  { evidence: 'Faucet body intact', excluded: 'Body replacement not included (cartridge swap only)' },
+  { evidence: 'Cabinet base appears intact', excluded: 'Cabinet refinishing or interior repair not included' },
+  { evidence: 'No mold visible in photos', excluded: 'Mold remediation not included' },
 ];
 
 const acceptance = [
@@ -316,28 +321,9 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 05 Exclusions */}
-            <SectionBlock label="05 · Exclusions" eyebrow="What this scope does NOT include">
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {exclusions.map((e) => (
-                  <li
-                    key={e}
-                    className="flex items-start gap-2 rounded-xl bg-canvas-soft border border-ink-100 px-3 py-2"
-                  >
-                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-white text-ink-400 ring-1 ring-ink-100">
-                      ✕
-                    </span>
-                    <span className="text-[12.5px] text-ink-700 leading-snug">
-                      {e}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </SectionBlock>
-
-            {/* 06 Unit-priced add-ons */}
+            {/* 05 Unit-priced add-ons */}
             <SectionBlock
-              label="06 · Unit-priced add-ons"
+              label="05 · Unit-priced add-ons"
               eyebrow="Pre-agreed pricing if scope expands during the job"
             >
               <p className="text-[12.5px] text-ink-500 leading-relaxed mb-3 max-w-xl">
@@ -371,8 +357,8 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 07 Acceptance criteria */}
-            <SectionBlock label="07 · Acceptance criteria" eyebrow="What 'done' looks like">
+            {/* 06 Acceptance criteria */}
+            <SectionBlock label="06 · Acceptance criteria" eyebrow="What 'done' looks like">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -383,6 +369,25 @@ export default function ScopePage({ onNavigate }) {
                   </li>
                 ))}
               </ol>
+            </SectionBlock>
+
+            {/* 07 Exclusions (closing disclaimer, evidence-framed) */}
+            <SectionBlock label="07 · Exclusions" eyebrow="What we checked and ruled out">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {exclusions.map((e) => (
+                  <li
+                    key={e.evidence}
+                    className="flex items-start gap-2 rounded-xl bg-sage-50/40 border border-sage-100 px-3 py-2"
+                  >
+                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 shrink-0">
+                      <CheckCircle2 size={10} strokeWidth={2.4} />
+                    </span>
+                    <span className="text-[12.5px] text-ink-700 leading-snug">
+                      <span className="font-medium text-ink-900">{e.evidence}:</span> {e.excluded}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </SectionBlock>
           </div>
 
@@ -423,6 +428,13 @@ export default function ScopePage({ onNavigate }) {
               <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
                 <Pencil size={13} strokeWidth={1.8} />
                 Edit scope
+              </button>
+              <button
+                onClick={() => onNavigate?.('overview')}
+                className="h-12 px-4 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-2 text-[13.5px] font-medium transition-all"
+              >
+                <Bookmark size={14} strokeWidth={1.8} />
+                Save for later
               </button>
               <button
                 onClick={() => onNavigate?.('contractor-compare')}
