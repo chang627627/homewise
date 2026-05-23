@@ -400,7 +400,13 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             }
             placeholder="123 Maple St, Oakland, CA"
             autoComplete="street-address"
-            className="flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+            className={`flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] focus:outline-none transition-colors ${
+              addressValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : addressWarning
+                ? 'border-ember-400 focus:border-ember-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
           <input
             type="text"
@@ -414,7 +420,11 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             placeholder="94609"
             inputMode="numeric"
             autoComplete="postal-code"
-            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
+            className={`w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none transition-colors ${
+              zipValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
         </div>
         {addressWarning ? (
