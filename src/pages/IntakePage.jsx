@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Flame,
   CalendarDays,
+  Loader2,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 
@@ -441,7 +442,39 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
   );
 }
 
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
 function AgentMessage({ m, onUploadPhotos, uploaded }) {
+  const [uploading, setUploading] = useState(false);
+  const [formatError, setFormatError] = useState(false);
+  const fileInputRef = useRef(null);
+
+  function handleUploadClick() {
+    if (!onUploadPhotos || uploaded || uploading) return;
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e) {
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+
+    if (files.some((f) => !ALLOWED_IMAGE_TYPES.has(f.type))) {
+      setFormatError(true);
+      return;
+    }
+
+    setFormatError(false);
+    setUploading(true);
+    // Simulated upload latency. The script's photo strip + AI analysis
+    // is what actually drives the demo; this 1.5s pause is just to make
+    // the upload feel like a real product moment.
+    setTimeout(() => {
+      setUploading(false);
+      onUploadPhotos();
+    }, 1500);
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -474,12 +507,22 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </li>
                 ))}
               </ul>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
               <button
-                onClick={onUploadPhotos}
-                disabled={uploaded || !onUploadPhotos}
+                onClick={handleUploadClick}
+                disabled={uploaded || uploading || !onUploadPhotos}
                 className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-xl transition-all text-[12.5px] font-semibold ${
                   uploaded
                     ? 'bg-sage-50 text-sage-700 ring-1 ring-sage-100'
+                    : uploading
+                    ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait'
                     : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
                 }`}
               >
@@ -488,6 +531,11 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                     <CheckCircle2 size={13} strokeWidth={2.2} />
                     Photos uploaded
                   </>
+                ) : uploading ? (
+                  <>
+                    <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
+                    Uploading…
+                  </>
                 ) : (
                   <>
                     <Camera size={13} strokeWidth={2} />
@@ -495,6 +543,12 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </>
                 )}
               </button>
+              {formatError && (
+                <p className="mt-2 flex items-center gap-1.5 text-[11px] text-ember-500">
+                  <AlertCircle size={11} strokeWidth={2.2} className="shrink-0" />
+                  Unsupported file. Try a JPG, PNG, GIF, or WEBP image.
+                </p>
+              )}
             </div>
           )}
           {m.follow && (
