@@ -47,7 +47,7 @@ const script = [
   },
   {
     type: 'user',
-    text: 'Sending the first two. Panel photo coming in a sec.',
+    text: 'Sending all three now.',
     time: '10:30 AM',
   },
   {
@@ -55,6 +55,7 @@ const script = [
     photos: [
       { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
       { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
+      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
     ],
   },
   {
@@ -63,7 +64,7 @@ const script = [
   },
   {
     type: 'agent',
-    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base. Two separate problems.',
+    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base, supply line behind the panel is dry. Two contained problems.',
     time: '10:30 AM',
   },
   {
@@ -83,27 +84,20 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Standard 5-day quote window. Two quick things and I can scope this:",
+    text: "Standard 5-day quote window. One quick thing and I can scope this:",
     follow: [
-      "Can you send the cabinet-panel photo now? I want to confirm the supply line is dry.",
       'Is the faucet a single-handle or two-handle?',
     ],
     time: '10:31 AM',
   },
   {
     type: 'user',
-    text: 'Single-handle. Sending the panel photo now.',
+    text: 'Single-handle.',
     time: '10:31 AM',
   },
   {
-    type: 'photos',
-    photos: [
-      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
-    ],
-  },
-  {
     type: 'agent',
-    text: "Perfect, supply line is dry, so this is contained. I'll scope this as a P-trap replacement plus a single-handle faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
+    text: "Perfect, single-handle cartridge. I'll scope this as a P-trap replacement plus a faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
     summary: {
       job: 'Kitchen sink leak + drip',
       scope: 'P-trap replacement, faucet cartridge replacement',
@@ -133,7 +127,7 @@ function getConversationState(step, photosUploaded, urgencyChosen, done, failedS
   if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
   if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
   if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
-  if (step >= 13) return { label: 'Building scope', pulse: true };
+  if (step >= 12) return { label: 'Building scope', pulse: true };
   const last = script[step - 1];
   if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
     return { label: 'Working on it', pulse: true };
