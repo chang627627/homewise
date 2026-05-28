@@ -477,6 +477,29 @@ export default function QuoteComparePage({ onNavigate }) {
           </div>
         </div>
 
+        {/* Ask before booking — its own section, before the commit row */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+          <div className="md:col-span-3 flex flex-col justify-center">
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Ask before booking
+            </div>
+            <div className="text-[11.5px] text-ink-500 mt-0.5">
+              Optional. Talk first if you have questions.
+            </div>
+          </div>
+          {cols.map((c) => (
+            <div key={c.id} className="md:col-span-3">
+              <button
+                onClick={() => setContactOpen(c.id)}
+                className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+              >
+                <Phone size={12} strokeWidth={2} />
+                Ask {c.name.split(' ')[0]}
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* Per-contractor approve actions, with slot chips that respect overlap */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
           <div className="md:col-span-3 flex flex-col justify-center">
@@ -517,13 +540,6 @@ export default function QuoteComparePage({ onNavigate }) {
                   </div>
                 )}
 
-                <button
-                  onClick={() => setContactOpen(c.id)}
-                  className="w-full h-9 rounded-2xl bg-white text-ink-500 hover:text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12px] font-medium transition-all"
-                >
-                  <Phone size={11} strokeWidth={1.8} />
-                  Ask {c.name.split(' ')[0]} before booking
-                </button>
                 <button
                   onClick={() =>
                     onNavigate?.({
