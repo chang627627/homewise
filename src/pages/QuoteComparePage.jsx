@@ -495,6 +495,7 @@ export default function QuoteComparePage({ onNavigate }) {
             const noOverlap = valid.length === 0;
             return (
               <div key={c.id} className="md:col-span-3 flex flex-col gap-2">
+                {/* Slot chips */}
                 {noOverlap ? (
                   <div className="rounded-xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[11.5px] text-ink-700 leading-snug">
                     No overlap with your availability. Add a window above or ask {c.name.split(' ')[0]} for more times.
@@ -520,34 +521,38 @@ export default function QuoteComparePage({ onNavigate }) {
                     })}
                   </div>
                 )}
-                <button
-                  onClick={() => setContactOpen(c.id)}
-                  className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
-                >
-                  <Phone size={12} strokeWidth={2} />
-                  Ask {c.name.split(' ')[0]} before booking
-                </button>
-                <button
-                  onClick={() =>
-                    onNavigate?.({
-                      page: 'overview',
-                      decisionHandled: true,
-                      scheduledSlot: sel?.time,
-                    })
-                  }
-                  disabled={noOverlap}
-                  className={`w-full h-10 rounded-2xl inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all ${
-                    noOverlap
-                      ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
-                      : c.aiPick
-                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
-                      : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
-                  }`}
-                >
-                  {c.aiPick && !noOverlap && <Check size={13} strokeWidth={2.4} />}
-                  Approve {c.name.split(' ')[0]}
-                  {sel && ` · ${sel.time}`}
-                </button>
+
+                {/* Commitment zone — separated from slot chips */}
+                <div className="flex flex-col gap-1.5 pt-2 mt-0.5 border-t border-ink-100">
+                  <button
+                    onClick={() => setContactOpen(c.id)}
+                    className="w-full h-9 rounded-2xl bg-white text-ink-500 hover:text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12px] font-medium transition-all"
+                  >
+                    <Phone size={11} strokeWidth={1.8} />
+                    Ask {c.name.split(' ')[0]} before booking
+                  </button>
+                  <button
+                    onClick={() =>
+                      onNavigate?.({
+                        page: 'overview',
+                        decisionHandled: true,
+                        scheduledSlot: sel?.time,
+                      })
+                    }
+                    disabled={noOverlap}
+                    className={`w-full h-10 rounded-2xl inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all ${
+                      noOverlap
+                        ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                        : c.aiPick
+                        ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
+                        : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
+                    }`}
+                  >
+                    {c.aiPick && !noOverlap && <Check size={13} strokeWidth={2.4} />}
+                    Approve {c.name.split(' ')[0]}
+                    {sel && ` · ${sel.time}`}
+                  </button>
+                </div>
               </div>
             );
           })}
