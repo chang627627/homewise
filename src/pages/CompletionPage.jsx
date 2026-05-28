@@ -107,7 +107,7 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
       <Section
         num="02"
         title="Approve photos for Jason's showcase"
-        sub="Optional. Off by default. Photos go up exactly as shown — no faces, no addresses."
+        sub="Optional. Off by default. Photos go up exactly as shown: no faces, no addresses."
       >
         <div className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
           <div className="px-5 py-4 border-b border-ink-100/80 bg-gradient-to-b from-canvas-soft/30 to-white flex items-center justify-between gap-3">

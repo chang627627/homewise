@@ -13,6 +13,7 @@ import {
   Wrench,
   Bell,
   ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import googleLogo from '../assets/google.svg';
 import appleLogo from '../assets/apple.svg';
@@ -143,12 +144,12 @@ function buildMaintenance(profile) {
 export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState({
-    homeType: 'house',
-    yearBuilt: '1980-2000',
-    address: '124 Maple St, Oakland, CA',
-    zip: '94609',
-    outdoor: new Set(['yard', 'trees']),
-    systems: new Set(['central-hvac', 'water-heater']),
+    homeType: '',
+    yearBuilt: '',
+    address: '',
+    zip: '',
+    outdoor: new Set(),
+    systems: new Set(),
   });
 
   const toggle = (key, id) => {
@@ -309,6 +310,32 @@ function SignupScreen({ onContinue }) {
 }
 
 function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onContinue }) {
+  // All 5 questions required. Q04 Outdoor uses the "None" chip as the
+  // explicit "no outdoor features" affordance (per the toggleOutdoor
+  // logic in the parent), so the gate is satisfied either by a real
+  // selection (yard/pool/trees/etc.) or by picking "None".
+  //
+  // Q03 address: must look like a street address — has a digit, a letter,
+  // a space, and is at least 5 chars. Catches typos like "home" or "x"
+  // without needing a geocoding service.
+  const addrTrimmed = profile.address.trim();
+  const addressValid =
+    addrTrimmed.length >= 5 &&
+    /\d/.test(addrTrimmed) &&
+    /[a-zA-Z]/.test(addrTrimmed) &&
+    addrTrimmed.includes(' ');
+  const zipValid = profile.zip.length === 5;
+  const addressWarning = addrTrimmed.length > 0 && !addressValid;
+  const bothValid = addressValid && zipValid;
+
+  const canContinue =
+    profile.homeType !== '' &&
+    profile.yearBuilt !== '' &&
+    addressValid &&
+    profile.zip.length === 5 &&
+    profile.outdoor.size > 0 &&
+    profile.systems.size > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -373,7 +400,13 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             }
             placeholder="123 Maple St, Oakland, CA"
             autoComplete="street-address"
-            className="flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+            className={`flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] focus:outline-none transition-colors ${
+              addressValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : addressWarning
+                ? 'border-ember-400 focus:border-ember-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
           <input
             type="text"
@@ -387,12 +420,30 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             placeholder="94609"
             inputMode="numeric"
             autoComplete="postal-code"
-            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
+            className={`w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none transition-colors ${
+              zipValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
         </div>
+        {addressWarning ? (
+          <p className="mt-1.5 text-[11px] text-ember-500">
+            Please type a valid street address.
+          </p>
+        ) : bothValid ? (
+          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-sage-600">
+            <CheckCircle2 size={11} strokeWidth={2.2} className="shrink-0" />
+            Looks good.
+          </p>
+        ) : (
+          <p className="mt-1.5 text-[11px] text-ink-500">
+            Street + city + state, then ZIP.
+          </p>
+        )}
       </Question>
 
-      <Question num="04" label="Outdoor features" sub="Multi-select, optional">
+      <Question num="04" label="Outdoor features" sub="Multi-select">
         <ChipRow>
           {OUTDOOR.map((o) => {
             const on = profile.outdoor.has(o.id);
@@ -437,7 +488,8 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
       <div className="pt-2 flex items-center gap-3">
         <button
           onClick={onContinue}
-          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
+          disabled={!canContinue}
+          className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none"
         >
           Continue to your home
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">

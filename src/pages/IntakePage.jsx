@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Flame,
   CalendarDays,
+  Loader2,
+  ArrowUp,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 
@@ -45,7 +47,7 @@ const script = [
   },
   {
     type: 'user',
-    text: 'Sending the first two. Panel photo coming in a sec.',
+    text: 'Sending all three now.',
     time: '10:30 AM',
   },
   {
@@ -53,6 +55,7 @@ const script = [
     photos: [
       { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
       { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
+      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
     ],
   },
   {
@@ -61,7 +64,7 @@ const script = [
   },
   {
     type: 'agent',
-    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base. Two separate problems.',
+    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base, supply line behind the panel is dry. Two contained problems.',
     time: '10:30 AM',
   },
   {
@@ -81,27 +84,20 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Standard 5-day quote window. Two quick things and I can scope this:",
+    text: "Standard 5-day quote window. One quick thing and I can scope this:",
     follow: [
-      "Can you send the cabinet-panel photo now? I want to confirm the supply line is dry.",
       'Is the faucet a single-handle or two-handle?',
     ],
     time: '10:31 AM',
   },
   {
     type: 'user',
-    text: 'Single-handle. Sending the panel photo now.',
+    text: 'Single-handle.',
     time: '10:31 AM',
   },
   {
-    type: 'photos',
-    photos: [
-      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
-    ],
-  },
-  {
     type: 'agent',
-    text: "Perfect, supply line is dry, so this is contained. I'll scope this as a P-trap replacement plus a single-handle faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
+    text: "Perfect, single-handle cartridge. I'll scope this as a P-trap replacement plus a faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
     summary: {
       job: 'Kitchen sink leak + drip',
       scope: 'P-trap replacement, faucet cartridge replacement',
@@ -124,13 +120,14 @@ const urgencyReplies = {
   flexible: 'Just an annoyance. Whenever convenient.',
 };
 
-function getConversationState(step, photosUploaded, urgencyChosen, done) {
+function getConversationState(step, photosUploaded, urgencyChosen, done, failedStep) {
   if (done) return { label: 'Scoped', pulse: false };
+  if (failedStep !== null) return { label: 'Hit a snag', pulse: false };
   if (step <= 1) return { label: null, pulse: false };
   if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
   if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
   if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
-  if (step >= 13) return { label: 'Building scope', pulse: true };
+  if (step >= 12) return { label: 'Building scope', pulse: true };
   const last = script[step - 1];
   if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
     return { label: 'Working on it', pulse: true };
@@ -138,12 +135,23 @@ function getConversationState(step, photosUploaded, urgencyChosen, done) {
   return { label: 'Working on it', pulse: false };
 }
 
+// Demo narrative: the first photo-analysis pass always fails once, then
+// recovers on retry. script[6] = "Looking at your photos…" (the agent-
+// thinking just after the first photo strip renders). The Thinking bubble
+// is only visible AFTER step advances past 6, so we inject the failure
+// when step === 7 — that way the bubble is already on screen and just
+// flips its content to the failure state.
+const FAILED_THINKING_INDEX = 6;
+
+
 export default function IntakePage({ onNavigate }) {
   const [step, setStep] = useState(1);
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [failedStep, setFailedStep] = useState(null);
+  const [hasShownFailure, setHasShownFailure] = useState(false);
   const messagesRef = React.useRef(null);
   const inputRef = React.useRef(null);
 
@@ -152,11 +160,25 @@ export default function IntakePage({ onNavigate }) {
     // Gate auto-advance on user actions
     if (step === 4 && !photosUploaded) return;
     if (step === 9 && !urgencyChosen) return;
+    // Gate auto-advance while a thinking step is in a failed state
+    if (failedStep !== null) return;
     const m = script[step];
+    // Inject a one-time failure on the first photo-analysis thinking step.
+    // Trigger when step === FAILED_THINKING_INDEX + 1 so the Thinking bubble
+    // is already on screen and just flips into the failure state.
+    if (step === FAILED_THINKING_INDEX + 1 && !hasShownFailure) {
+      const t = setTimeout(() => setFailedStep(FAILED_THINKING_INDEX), 2400);
+      return () => clearTimeout(t);
+    }
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
     return () => clearTimeout(t);
-  }, [step, photosUploaded, urgencyChosen]);
+  }, [step, photosUploaded, urgencyChosen, failedStep, hasShownFailure]);
+
+  function handleRetryThinking() {
+    setHasShownFailure(true);
+    setFailedStep(null);
+  }
 
   // Auto-scroll the messages container (not the page) when new messages arrive
   useEffect(() => {
@@ -170,7 +192,7 @@ export default function IntakePage({ onNavigate }) {
 
   const visible = script.slice(0, step);
   const done = step >= script.length;
-  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done);
+  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done, failedStep);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-[820px] mx-auto">
@@ -219,7 +241,14 @@ export default function IntakePage({ onNavigate }) {
                 }}
               />
             );
-            if (m.type === 'agent-thinking') return <Thinking key={i} m={m} />;
+            if (m.type === 'agent-thinking') return (
+              <Thinking
+                key={i}
+                m={m}
+                failed={failedStep === i}
+                onRetry={handleRetryThinking}
+              />
+            );
             if (m.type === 'agent-urgency')
               return (
                 <UrgencyPick
@@ -275,14 +304,28 @@ export default function IntakePage({ onNavigate }) {
           <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
             <Paperclip size={14} strokeWidth={1.8} />
           </button>
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Reply to Homewise…"
-            className="flex-1 min-w-0 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
-          />
+          <div className="relative flex-1 min-w-0">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && inputValue.trim()) setInputValue(''); }}
+              placeholder="Reply to Homewise…"
+              className="w-full h-10 pl-3.5 pr-10 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+            />
+            <button
+              onClick={() => { if (inputValue.trim()) setInputValue(''); }}
+              disabled={!inputValue.trim()}
+              className={`absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-xl flex items-center justify-center transition-all ${
+                inputValue.trim()
+                  ? 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
+                  : 'text-ink-300'
+              }`}
+            >
+              <ArrowUp size={13} strokeWidth={2} />
+            </button>
+          </div>
           <button className="h-10 w-10 rounded-2xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
             <Mic size={14} strokeWidth={1.8} />
           </button>
@@ -359,7 +402,7 @@ function PhotoStrip({ m, onCorrect }) {
   );
 }
 
-function Thinking({ m }) {
+function Thinking({ m, failed, onRetry }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -371,12 +414,25 @@ function Thinking({ m }) {
         <Sparkles size={13} strokeWidth={2.2} />
       </span>
       <div className="rounded-2xl rounded-tl-md bg-canvas-soft border border-ink-100 px-3.5 py-2.5">
-        <div className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" />
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.2s' }} />
-          <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.4s' }} />
-          <span className="ml-2 text-[12px] text-ink-500 italic">{m.text}</span>
-        </div>
+        {failed ? (
+          <div className="flex items-center gap-2">
+            <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+            <span className="text-[12px] text-ink-700">Something went wrong.</span>
+            <button
+              onClick={onRetry}
+              className="text-[12px] text-ink-900 underline decoration-ink-200 underline-offset-2 hover:decoration-ink-400 transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.2s' }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.4s' }} />
+            <span className="ml-2 text-[12px] text-ink-500 italic">{m.text}</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -441,7 +497,49 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
   );
 }
 
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const REQUIRED_PHOTOS = 3;
+
 function AgentMessage({ m, onUploadPhotos, uploaded }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadedCount, setUploadedCount] = useState(0);
+  const [formatError, setFormatError] = useState(false);
+  const fileInputRef = useRef(null);
+
+  function handleUploadClick() {
+    if (!onUploadPhotos || uploaded || uploading) return;
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e) {
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+
+    if (files.some((f) => !ALLOWED_IMAGE_TYPES.has(f.type))) {
+      setFormatError(true);
+      return;
+    }
+
+    setFormatError(false);
+    setUploading(true);
+    // Simulated upload latency. The script's photo strip + AI analysis
+    // is what actually drives the demo; this 1.5s pause is just to make
+    // the upload feel like a real product moment.
+    setTimeout(() => {
+      setUploading(false);
+      const newCount = Math.min(uploadedCount + files.length, REQUIRED_PHOTOS);
+      setUploadedCount(newCount);
+      // Only advance the conversation once all 3 shots are in.
+      if (newCount >= REQUIRED_PHOTOS) {
+        onUploadPhotos();
+      }
+    }, 1500);
+  }
+
+  const remaining = Math.max(REQUIRED_PHOTOS - uploadedCount, 0);
+  const showProgress = !uploaded && uploadedCount > 0 && uploadedCount < REQUIRED_PHOTOS;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -474,12 +572,30 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </li>
                 ))}
               </ul>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {showProgress && (
+                <p className="mt-3 flex items-center gap-1.5 text-[11px] text-ink-500">
+                  <CheckCircle2 size={11} strokeWidth={2.2} className="shrink-0 text-sage-600" />
+                  <span className="tabular-nums">{uploadedCount} of {REQUIRED_PHOTOS} uploaded</span>
+                  <span className="text-ink-400">·</span>
+                  <span>{remaining} to go</span>
+                </p>
+              )}
               <button
-                onClick={onUploadPhotos}
-                disabled={uploaded || !onUploadPhotos}
+                onClick={handleUploadClick}
+                disabled={uploaded || uploading || !onUploadPhotos}
                 className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-xl transition-all text-[12.5px] font-semibold ${
                   uploaded
                     ? 'bg-sage-50 text-sage-700 ring-1 ring-sage-100'
+                    : uploading
+                    ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait'
                     : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
                 }`}
               >
@@ -488,6 +604,16 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                     <CheckCircle2 size={13} strokeWidth={2.2} />
                     Photos uploaded
                   </>
+                ) : uploading ? (
+                  <>
+                    <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
+                    Uploading…
+                  </>
+                ) : uploadedCount > 0 ? (
+                  <>
+                    <Camera size={13} strokeWidth={2} />
+                    Add {remaining} more
+                  </>
                 ) : (
                   <>
                     <Camera size={13} strokeWidth={2} />
@@ -495,6 +621,12 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
                   </>
                 )}
               </button>
+              {formatError && (
+                <p className="mt-2 flex items-center gap-1.5 text-[11px] text-ember-500">
+                  <AlertCircle size={11} strokeWidth={2.2} className="shrink-0" />
+                  Unsupported file. Try a JPG, PNG, GIF, or WEBP image.
+                </p>
+              )}
             </div>
           )}
           {m.follow && (

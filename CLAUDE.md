@@ -219,15 +219,19 @@ footer to the screen edge.
   Terms below.
         │
         ▼  click any SSO/email
-[ Onboarding · screen 2 — Profile (5 questions, all pre-filled for demo) ]
+[ Onboarding · screen 2 — Profile (5 questions, all empty by default) ]
   Back link top-left ("← Back"). Step 1 of 2 indicator top-right.
   Eyebrow: "QUICK SETUP · ABOUT A MINUTE"
   H1: "Five questions, then we plan."
-  Q01 Home type (chip-select, "House" pre-selected)
-  Q02 Year built (chip-select, "1980–2000" pre-selected)
-  Q03 Where you live (text address + ZIP — "124 Maple St, Oakland, CA" + "94609")
-  Q04 Outdoor features (multi-select chips, Yard + Mature trees pre-selected)
-  Q05 Major systems (multi-select chips, Central HVAC + Water heater pre-selected)
+  Q01 Home type (chip-select, no default)
+  Q02 Year built (chip-select, no default)
+  Q03 Where you live (text address + ZIP, both empty)
+  Q04 Outdoor features (multi-select chips, no default — "None" chip is
+      the explicit-no affordance for homes with no outdoor features)
+  Q05 Major systems (multi-select chips, no default)
+  Continue button is disabled until ALL 5 questions are answered. For Q04,
+  picking "None" counts as a valid answer (per the toggleOutdoor logic
+  that clears other selections when "None" is chosen).
         │
         ▼  click "Show my maintenance plan"
 [ Onboarding · screen 3 — Maintenance plan ]
@@ -594,11 +598,15 @@ content. Three screens, all in `OnboardingPage.jsx`:
    ("No contractor sees your home until you ask") — encryption
    claim was dropped as technical noise. No "Sign in" link (the
    demo is single-flow).
-2. **Profile** — 5 questions, **all pre-filled for the demo**:
-   home type (House), year built (1980–2000), address + ZIP
-   (124 Maple St, Oakland, CA / 94609), outdoor (Yard + Mature
-   trees), systems (Central HVAC + Water heater). Back link to
-   sign-up; Step 1 of 2 indicator.
+2. **Profile** — 5 questions, **all empty by default**. The Continue
+   button is gated: it stays disabled until **all 5 questions** are
+   answered (Q01 Home type, Q02 Year built, Q03 address + ZIP, Q04
+   Outdoor features, Q05 Major systems). For homes with no outdoor
+   features (e.g. a high-rise condo), the **"None"** chip in Q04 is
+   the explicit-no affordance — picking it clears any other outdoor
+   selections but counts as a valid answer. Disabled treatment uses
+   the standard `disabled:opacity-50 disabled:pointer-events-none`
+   tokens from Button.jsx. Back link to sign-up; Step 1 of 2 indicator.
 3. **Maintenance plan** — derived from the profile via
    `buildMaintenance(profile)`. Each item carries a `source` field
    ("From Central HVAC", "From Yard + Mature trees", "Standard for

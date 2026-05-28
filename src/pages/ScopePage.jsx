@@ -19,6 +19,7 @@ import {
   Lightbulb,
   Shield,
   CalendarDays,
+  Bookmark,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -57,11 +58,15 @@ const materials = [
   { item: 'Plumber\'s tape & misc.', spec: 'Sealant, washers', qty: 1, est: 8 },
 ];
 
+// Evidence-based exclusions: each one cites what the AI saw in the
+// photos, then states what's not included. Reframes the section from a
+// defensive disclaimer ("we won't do these") into a positive trust
+// signal ("we checked these and ruled them out").
 const exclusions = [
-  'Drywall repair (none anticipated)',
-  'Faucet body replacement (only cartridge)',
-  'Cabinet refinishing or interior repair',
-  'Mold remediation (no mold visible in photos)',
+  { evidence: 'No drywall damage visible', excluded: 'Drywall repair not included' },
+  { evidence: 'Faucet body intact', excluded: 'Body replacement not included (cartridge swap only)' },
+  { evidence: 'Cabinet base appears intact', excluded: 'Cabinet refinishing or interior repair not included' },
+  { evidence: 'No mold visible in photos', excluded: 'Mold remediation not included' },
 ];
 
 const acceptance = [
@@ -86,12 +91,15 @@ const unitPriced = [
   },
 ];
 
+// Max triggerable add-on, surfaced in the totals footer cell. Item 1 is
+// the only one with a concrete cost ($58 labor + $18 valve). Item 2 is
+// out-of-scope/TBD so it's excluded from the ceiling figure.
+const maxAddOnCost = 76;
+
 const totalHours = tasks.reduce((s, t) => s + t.hours, 0);
 const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
 const labor = 95;
 const laborTotal = Math.round(totalHours * labor);
-// Max triggerable add-on: item 1 ($58 labor + $18 valve). Item 2 is TBD/out-of-scope.
-const maxAddOnCost = 76;
 
 // Photos captured during intake + AI-tagged. Surfaced here on the scope
 // document so the contractor has visual context to bid against, and so
@@ -228,7 +236,7 @@ export default function ScopePage({ onNavigate }) {
                     </span>
                   </div>
                   <div className="text-[12.5px] text-ink-700 leading-relaxed">
-                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see add-on pricing in the totals below.
+                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see unit pricing in section 05.
                   </div>
                 </div>
               </div>
@@ -310,8 +318,44 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 05 Acceptance criteria */}
-            <SectionBlock label="05 · Acceptance criteria">
+            {/* 05 Unit-priced add-ons (restored after PR #7 cut) */}
+            <SectionBlock
+              label="05 · Unit-priced add-ons"
+              eyebrow="Pre-agreed pricing if scope expands during the job"
+            >
+              <p className="text-[12.5px] text-ink-500 leading-relaxed mb-3 max-w-xl">
+                If the contractor finds something only visible after starting (rare here, but documented), these prices are agreed upfront so there's no surprise change order.
+              </p>
+              <div className="rounded-2xl border border-ember-100 bg-ember-50/30 overflow-hidden">
+                {unitPriced.map((c, i) => (
+                  <div
+                    key={i}
+                    className={`grid grid-cols-12 gap-3 px-4 py-3.5 ${i > 0 ? 'border-t border-ember-100' : ''}`}
+                  >
+                    <div className="col-span-1">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100">
+                        <AlertCircle size={12} strokeWidth={2} />
+                      </span>
+                    </div>
+                    <div className="col-span-7 min-w-0">
+                      <div className="text-[13px] font-semibold text-ink-900">
+                        {c.if}
+                      </div>
+                      <div className="text-[12px] text-ink-500 mt-0.5">{c.add}</div>
+                      <div className="text-[10.5px] text-ink-500 mt-1 uppercase tracking-[0.14em] font-semibold">
+                        Likelihood: {c.likelihood}
+                      </div>
+                    </div>
+                    <div className="col-span-4 text-right text-[14px] font-semibold tabular-nums text-ember-500">
+                      {c.cost}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionBlock>
+
+            {/* 06 Acceptance criteria */}
+            <SectionBlock label="06 · Acceptance criteria" eyebrow="What 'done' looks like">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -327,14 +371,11 @@ export default function ScopePage({ onNavigate }) {
 
           {/* Document footer / totals */}
           <div className="px-7 md:px-9 py-6 border-t border-ink-100/80 bg-canvas-deep/50 hairline-inset">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Total label="Labor" value={`$${laborTotal}`} sub={`${totalHours} hrs`} />
               <Total label="Materials" value={`$${totalMaterials}`} sub={`${materials.length} items`} />
               <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. add-ons" highlight />
               <Total label="Local benchmark" value="$180–$320" sub="Inside range" tone="sage" />
-              <div className="col-span-2 md:col-span-1">
-                <Total label="If add-ons triggered" value={`up to +$${maxAddOnCost}`} sub="pre-agreed rate" tone="ember" />
-              </div>
             </div>
           </div>
         </article>
@@ -359,6 +400,13 @@ export default function ScopePage({ onNavigate }) {
               <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
                 <Pencil size={13} strokeWidth={1.8} />
                 Edit scope
+              </button>
+              <button
+                onClick={() => onNavigate?.({ page: 'overview', resetTask: true })}
+                className="h-12 px-4 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-2 text-[13.5px] font-medium transition-all"
+              >
+                <Clock size={14} strokeWidth={1.8} />
+                Not now
               </button>
               <button
                 onClick={() => onNavigate?.('contractor-compare')}
@@ -421,11 +469,16 @@ function Total({ label, value, sub, highlight = false, tone }) {
   const valueCls = highlight
     ? 'editorial text-[24px]'
     : 'editorial text-[18px]';
-  const colorCls = tone === 'sage' ? 'text-sage-600' : tone === 'ember' ? 'text-ember-500' : 'text-ink-900';
+  const colorCls =
+    tone === 'sage' ? 'text-sage-600' :
+    tone === 'ember' ? 'text-ember-500' :
+    'text-ink-900';
   return (
     <div
       className={`rounded-2xl px-3.5 py-3 ${
-        highlight ? 'bg-ink-900 text-canvas-soft' : tone === 'ember' ? 'bg-ember-50/60 border border-ember-100' : 'bg-white border border-ink-100'
+        highlight ? 'bg-ink-900 text-canvas-soft'
+        : tone === 'ember' ? 'bg-ember-50/60 border border-ember-100'
+        : 'bg-white border border-ink-100'
       }`}
     >
       <div

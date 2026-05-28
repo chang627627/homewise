@@ -111,6 +111,65 @@ const contractors = [
   },
 ];
 
+// Per-column swap alternates. Clicking the small refresh icon on a
+// contractor column toggles between the original and the alternate at
+// that position. Per PDF spec (US-E3-01): "swap one with the next-best
+// match in one click."
+const alternates = [
+  {
+    id: 'mike',
+    name: 'Mike Burns Plumbing',
+    initials: 'MB',
+    accent: 'sage',
+    rating: { score: 4.7, reviews: 89 },
+    yearsLicensed: 11,
+    license: { ok: true, label: 'CA Lic #821445' },
+    insurance: { ok: true, label: 'GL + WC current' },
+    relevantWork: { value: 5, label: 'similar jobs · 12 mo' },
+    permitHistory: { value: 9, label: 'permits pulled · 12 mo' },
+    earliest: { value: 'Monday', label: '5 days' },
+    recommendCount: 9,
+    showcase: [
+      { category: 'Sink leak repair', scope: 'P-trap replacement + supply valve swap', date: 'Apr 2026', photoTone: 'sage', photoLabel: 'Under sink · after' },
+      { category: 'Faucet replacement', scope: 'Single-handle pull-down + cartridge', date: 'Feb 2026', photoTone: 'sky', photoLabel: 'Faucet · installed' },
+    ],
+  },
+  {
+    id: 'greenvalley',
+    name: 'Green Valley Plumbing',
+    initials: 'GV',
+    accent: 'sky',
+    rating: { score: 4.4, reviews: 53 },
+    yearsLicensed: 6,
+    license: { ok: true, label: 'CA Lic #905112' },
+    insurance: { ok: true, label: 'GL + WC current' },
+    relevantWork: { value: 3, label: 'similar jobs · 12 mo' },
+    permitHistory: { value: 4, label: 'permits pulled · 12 mo' },
+    earliest: { value: 'Sunday', label: '4 days' },
+    recommendCount: 4,
+    showcase: [
+      { category: 'Sink leak repair', scope: 'P-trap + cartridge swap', date: 'Mar 2026', photoTone: 'sage', photoLabel: 'Sink · finished' },
+    ],
+  },
+  {
+    id: 'sarahwells',
+    name: 'Sarah Wells Plumbing',
+    initials: 'SW',
+    accent: 'ember',
+    rating: { score: 4.6, reviews: 67 },
+    yearsLicensed: 8,
+    license: { ok: true, label: 'CA Lic #743290' },
+    insurance: { ok: true, label: 'GL + WC current' },
+    relevantWork: { value: 4, label: 'similar jobs · 12 mo' },
+    permitHistory: { value: 6, label: 'permits pulled · 12 mo' },
+    earliest: { value: 'Wednesday', label: '7 days' },
+    recommendCount: 6,
+    showcase: [
+      { category: 'Bathroom leak repair', scope: 'Faucet cartridge + drain assembly', date: 'Feb 2026', photoTone: 'sky', photoLabel: 'Bathroom · finished' },
+    ],
+  },
+];
+
 const photoTone = {
   sage: 'from-sage-200 to-sage-300',
   sky: 'from-sky2026-100 to-sky2026-300',
@@ -145,14 +204,33 @@ const sharedRationale = [
 
 export default function ContractorComparePage({ onNavigate, jobCompleted, recommended }) {
   const [showcaseOpen, setShowcaseOpen] = useState(null); // contractor id or null
-  const aiPickIndex = contractors.findIndex((c) => c.aiPick);
+  // Track whether each column is showing the original contractor or the
+  // swapped alternate. swappedColumns[i] = true means column i is showing
+  // alternates[i] instead of contractors[i].
+  const [swappedColumns, setSwappedColumns] = useState([false, false, false]);
+
+  const displayed = contractors.map((c, i) =>
+    swappedColumns[i]
+      ? { ...alternates[i], aiPick: c.aiPick } // keep AI-pick affinity with the column position
+      : c
+  );
+
+  const aiPickIndex = displayed.findIndex((c) => c.aiPick);
   // After homeowner recommends Jason, his count bumps by 1
-  const liveContractors = contractors.map((c) =>
+  const liveContractors = displayed.map((c) =>
     c.id === 'jason' && jobCompleted && recommended === 'yes'
       ? { ...c, recommendCount: c.recommendCount + 1, justRecommended: true }
       : c
   );
   const open = liveContractors.find((c) => c.id === showcaseOpen);
+
+  function handleSwap(idx) {
+    setSwappedColumns((prev) => {
+      const next = [...prev];
+      next[idx] = !next[idx];
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-8">
@@ -258,7 +336,8 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
                   </div>
                 </div>
                 <button
-                  title="Swap with next-best"
+                  onClick={() => handleSwap(idx)}
+                  title={swappedColumns[idx] ? 'Restore original' : 'Swap with next-best'}
                   className="h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
                 >
                   <RefreshCw size={11} strokeWidth={2} />
@@ -405,7 +484,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
               Approve all three to send the scope and gather bids.
             </h3>
             <p className="text-[13px] text-ink-500 leading-relaxed">
-              Each contractor gets the same brief. Bids come back within 5 days · you'll compare them apples-to-apples before booking anyone.
+              Each contractor gets the same brief. Bids come back within 5 days · 24 hrs if you flagged the job urgent. You'll compare them apples-to-apples before booking anyone.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
