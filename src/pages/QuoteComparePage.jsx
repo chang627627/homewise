@@ -273,11 +273,6 @@ export default function QuoteComparePage({ onNavigate }) {
         <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
           Three quotes, one normalized scope.
         </h1>
-        <div className="mt-4 flex items-center gap-2 flex-wrap">
-          <Pill tone="ember" icon={AlertTriangle}>
-            3 deviations flagged
-          </Pill>
-        </div>
       </header>
 
       {/* AI plain-language summary */}
