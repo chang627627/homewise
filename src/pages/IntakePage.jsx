@@ -47,7 +47,7 @@ const script = [
   },
   {
     type: 'user',
-    text: 'Sending the first two. Panel photo coming in a sec.',
+    text: 'Sending all three now.',
     time: '10:30 AM',
   },
   {
@@ -55,6 +55,7 @@ const script = [
     photos: [
       { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
       { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
+      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
     ],
   },
   {
@@ -63,7 +64,7 @@ const script = [
   },
   {
     type: 'agent',
-    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base. Two separate problems.',
+    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base, supply line behind the panel is dry. Two contained problems.',
     time: '10:30 AM',
   },
   {
@@ -83,27 +84,20 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Standard 5-day quote window. Two quick things and I can scope this:",
+    text: "Standard 5-day quote window. One quick thing and I can scope this:",
     follow: [
-      "Can you send the cabinet-panel photo now? I want to confirm the supply line is dry.",
       'Is the faucet a single-handle or two-handle?',
     ],
     time: '10:31 AM',
   },
   {
     type: 'user',
-    text: 'Single-handle. Sending the panel photo now.',
+    text: 'Single-handle.',
     time: '10:31 AM',
   },
   {
-    type: 'photos',
-    photos: [
-      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
-    ],
-  },
-  {
     type: 'agent',
-    text: "Perfect, supply line is dry, so this is contained. I'll scope this as a P-trap replacement plus a single-handle faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
+    text: "Perfect, single-handle cartridge. I'll scope this as a P-trap replacement plus a faucet cartridge swap. Standard 1.5-2 hour visit, no wall work needed.",
     summary: {
       job: 'Kitchen sink leak + drip',
       scope: 'P-trap replacement, faucet cartridge replacement',
@@ -126,19 +120,28 @@ const urgencyReplies = {
   flexible: 'Just an annoyance. Whenever convenient.',
 };
 
-function getConversationState(step, photosUploaded, urgencyChosen, done) {
+function getConversationState(step, photosUploaded, urgencyChosen, done, failedStep) {
   if (done) return { label: 'Scoped', pulse: false };
+  if (failedStep !== null) return { label: 'Hit a snag', pulse: false };
   if (step <= 1) return { label: null, pulse: false };
   if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
   if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
   if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
-  if (step >= 13) return { label: 'Building scope', pulse: true };
+  if (step >= 12) return { label: 'Building scope', pulse: true };
   const last = script[step - 1];
   if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
     return { label: 'Working on it', pulse: true };
   }
   return { label: 'Working on it', pulse: false };
 }
+
+// Demo narrative: the first photo-analysis pass always fails once, then
+// recovers on retry. script[6] = "Looking at your photos…" (the agent-
+// thinking just after the first photo strip renders). The Thinking bubble
+// is only visible AFTER step advances past 6, so we inject the failure
+// when step === 7 — that way the bubble is already on screen and just
+// flips its content to the failure state.
+const FAILED_THINKING_INDEX = 6;
 
 export default function IntakePage({ onNavigate }) {
   const [step, setStep] = useState(1);
@@ -151,6 +154,7 @@ export default function IntakePage({ onNavigate }) {
   const [failedText, setFailedText] = useState('');
   const [paperclipUploading, setPaperclipUploading] = useState(false);
   const [paperclipFormatError, setPaperclipFormatError] = useState(false);
+  const [hasShownFailure, setHasShownFailure] = useState(false);
   const messagesRef = React.useRef(null);
   const inputRef = React.useRef(null);
   const paperclipInputRef = useRef(null);
@@ -163,10 +167,17 @@ export default function IntakePage({ onNavigate }) {
     // Gate auto-advance while a thinking step has failed
     if (failedStep !== null) return;
     const m = script[step];
+    // Inject a one-time failure on the first photo-analysis thinking step.
+    // Trigger when step === FAILED_THINKING_INDEX + 1 so the Thinking bubble
+    // is already on screen and just flips into the failure state.
+    if (step === FAILED_THINKING_INDEX + 1 && !hasShownFailure) {
+      const t = setTimeout(() => setFailedStep(FAILED_THINKING_INDEX), 2400);
+      return () => clearTimeout(t);
+    }
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
     return () => clearTimeout(t);
-  }, [step, photosUploaded, urgencyChosen, failedStep]);
+  }, [step, photosUploaded, urgencyChosen, failedStep, hasShownFailure]);
 
   // Auto-scroll the messages container (not the page) when new messages arrive
   useEffect(() => {
@@ -180,7 +191,7 @@ export default function IntakePage({ onNavigate }) {
 
   const visible = script.slice(0, step);
   const done = step >= script.length;
-  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done);
+  const { label: stateLabel, pulse } = getConversationState(step, photosUploaded, urgencyChosen, done, failedStep);
 
   function handleSend() {
     const text = inputValue.trim();
@@ -280,7 +291,7 @@ export default function IntakePage({ onNavigate }) {
                 key={i}
                 m={m}
                 failed={failedStep === i}
-                onRetry={() => setFailedStep(null)}
+                onRetry={() => { setHasShownFailure(true); setFailedStep(null); }}
               />
             );
             if (m.type === 'agent-urgency')
@@ -615,6 +626,7 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
       onUploadPhotos();
     }, 1500);
   }
+
 
   return (
     <motion.div

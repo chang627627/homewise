@@ -86,6 +86,9 @@ export default function App() {
     if (opts.conversationId) setConversationId(opts.conversationId);
     // Reaching scope means the AI has produced something tangible — populate the dashboard
     if (id === 'scope') setHasStartedFirstTask(true);
+    // "Not now" exit from Scope: roll the dashboard back to its empty state.
+    // The user hasn't approved anything yet, so there's no active task to keep around.
+    if (opts.resetTask) setHasStartedFirstTask(false);
     // The user explicitly approved a contractor (sent via opts.decisionHandled)
     if (opts.decisionHandled) setDecisionHandled(true);
     if (opts.scheduledSlot) setScheduledSlot(opts.scheduledSlot);

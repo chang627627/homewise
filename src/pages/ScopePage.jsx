@@ -19,6 +19,7 @@ import {
   Lightbulb,
   Shield,
   CalendarDays,
+  Bookmark,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -57,11 +58,15 @@ const materials = [
   { item: 'Plumber\'s tape & misc.', spec: 'Sealant, washers', qty: 1, est: 8 },
 ];
 
+// Evidence-based exclusions: each one cites what the AI saw in the
+// photos, then states what's not included. Reframes the section from a
+// defensive disclaimer ("we won't do these") into a positive trust
+// signal ("we checked these and ruled them out").
 const exclusions = [
-  'Drywall repair (none anticipated)',
-  'Faucet body replacement (only cartridge)',
-  'Cabinet refinishing or interior repair',
-  'Mold remediation (no mold visible in photos)',
+  { evidence: 'No drywall damage visible', excluded: 'Drywall repair not included' },
+  { evidence: 'Faucet body intact', excluded: 'Body replacement not included (cartridge swap only)' },
+  { evidence: 'Cabinet base appears intact', excluded: 'Cabinet refinishing or interior repair not included' },
+  { evidence: 'No mold visible in photos', excluded: 'Mold remediation not included' },
 ];
 
 const acceptance = [
@@ -85,6 +90,11 @@ const unitPriced = [
     likelihood: 'Very low',
   },
 ];
+
+// Max triggerable add-on, surfaced in the totals footer cell. Item 1 is
+// the only one with a concrete cost ($58 labor + $18 valve). Item 2 is
+// out-of-scope/TBD so it's excluded from the ceiling figure.
+const maxAddOnCost = 76;
 
 const totalHours = tasks.reduce((s, t) => s + t.hours, 0);
 const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
@@ -141,26 +151,18 @@ export default function ScopePage({ onNavigate }) {
       <BackBar
         onBack={() => onNavigate?.('intake')}
         label="Back to intake"
-        context="Scope of work · v1 · auto-generated"
+        context="Scope of work · draft"
       />
 
       <FlowProgress current="scope" onNavigate={onNavigate} />
 
       {/* Header */}
       <header>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft">
-            <Sparkles size={13} strokeWidth={2.2} />
-          </span>
-          <span className="text-[11px] uppercase tracking-[0.22em] text-sage-600 font-semibold">
-            AI-generated scope · review before sending
-          </span>
-        </div>
         <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
           Kitchen sink leak &amp; drip repair.
         </h1>
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
-          Apples-to-apples scope so every contractor bids on the same job. You can edit, ask questions, or have Homewise revise. Nothing is sent until you approve.
+          Apples-to-apples scope so every contractor bids on the same job.
         </p>
       </header>
 
@@ -234,16 +236,16 @@ export default function ScopePage({ onNavigate }) {
                     </span>
                   </div>
                   <div className="text-[12.5px] text-ink-700 leading-relaxed">
-                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see unit pricing in section 06.
+                    O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during diagnostic step. If found, see unit pricing in section 05.
                   </div>
                 </div>
               </div>
             </SectionBlock>
 
             {/* 02 Summary */}
-            <SectionBlock label="02 · Job summary" eyebrow="Plain language">
+            <SectionBlock label="02 · Job summary">
               <p className="text-[14px] leading-relaxed text-ink-700">
-                Standing water and a slow drip at the single-handle kitchen faucet. Photo analysis confirms the supply line behind the cabinet is dry, isolating the issue to the <strong className="text-ink-900 font-semibold">P-trap assembly</strong> and the <strong className="text-ink-900 font-semibold">faucet cartridge</strong>. No drywall, cabinet, or supply work is anticipated.
+                <strong className="text-ink-900 font-semibold">P-trap assembly</strong> and <strong className="text-ink-900 font-semibold">faucet cartridge</strong> replacement. No drywall, cabinet, or supply work anticipated.
               </p>
             </SectionBlock>
 
@@ -316,28 +318,9 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 05 Exclusions */}
-            <SectionBlock label="05 · Exclusions" eyebrow="What this scope does NOT include">
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {exclusions.map((e) => (
-                  <li
-                    key={e}
-                    className="flex items-start gap-2 rounded-xl bg-canvas-soft border border-ink-100 px-3 py-2"
-                  >
-                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-white text-ink-400 ring-1 ring-ink-100">
-                      ✕
-                    </span>
-                    <span className="text-[12.5px] text-ink-700 leading-snug">
-                      {e}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </SectionBlock>
-
-            {/* 06 Unit-priced add-ons */}
+            {/* 05 Unit-priced add-ons (restored after PR #7 cut) */}
             <SectionBlock
-              label="06 · Unit-priced add-ons"
+              label="05 · Unit-priced add-ons"
               eyebrow="Pre-agreed pricing if scope expands during the job"
             >
               <p className="text-[12.5px] text-ink-500 leading-relaxed mb-3 max-w-xl">
@@ -371,8 +354,8 @@ export default function ScopePage({ onNavigate }) {
               </div>
             </SectionBlock>
 
-            {/* 07 Acceptance criteria */}
-            <SectionBlock label="07 · Acceptance criteria" eyebrow="What 'done' looks like">
+            {/* 06 Acceptance criteria */}
+            <SectionBlock label="06 · Acceptance criteria" eyebrow="What 'done' looks like">
               <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
                 {acceptance.map((a, i) => (
                   <li key={i} className="flex items-start gap-3 px-4 py-3">
@@ -391,7 +374,7 @@ export default function ScopePage({ onNavigate }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Total label="Labor" value={`$${laborTotal}`} sub={`${totalHours} hrs`} />
               <Total label="Materials" value={`$${totalMaterials}`} sub={`${materials.length} items`} />
-              <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. unit add-ons" highlight />
+              <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. add-ons" highlight />
               <Total label="Local benchmark" value="$180–$320" sub="Inside range" tone="sage" />
             </div>
           </div>
@@ -400,19 +383,13 @@ export default function ScopePage({ onNavigate }) {
         {/* What's next · all actions live here after the document so the user
             never has to scroll back up to the header to act */}
         <section className="mt-10 pt-8 border-t border-ink-100">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
-              Ready to send
-            </span>
-          </div>
           <div className="space-y-6">
             <div className="max-w-2xl space-y-1.5">
               <h3 className="editorial text-[20px] md:text-[24px] leading-tight text-ink-900">
-                Approve the scope and we'll reach out to 3 vetted contractors.
+                Approve the scope and we'll reach out to 3 contractors.
               </h3>
               <p className="text-[13px] text-ink-500 leading-relaxed">
-                Each gets the exact same brief. You'll see apples-to-apples bids within 5 days · nothing is final until you pick.
+                Each contractor bids on the same scope.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -423,6 +400,13 @@ export default function ScopePage({ onNavigate }) {
               <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
                 <Pencil size={13} strokeWidth={1.8} />
                 Edit scope
+              </button>
+              <button
+                onClick={() => onNavigate?.({ page: 'overview', resetTask: true })}
+                className="h-12 px-4 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center gap-2 text-[13.5px] font-medium transition-all"
+              >
+                <Clock size={14} strokeWidth={1.8} />
+                Not now
               </button>
               <button
                 onClick={() => onNavigate?.('contractor-compare')}
@@ -477,11 +461,16 @@ function Total({ label, value, sub, highlight = false, tone }) {
   const valueCls = highlight
     ? 'editorial text-[24px]'
     : 'editorial text-[18px]';
-  const colorCls = tone === 'sage' ? 'text-sage-600' : 'text-ink-900';
+  const colorCls =
+    tone === 'sage' ? 'text-sage-600' :
+    tone === 'ember' ? 'text-ember-500' :
+    'text-ink-900';
   return (
     <div
       className={`rounded-2xl px-3.5 py-3 ${
-        highlight ? 'bg-ink-900 text-canvas-soft' : 'bg-white border border-ink-100'
+        highlight ? 'bg-ink-900 text-canvas-soft'
+        : tone === 'ember' ? 'bg-ember-50/60 border border-ember-100'
+        : 'bg-white border border-ink-100'
       }`}
     >
       <div

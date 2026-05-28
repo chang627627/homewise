@@ -13,6 +13,7 @@ import {
   Wrench,
   Bell,
   ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import googleLogo from '../assets/google.svg';
 import appleLogo from '../assets/apple.svg';
@@ -321,7 +322,9 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
     /\d/.test(addrTrimmed) &&
     /[a-zA-Z]/.test(addrTrimmed) &&
     addrTrimmed.includes(' ');
+  const zipValid = profile.zip.length === 5;
   const addressWarning = addrTrimmed.length > 0 && !addressValid;
+  const bothValid = addressValid && zipValid;
 
   const canContinue =
     profile.homeType !== '' &&
@@ -395,7 +398,13 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             }
             placeholder="123 Maple St, Oakland, CA"
             autoComplete="street-address"
-            className="flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+            className={`flex-1 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] focus:outline-none transition-colors ${
+              addressValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : addressWarning
+                ? 'border-ember-400 focus:border-ember-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
           <input
             type="text"
@@ -409,12 +418,25 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
             placeholder="94609"
             inputMode="numeric"
             autoComplete="postal-code"
-            className="w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none focus:border-ink-300"
+            className={`w-full sm:w-28 h-10 px-3.5 rounded-2xl bg-canvas-soft border placeholder:text-ink-400 text-[13px] tabular-nums focus:outline-none transition-colors ${
+              zipValid
+                ? 'border-sage-400 focus:border-sage-500'
+                : 'border-ink-100 focus:border-ink-300'
+            }`}
           />
         </div>
-        {addressWarning && (
+        {addressWarning ? (
           <p className="mt-1.5 text-[11px] text-ember-500">
             Please type a valid street address.
+          </p>
+        ) : bothValid ? (
+          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-sage-600">
+            <CheckCircle2 size={11} strokeWidth={2.2} className="shrink-0" />
+            Looks good.
+          </p>
+        ) : (
+          <p className="mt-1.5 text-[11px] text-ink-500">
+            Street + city + state, then ZIP.
           </p>
         )}
       </Question>
