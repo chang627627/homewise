@@ -497,7 +497,7 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
               Show 3 different
             </button>
             <button
-              onClick={() => onNavigate?.('quote-compare')}
+              onClick={() => onNavigate?.('quote-tracking')}
               className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
             >
               <Send size={14} strokeWidth={2} />

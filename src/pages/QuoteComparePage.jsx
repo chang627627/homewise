@@ -261,8 +261,8 @@ export default function QuoteComparePage({ onNavigate }) {
   return (
     <div className="space-y-8">
       <BackBar
-        onBack={() => onNavigate?.('contractor-compare')}
-        label="Back to contractors"
+        onBack={() => onNavigate?.('quote-tracking')}
+        label="Back to quotes"
         context="Apples-to-apples · Kitchen sink leak"
       />
 

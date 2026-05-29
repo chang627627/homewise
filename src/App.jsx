@@ -7,6 +7,7 @@ import SchedulePage from './pages/SchedulePage';
 import IntakePage from './pages/IntakePage';
 import ScopePage from './pages/ScopePage';
 import ContractorComparePage from './pages/ContractorComparePage';
+import QuoteTrackingPage from './pages/QuoteTrackingPage';
 import QuoteComparePage from './pages/QuoteComparePage';
 import ConversationPage from './pages/ConversationPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -22,6 +23,7 @@ const pageMap = {
   intake: IntakePage,
   scope: ScopePage,
   'contractor-compare': ContractorComparePage,
+  'quote-tracking': QuoteTrackingPage,
   'quote-compare': QuoteComparePage,
   conversation: ConversationPage,
   completion: CompletionPage,
