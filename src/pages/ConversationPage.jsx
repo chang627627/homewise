@@ -30,63 +30,79 @@ const conversations = {
     icon: Droplets,
     accent: 'sage',
     statusPill: { tone: 'ember', label: 'Awaiting your approval' },
-    confidence: 92,
     started: 'Today · 10:28 AM',
     artifacts: [
-      { id: 'scope', label: 'Scope of work', sub: '7 sections · v1', icon: FileText, target: 'scope' },
+      { id: 'scope', label: 'Scope of work', sub: '6 sections · v1', icon: FileText, target: 'scope' },
       { id: 'contractors', label: 'Contractor matches', sub: '3 verified', icon: ShieldCheck, target: 'contractor-compare' },
-      { id: 'quotes', label: 'Quote comparison', sub: '2 of 3 in', icon: TrendingUp, target: 'quote-compare' },
+      { id: 'tracking', label: 'Quote tracking', sub: 'Quotes as they land', icon: Clock, target: 'quote-tracking' },
+      { id: 'quotes', label: 'Quote comparison', sub: 'Jason recommended', icon: TrendingUp, target: 'quote-compare' },
     ],
     thread: [
       { type: 'date', label: 'Today · April 23' },
+      {
+        type: 'agent',
+        text: "What's happening at home?",
+        time: '10:28 AM',
+      },
       {
         type: 'user',
         text: 'My bathroom sink is leaking and I need someone this week.',
         time: '10:28 AM',
       },
       {
+        type: 'agent',
+        text: 'Got it. Before I scope this for contractors I need 3 photos to rule things out: under the sink at the P-trap, the faucet base from above, and behind the cabinet panel.',
+        time: '10:28 AM',
+      },
+      {
+        type: 'user',
+        text: 'Sending all three now.',
+        time: '10:30 AM',
+      },
+      {
         type: 'photos',
         photos: [
           { tone: 'sage', label: 'Under the sink', tag: 'Standing water' },
           { tone: 'sky', label: 'Faucet base', tag: 'Slight drip' },
+          { tone: 'ember', label: 'Behind panel', tag: 'Supply line dry' },
         ],
       },
       {
         type: 'agent',
-        text: "I see standing water around the P-trap and a slow drip at the faucet base. . Usually two separate problems. I'll need a couple of details.",
-        time: '10:29 AM',
+        text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base, supply line behind the panel is dry. Two contained problems.',
+        time: '10:30 AM',
       },
       {
         type: 'agent-urgency',
-        text: 'How active is this right now? It changes how fast I push for a contractor.',
+        text: 'Quick check, how active is this right now? It changes how fast I push for a contractor.',
         selected: 'Slow leak, this week',
-        time: '10:29 AM',
+        time: '10:30 AM',
       },
       {
         type: 'user',
         text: 'Slow leak. Sometime this week is fine.',
-        time: '10:29 AM',
-      },
-      {
-        type: 'user',
-        text: 'Single-handle faucet. Sending the panel photo now.',
-        time: '10:31 AM',
-      },
-      {
-        type: 'photos',
-        photos: [{ tone: 'ember', label: 'Behind panel', tag: 'Supply line dry' }],
+        time: '10:30 AM',
       },
       {
         type: 'agent',
-        text: "Perfect, supply line is dry, so this is contained. Drafting a scope now: P-trap replacement plus a single-handle faucet cartridge swap.",
+        text: 'Standard 5-day quote window. One quick thing and I can scope this: is the faucet single-handle or two-handle?',
+        time: '10:31 AM',
+      },
+      {
+        type: 'user',
+        text: 'Single-handle.',
+        time: '10:31 AM',
+      },
+      {
+        type: 'agent',
+        text: "Perfect, single-handle cartridge. Scoping this as a P-trap replacement plus a faucet cartridge swap. Standard 1.5 to 2 hour visit, no wall work needed.",
         time: '10:32 AM',
       },
       {
         type: 'artifact',
         kind: 'scope',
         title: 'Scope of work · SOW-2026-0423-001',
-        meta: '4 tasks · 3 materials · acceptance criteria · unit-priced add-ons',
-        confidence: 92,
+        meta: '4 labor tasks · 3 materials · unit-priced add-ons · acceptance criteria',
         target: 'scope',
         time: '10:33 AM',
       },
@@ -98,10 +114,18 @@ const conversations = {
       { type: 'action', icon: ShieldCheck, accent: 'sage', title: 'Checked license records', detail: '3 contractors · all current with state board', time: '10:35 AM' },
       { type: 'action', icon: BadgeCheck, accent: 'sage', title: 'Verified insurance status', detail: '2 of 3 GL + WC current · Quickfix renewal pending', time: '10:36 AM' },
       { type: 'action', icon: TrendingUp, accent: 'sky', title: 'Compared local pricing benchmark', detail: '46 nearby plumbing jobs · last 90 days', time: '10:38 AM' },
-      { type: 'action', icon: Send, accent: 'sky', title: 'Outreach sent to 3 contractors', detail: 'Same scope, same form.  5-day window.', time: '10:42 AM' },
+      { type: 'action', icon: Send, accent: 'sky', title: 'Outreach sent to 3 contractors', detail: 'Same scope, same form. 5-day window.', time: '10:42 AM' },
+      {
+        type: 'artifact',
+        kind: 'tracking',
+        title: 'Quote tracking · scope out to 3',
+        meta: 'Quotes streaming in as they land',
+        target: 'quote-tracking',
+        time: '10:43 AM',
+      },
       {
         type: 'agent',
-        text: "Just received Jason Plumbing's quote. $220, fair price for the scope, available Friday afternoon.",
+        text: "Jason Plumbing's quote just came in. $220, fair price for the scope, available Friday afternoon.",
         time: '11:08 AM',
       },
       {
@@ -116,14 +140,14 @@ const conversations = {
       },
       {
         type: 'agent',
-        text: "Quick side-by-side now that the others are in. Bayline came in at $390 (above market with a $75 service fee), Quickfix at $175 but their quote is missing materials. I'd recommend Jason, or ask Quickfix to clarify.",
+        text: "All three are in. Quick side-by-side: Bayline came in at $390 (above market with a $75 service fee), Quickfix at $175 but their quote is missing materials and warranty language. I'd recommend Jason.",
         time: '11:10 AM',
       },
       {
         type: 'artifact',
         kind: 'compare',
-        title: 'Quote comparison · 2 of 3 received',
-        meta: 'Avg 12% under benchmark · 3 deviations flagged',
+        title: 'Quote comparison · 3 of 3 in',
+        meta: 'Apples-to-apples · Jason recommended',
         target: 'quote-compare',
         time: '11:10 AM',
       },
@@ -372,10 +396,6 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
             <div className="space-y-2.5 text-[12.5px]">
               <SummaryRow label="Started" value={c.started} />
               <SummaryRow label="Status" value={c.statusPill.label} />
-              <SummaryRow
-                label="AI confidence"
-                value={`${c.confidence}% · ${c.confidence >= 85 ? 'High' : c.confidence >= 65 ? 'Medium' : 'Low'}`}
-              />
             </div>
           </div>
 
@@ -602,17 +622,19 @@ function ActionItem({ m }) {
 }
 
 function ArtifactCard({ m, onNavigate }) {
-  // 3 visual variants: scope, quote, compare, outreach
+  // visual variants: scope, quote, compare, tracking, outreach
   const accents = {
     scope: 'from-sage-50 to-white border-sage-100',
     quote: 'from-sky2026-50 to-white border-sky2026-100',
     compare: 'from-ember-50 to-white border-ember-100',
+    tracking: 'from-canvas-soft to-white border-ink-100',
     outreach: 'from-canvas-soft to-white border-ink-100',
   };
   const icons = {
     scope: FileText,
     quote: Star,
     compare: TrendingUp,
+    tracking: Clock,
     outreach: Send,
   };
   const Icon = icons[m.kind] || FileText;
@@ -657,12 +679,6 @@ function ArtifactCard({ m, onNavigate }) {
                   {m.verdict && (
                     <Pill tone="sage">{m.verdict}</Pill>
                   )}
-                </div>
-              )}
-              {m.confidence && (
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 ring-1 ring-ink-100 px-2 py-0.5 text-[10.5px] font-semibold">
-                  <Sparkles size={10} className="text-sage-500" />
-                  AI confidence · {m.confidence}%
                 </div>
               )}
             </div>

@@ -48,8 +48,8 @@ const quoteFeed = [
     accent: 'ember',
     total: 175,
     earliest: 'Today',
-    received: '4:15 PM · clarifying',
-    final: 'conversation',
+    received: '4:15 PM',
+    final: 'received',
   },
 ];
 
@@ -117,13 +117,13 @@ export default function QuoteTrackingPage({ onNavigate }) {
             )}
             <span className="text-[13px] font-semibold text-ink-900">
               {allIn
-                ? `${receivedCount} of 3 quotes in${receivedCount < 3 ? ' · 1 in conversation' : ''}`
+                ? `${receivedCount} of 3 quotes in`
                 : `Waiting on quotes · ${receivedCount} of 3 in`}
             </span>
           </div>
           <p className="text-[12px] text-ink-500 mt-0.5">
             {allIn
-              ? 'Standard 5-day window. You can compare now or keep waiting on the last one.'
+              ? 'Standard 5-day window. All three bid on the same scope.'
               : 'Typically back within 5 days. We’ll notify you as each one arrives.'}
           </p>
         </div>

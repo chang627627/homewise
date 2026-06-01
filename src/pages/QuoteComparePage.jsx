@@ -90,8 +90,8 @@ const cols = [
     accent: 'ember',
     total: 175,
     verdict: { tone: 'ember', label: 'Low, missing details' },
-    status: 'conversation',
-    received: '4:15 PM today · clarifying',
+    status: 'received',
+    received: '4:15 PM today',
     bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
     rating: { score: 4.5, reviews: 41 },
     responseTime: 'Usually replies within 1 hour',
@@ -286,7 +286,7 @@ export default function QuoteComparePage({ onNavigate }) {
           <Sparkles size={12} strokeWidth={2.2} />
         </span>
         <p className="editorial-italic text-[15px] leading-relaxed text-ink-900">
-          "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
+          "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is cheapest at $175 but their quote is missing materials and warranty language."
         </p>
       </motion.section>
 
