@@ -356,7 +356,7 @@ function ProfileScreen({ profile, setProfile, toggle, toggleOutdoor, onBack, onC
           Five questions, then we plan.
         </h1>
         <p className="mt-3 text-[14px] text-ink-500 max-w-xl leading-relaxed">
-          Each is skippable. Your answers build the watchlist on your home page.
+          Your answers build the watchlist on your home page.
         </p>
       </header>
 

@@ -7,7 +7,6 @@ import {
   X,
   AlertTriangle,
   TrendingUp,
-  TrendingDown,
   ArrowRight,
   Info,
   CheckCircle2,
@@ -91,8 +90,8 @@ const cols = [
     accent: 'ember',
     total: 175,
     verdict: { tone: 'ember', label: 'Low, missing details' },
-    status: 'conversation',
-    received: '4:15 PM today · clarifying',
+    status: 'received',
+    received: '4:15 PM today',
     bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
     rating: { score: 4.5, reviews: 41 },
     responseTime: 'Usually replies within 1 hour',
@@ -168,7 +167,7 @@ const rows = [
   },
   {
     label: 'Workmanship warranty',
-    sub: 'Buyer protection if failure post-job',
+    sub: '',
     cells: [
       { state: 'included', text: '90 days', value: 'Standard for trade' },
       { state: 'better', text: '1 year', value: 'Above market', badge: 'Better' },
@@ -186,7 +185,7 @@ const rows = [
   },
   {
     label: 'Cleanup & photos',
-    sub: 'Documentation of completed work',
+    sub: '',
     cells: [
       { state: 'included', text: 'Included', value: 'Standard' },
       { state: 'included', text: 'Included', value: 'Standard' },
@@ -262,8 +261,8 @@ export default function QuoteComparePage({ onNavigate }) {
   return (
     <div className="space-y-8">
       <BackBar
-        onBack={() => onNavigate?.('contractor-compare')}
-        label="Back to contractors"
+        onBack={() => onNavigate?.('quote-tracking')}
+        label="Back to quotes"
         context="Apples-to-apples · Kitchen sink leak"
       />
 
@@ -271,56 +270,24 @@ export default function QuoteComparePage({ onNavigate }) {
 
       {/* Header */}
       <header>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft">
-            <Sparkles size={13} strokeWidth={2.2} />
-          </span>
-          <span className="text-[11px] uppercase tracking-[0.22em] text-sage-600 font-semibold">
-            Apples-to-apples · Homewise normalized
-          </span>
-        </div>
         <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
           Three quotes, one normalized scope.
         </h1>
-        <p className="mt-3 text-[14px] text-ink-500 max-w-2xl leading-relaxed">
-          Each contractor was given the same scope of work. Below shows what they actually agreed to do, where they deviate, and where prices look like outliers.
-        </p>
-        <div className="mt-5 flex items-center gap-2 flex-wrap">
-          <Pill tone="ember" icon={AlertTriangle}>
-            3 deviations flagged
-          </Pill>
-          <Pill tone="sky" icon={TrendingDown}>
-            Avg 12% under benchmark
-          </Pill>
-        </div>
       </header>
 
-      {/* Plain-language summary (PDF spec: AI surfaces a single-paragraph summary) */}
+      {/* AI plain-language summary */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="rounded-3xl bg-white border border-sage-100 p-6 md:p-7 relative overflow-hidden"
+        className="rounded-3xl bg-white border border-sage-100 px-6 py-5 md:px-7 flex items-start gap-3"
       >
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-sage-300 via-sage-500 to-sage-300" />
-        <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft shrink-0">
-            <Sparkles size={15} strokeWidth={2.2} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-sage-600 font-semibold">
-                Plain-language summary
-              </span>
-              <Pill tone="sage" icon={CheckCircle2}>
-                Reviewed
-              </Pill>
-            </div>
-            <p className="editorial-italic text-[16px] leading-relaxed text-ink-900">
-              "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
-            </p>
-          </div>
-        </div>
+        <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-xl bg-sage-50 text-sage-500 ring-1 ring-sage-100 shrink-0">
+          <Sparkles size={12} strokeWidth={2.2} />
+        </span>
+        <p className="editorial-italic text-[15px] leading-relaxed text-ink-900">
+          "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is cheapest at $175 but their quote is missing materials and warranty language."
+        </p>
       </motion.section>
 
       {/* Total bar */}
@@ -376,14 +343,8 @@ export default function QuoteComparePage({ onNavigate }) {
               </div>
             )}
             {c.note && (
-              <div className="mt-3 pt-3 border-t border-ink-100/80 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="h-px w-3 bg-ink-200" />
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-ink-500 font-semibold">
-                    Note from {c.name.split(' ')[0]}
-                  </span>
-                </div>
-                <p className="editorial-italic text-[12.5px] leading-relaxed text-ink-700">
+              <div className="mt-3 pt-3 border-t border-ink-100/80">
+                <p className="text-[12px] leading-relaxed text-ink-500 italic">
                   &ldquo;{c.note}&rdquo;
                 </p>
               </div>
@@ -431,7 +392,7 @@ export default function QuoteComparePage({ onNavigate }) {
                 <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">
                   {row.label}
                 </div>
-                <div className="text-[11.5px] text-ink-500 mt-0.5">{row.sub}</div>
+                {row.sub && <div className="text-[11.5px] text-ink-500 mt-0.5">{row.sub}</div>}
               </div>
               {row.cells.map((cell, i) => {
                 const meta = stateMap[cell.state];
@@ -472,44 +433,6 @@ export default function QuoteComparePage({ onNavigate }) {
           ))}
         </div>
 
-        {/* Schedule row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-start">
-          <div className="md:col-span-3">
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-              Schedule
-            </div>
-            <div className="text-[11.5px] text-ink-500 mt-0.5">
-              Earliest start, duration
-            </div>
-          </div>
-          {cols.map((c) => (
-            <div key={c.id} className="md:col-span-3 space-y-1.5">
-              {c.schedule ? (
-                <>
-                  <div>
-                    <div className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400 font-semibold">
-                      Earliest start
-                    </div>
-                    <div className="figure text-[13px] text-ink-900 mt-0.5">
-                      {c.schedule.earliestStart}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400 font-semibold">
-                      Duration
-                    </div>
-                    <div className="text-[12.5px] text-ink-700 leading-snug mt-0.5">
-                      {c.schedule.duration}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <span className="text-[12px] text-ink-400">Not provided</span>
-              )}
-            </div>
-          ))}
-        </div>
-
         {/* Total row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-deep/50 hairline-inset items-center">
           <div className="md:col-span-3">
@@ -531,9 +454,6 @@ export default function QuoteComparePage({ onNavigate }) {
           <div className="md:col-span-3">
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
               Your availability
-            </div>
-            <div className="text-[11.5px] text-ink-500 mt-0.5">
-              AI filters slots to match
             </div>
           </div>
           <div className="md:col-span-9 flex flex-wrap gap-1.5">
@@ -557,14 +477,34 @@ export default function QuoteComparePage({ onNavigate }) {
           </div>
         </div>
 
+        {/* Ask before booking — its own section, before the commit row */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+          <div className="md:col-span-3 flex flex-col justify-center">
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Ask before booking
+            </div>
+            <div className="text-[11.5px] text-ink-500 mt-0.5">
+              Optional. Talk first if you have questions.
+            </div>
+          </div>
+          {cols.map((c) => (
+            <div key={c.id} className="md:col-span-3">
+              <button
+                onClick={() => setContactOpen(c.id)}
+                className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+              >
+                <Phone size={12} strokeWidth={2} />
+                Ask {c.name.split(' ')[0]}
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* Per-contractor approve actions, with slot chips that respect overlap */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
           <div className="md:col-span-3 flex flex-col justify-center">
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
               Pick a slot &amp; approve
-            </div>
-            <div className="text-[11.5px] text-ink-500 mt-0.5">
-              Times where both of you are free
             </div>
           </div>
           {cols.map((c) => {
@@ -573,6 +513,7 @@ export default function QuoteComparePage({ onNavigate }) {
             const noOverlap = valid.length === 0;
             return (
               <div key={c.id} className="md:col-span-3 flex flex-col gap-2">
+                {/* Slot chips */}
                 {noOverlap ? (
                   <div className="rounded-xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[11.5px] text-ink-700 leading-snug">
                     No overlap with your availability. Add a window above or ask {c.name.split(' ')[0]} for more times.
@@ -598,13 +539,7 @@ export default function QuoteComparePage({ onNavigate }) {
                     })}
                   </div>
                 )}
-                <button
-                  onClick={() => setContactOpen(c.id)}
-                  className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
-                >
-                  <Phone size={12} strokeWidth={2} />
-                  Ask {c.name.split(' ')[0]} before booking
-                </button>
+
                 <button
                   onClick={() =>
                     onNavigate?.({
