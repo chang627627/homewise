@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -20,6 +20,7 @@ import {
   Shield,
   CalendarDays,
   Bookmark,
+  Loader2,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -146,6 +147,68 @@ export function ScopePhotoStrip({ photos = scopePhotos }) {
 }
 
 export default function ScopePage({ onNavigate }) {
+  const [status, setStatus] = useState('loading');
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (status !== 'loading') return;
+    const t = setTimeout(
+      () => setStatus(attempt === 0 ? 'error' : 'ready'),
+      1800,
+    );
+    return () => clearTimeout(t);
+  }, [status, attempt]);
+
+  if (status === 'loading') {
+    return (
+      <div className="space-y-8">
+        <BackBar
+          onBack={() => onNavigate?.('intake')}
+          label="Back to intake"
+          context="Scope of work · draft"
+        />
+        <FlowProgress current="scope" onNavigate={onNavigate} />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-start gap-3 py-10"
+        >
+          <Loader2 size={20} strokeWidth={1.8} className="text-ink-400 animate-spin" />
+          <p className="text-[14px] text-ink-500">Generating your scope of work...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="space-y-8">
+        <BackBar
+          onBack={() => onNavigate?.('intake')}
+          label="Back to intake"
+          context="Scope of work · draft"
+        />
+        <FlowProgress current="scope" onNavigate={onNavigate} />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center gap-2 py-10"
+        >
+          <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+          <span className="text-[12px] text-ink-700">We couldn't generate your scope.</span>
+          <button
+            onClick={() => { setAttempt(a => a + 1); setStatus('loading'); }}
+            className="text-[12px] text-ink-500 hover:text-ink-900 transition-colors"
+          >
+            Try again
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <BackBar

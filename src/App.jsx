@@ -47,6 +47,7 @@ export default function App() {
   const [scheduledSlot, setScheduledSlot] = useState(s.scheduledSlot || null);
   const [hasStartedFirstTask, setHasStartedFirstTask] = useState(s.hasStartedFirstTask || false);
   const [hasOnboarded, setHasOnboarded] = useState(s.hasOnboarded || false);
+  const [onboardingStartStep, setOnboardingStartStep] = useState(0);
   const [maintenanceItems, setMaintenanceItems] = useState([]);
   const [jobCompleted, setJobCompleted] = useState(s.jobCompleted || false);
   const [recommended, setRecommended] = useState(s.recommended || null);
@@ -73,8 +74,22 @@ export default function App() {
     if (path === '/bidform' || path.startsWith('/bid/')) return <BidFormPage />;
   }
 
+  const handleSetupHome = () => {
+    setOnboardingStartStep(1);
+    setHasOnboarded(false);
+  };
+
   if (!hasOnboarded) {
-    return <OnboardingPage onComplete={(items) => { setHasOnboarded(true); setMaintenanceItems(items || []); }} />;
+    return (
+      <OnboardingPage
+        startStep={onboardingStartStep}
+        onComplete={(items) => {
+          setOnboardingStartStep(0);
+          setHasOnboarded(true);
+          setMaintenanceItems(items || []);
+        }}
+      />
+    );
   }
 
   const handleNavigate = (id, opts = {}) => {
@@ -149,6 +164,11 @@ export default function App() {
                   photosShared={photosShared}
                   hasStartedFirstTask={hasStartedFirstTask}
                   maintenanceItems={maintenanceItems}
+                  onSetupHome={handleSetupHome}
+                  noContractors={false}
+                  allDeclined={false}
+                  visitCancelled={false}
+                  noPhotos={false}
                 />
               </motion.div>
             </AnimatePresence>

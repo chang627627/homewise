@@ -6,6 +6,7 @@ import {
   MessageCircle,
   ArrowRight,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
@@ -53,7 +54,7 @@ const quoteFeed = [
   },
 ];
 
-export default function QuoteTrackingPage({ onNavigate }) {
+export default function QuoteTrackingPage({ onNavigate, allDeclined = false }) {
   // arrived = how many contractors have resolved so far (0..3)
   const [arrived, setArrived] = useState(0);
 
@@ -68,6 +69,39 @@ export default function QuoteTrackingPage({ onNavigate }) {
 
   const allIn = arrived >= quoteFeed.length;
   const receivedCount = quoteFeed.slice(0, arrived).filter((c) => c.final === 'received').length;
+
+  if (allDeclined) {
+    return (
+      <div className="space-y-8">
+        <BackBar
+          onBack={() => onNavigate?.('contractor-compare')}
+          label="Back to contractors"
+          context="Quotes · tracking"
+        />
+        <FlowProgress current="quote-compare" onNavigate={onNavigate} />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="py-10 space-y-4"
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+            <span className="text-[12px] text-ink-700">All contractors declined to bid.</span>
+          </div>
+          <p className="text-[13px] text-ink-500 leading-relaxed max-w-sm">
+            This can happen when a job falls outside their area or schedule.
+          </p>
+          <button
+            onClick={() => onNavigate?.('contractor-compare')}
+            className="h-9 px-4 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft text-[12.5px] font-semibold transition-colors"
+          >
+            Find new contractors
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

@@ -202,7 +202,7 @@ const sharedRationale = [
   },
 ];
 
-export default function ContractorComparePage({ onNavigate, jobCompleted, recommended }) {
+export default function ContractorComparePage({ onNavigate, jobCompleted, recommended, noContractors = false }) {
   const [showcaseOpen, setShowcaseOpen] = useState(null); // contractor id or null
   // Track whether each column is showing the original contractor or the
   // swapped alternate. swappedColumns[i] = true means column i is showing
@@ -230,6 +230,39 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
       next[idx] = !next[idx];
       return next;
     });
+  }
+
+  if (noContractors) {
+    return (
+      <div className="space-y-8">
+        <BackBar
+          onBack={() => onNavigate?.('scope')}
+          label="Back to scope"
+          context="Contractor matching"
+        />
+        <FlowProgress current="contractor-compare" onNavigate={onNavigate} />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="py-10 space-y-4"
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+            <span className="text-[12px] text-ink-700">No contractors available in your area.</span>
+          </div>
+          <p className="text-[13px] text-ink-500 leading-relaxed max-w-sm">
+            We're growing our network and will notify you when a vetted pro is nearby.
+          </p>
+          <button
+            onClick={() => onNavigate?.('scope')}
+            className="h-9 px-4 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft text-[12.5px] font-semibold transition-colors"
+          >
+            Back to scope
+          </button>
+        </motion.div>
+      </div>
+    );
   }
 
   return (

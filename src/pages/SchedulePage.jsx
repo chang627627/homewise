@@ -26,7 +26,38 @@ const week = [
   { day: 'Sun', date: 27 },
 ];
 
-export default function SchedulePage({ onNavigate, hasStartedFirstTask, decisionHandled }) {
+export default function SchedulePage({ onNavigate, hasStartedFirstTask, decisionHandled, visitCancelled = false }) {
+  if (visitCancelled) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          eyebrow="Schedule · visit cancelled"
+          title="What's on the calendar."
+        />
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="py-10 space-y-4"
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+            <span className="text-[12px] text-ink-700">Your visit was cancelled.</span>
+          </div>
+          <p className="text-[13px] text-ink-500 leading-relaxed max-w-sm">
+            Tap below to reschedule.
+          </p>
+          <button
+            onClick={() => onNavigate?.('quote-compare')}
+            className="h-9 px-4 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft text-[12.5px] font-semibold transition-colors"
+          >
+            Find a new time
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!hasStartedFirstTask) {
     return <EmptySchedule onNavigate={onNavigate} />;
   }

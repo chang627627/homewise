@@ -141,8 +141,8 @@ function buildMaintenance(profile) {
   return items.slice(0, 5);
 }
 
-export default function OnboardingPage({ onComplete }) {
-  const [step, setStep] = useState(0);
+export default function OnboardingPage({ onComplete, startStep = 0 }) {
+  const [step, setStep] = useState(startStep);
   const [profile, setProfile] = useState({
     homeType: '',
     yearBuilt: '',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, ListChecks } from 'lucide-react';
 import OverviewCards from '../components/OverviewCards';
 import ActiveTasks from '../components/ActiveTasks';
 
@@ -18,9 +18,10 @@ export default function OverviewPage({
   recommended,
   hasStartedFirstTask,
   maintenanceItems = [],
+  onSetupHome,
 }) {
   if (!hasStartedFirstTask) {
-    return <EmptyOverview onNavigate={onNavigate} maintenanceItems={maintenanceItems} />;
+    return <EmptyOverview onNavigate={onNavigate} maintenanceItems={maintenanceItems} onSetupHome={onSetupHome} />;
   }
   return (
     <PopulatedOverview
@@ -33,7 +34,7 @@ export default function OverviewPage({
   );
 }
 
-function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
+function EmptyOverview({ onNavigate, maintenanceItems = [], onSetupHome }) {
   return (
     <div className="space-y-16 lg:space-y-24">
       {/* Hero / empty state */}
@@ -90,55 +91,85 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
         </div>
       </section>
 
-      {maintenanceItems.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
-              Your home's watchlist
-            </span>
-          </div>
-          <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
-            Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
-          </p>
-          <div className="space-y-2">
-            {maintenanceItems.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.05 * i }}
-                  className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
-                >
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent] || 'bg-canvas-soft text-ink-700 ring-ink-100'}`}>
-                    <Icon size={14} strokeWidth={1.8} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
-                          {item.title}
+      <section>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="h-px w-6 bg-ink-300" />
+          <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
+            Your home's watchlist
+          </span>
+        </div>
+
+        {maintenanceItems.length > 0 ? (
+          <>
+            <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
+              Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
+            </p>
+            <div className="space-y-2">
+              {maintenanceItems.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: 0.05 * i }}
+                    className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
+                  >
+                    <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent] || 'bg-canvas-soft text-ink-700 ring-ink-100'}`}>
+                      <Icon size={14} strokeWidth={1.8} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
+                            {item.title}
+                          </div>
+                          <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
                         </div>
-                        <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
+                        {item.source && (
+                          <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
+                            {item.source}
+                          </span>
+                        )}
                       </div>
-                      {item.source && (
-                        <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
-                          {item.source}
-                        </span>
-                      )}
+                      <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
+                        {item.detail}
+                      </p>
                     </div>
-                    <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
-                      {item.detail}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="rounded-2xl bg-white border border-ink-100/80 p-6 flex flex-col items-start gap-4"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-canvas-soft ring-1 ring-ink-100 text-ink-400">
+              <ListChecks size={16} strokeWidth={1.8} />
+            </span>
+            <div>
+              <p className="text-[14px] font-semibold text-ink-900 tracking-[-0.005em]">
+                Your watchlist is empty.
+              </p>
+              <p className="mt-1 text-[13px] text-ink-500 leading-relaxed">
+                Answer a few questions about your home and we'll build it for you.
+              </p>
+            </div>
+            {onSetupHome && (
+              <button
+                onClick={onSetupHome}
+                className="h-9 px-4 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft text-[12.5px] font-semibold transition-colors"
+              >
+                Set up your home
+              </button>
+            )}
+          </motion.div>
+        )}
+      </section>
     </div>
   );
 }

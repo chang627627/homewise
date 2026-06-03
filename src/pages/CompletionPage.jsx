@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import {
   Sparkles,
   Check,
+  CheckCircle2,
   X,
   AlertTriangle,
+  AlertCircle,
   ThumbsUp,
   ThumbsDown,
   Camera,
@@ -28,10 +30,11 @@ const photoTone = {
   ember: 'from-ember-100 to-ember-200',
 };
 
-export default function CompletionPage({ onNavigate, scheduledSlot }) {
+export default function CompletionPage({ onNavigate, scheduledSlot, noPhotos = false }) {
   const [confirm, setConfirm] = useState('yes'); // 'yes' | 'not-yet' | 'wrong'
   const [photosShared, setPhotosShared] = useState(false);
   const [recommend, setRecommend] = useState(null); // null | 'yes' | 'no'
+  const [reminderSent, setReminderSent] = useState(false);
 
   const submit = () => {
     onNavigate?.({
@@ -114,52 +117,82 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
             <div className="flex items-center gap-2">
               <Camera size={13} className="text-ink-500" strokeWidth={1.8} />
               <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-                Jason uploaded · 3 photos
+                {noPhotos ? 'Jason uploaded · 0 photos' : 'Jason uploaded · 3 photos'}
               </span>
             </div>
-            <Pill tone="sage" icon={Check}>
-              Same angles as your intake shots
-            </Pill>
+            {!noPhotos && (
+              <Pill tone="sage" icon={Check}>
+                Same angles as your intake shots
+              </Pill>
+            )}
           </div>
-          <div className="p-5 grid grid-cols-3 gap-3">
-            {completionPhotos.map((p, i) => (
-              <div
-                key={i}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
-              >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${photoTone[p.tone]}`}
-                />
-                <div className="absolute inset-0 dot-grid opacity-30" />
-                <div className="absolute top-2 left-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
-                    <ImageIcon size={9} strokeWidth={2.2} />
-                    {p.label}
-                  </span>
-                </div>
-                <div className="absolute bottom-2 left-2 right-2">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-canvas-soft">
-                    <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
-                    AI: {p.tag}
-                  </span>
-                </div>
+
+          {noPhotos ? (
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={13} strokeWidth={2} className="shrink-0 text-ember-500" />
+                <span className="text-[12px] text-ink-700">No photos uploaded yet.</span>
               </div>
-            ))}
-          </div>
-          <div className="px-5 py-4 border-t border-ink-100/80 bg-canvas-soft/30 flex items-center justify-between gap-3">
-            <div className="flex items-start gap-2">
-              <ShieldCheck size={13} className="text-sage-500 mt-0.5 shrink-0" strokeWidth={2} />
-              <div>
-                <div className="text-[12.5px] font-semibold text-ink-900">
-                  Allow these photos in Jason's Homewise showcase
-                </div>
-                <div className="text-[11px] text-ink-500 mt-0.5">
-                  Other Homewisers can see them when comparing contractors. No personal info shown.
-                </div>
-              </div>
+              <p className="text-[13px] text-ink-500 leading-relaxed">
+                Check back after the visit.
+              </p>
+              {reminderSent ? (
+                <span className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-sage-600">
+                  <CheckCircle2 size={13} strokeWidth={2} />
+                  Reminder sent.
+                </span>
+              ) : (
+                <button
+                  onClick={() => setReminderSent(true)}
+                  className="h-9 px-4 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft text-[12.5px] font-semibold transition-colors"
+                >
+                  Remind contractor
+                </button>
+              )}
             </div>
-            <Toggle on={photosShared} onChange={setPhotosShared} />
-          </div>
+          ) : (
+            <>
+              <div className="p-5 grid grid-cols-3 gap-3">
+                {completionPhotos.map((p, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
+                  >
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${photoTone[p.tone]}`}
+                    />
+                    <div className="absolute inset-0 dot-grid opacity-30" />
+                    <div className="absolute top-2 left-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
+                        <ImageIcon size={9} strokeWidth={2.2} />
+                        {p.label}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-canvas-soft">
+                        <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
+                        AI: {p.tag}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-5 py-4 border-t border-ink-100/80 bg-canvas-soft/30 flex items-center justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck size={13} className="text-sage-500 mt-0.5 shrink-0" strokeWidth={2} />
+                  <div>
+                    <div className="text-[12.5px] font-semibold text-ink-900">
+                      Allow these photos in Jason's Homewise showcase
+                    </div>
+                    <div className="text-[11px] text-ink-500 mt-0.5">
+                      Other Homewisers can see them when comparing contractors. No personal info shown.
+                    </div>
+                  </div>
+                </div>
+                <Toggle on={photosShared} onChange={setPhotosShared} />
+              </div>
+            </>
+          )}
         </div>
       </Section>
 
