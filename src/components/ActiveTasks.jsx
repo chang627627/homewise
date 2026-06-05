@@ -1,7 +1,18 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ChevronRight, CheckCircle2, ThumbsUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, CheckCircle2, ThumbsUp, Phone } from 'lucide-react';
 import Pill from './ui/Pill';
+import ContactDrawer from './ui/ContactDrawer';
+
+const jason = {
+  name: 'Jason Plumbing Co.',
+  initials: 'J',
+  accent: 'sage',
+  rating: { score: 4.8, reviews: 168 },
+  responseTime: 'Usually replies within 2 hours',
+  bio: 'Family-run since 2012. 14 years licensed. Specializes in residential plumbing repairs and faucet replacements.',
+  phone: '(510) 555-0142',
+};
 
 export default function ActiveTasks({
   onNavigate,
@@ -11,6 +22,7 @@ export default function ActiveTasks({
   recommended,
 }) {
   const slotLabel = scheduledSlot || 'Friday 2 PM';
+  const [contactOpen, setContactOpen] = useState(false);
 
   const upcoming = jobCompleted
     ? []
@@ -47,24 +59,32 @@ export default function ActiveTasks({
     : [];
 
   return (
-    <section className="space-y-8">
-      <VisitGroup
-        label="Upcoming"
-        visits={upcoming}
-        onNavigate={onNavigate}
-        emptyText="No upcoming visits."
-      />
-      <VisitGroup
-        label="Past"
-        visits={past}
-        onNavigate={onNavigate}
-        emptyText="No past visits yet."
-      />
-    </section>
+    <>
+      <section className="space-y-8">
+        <VisitGroup
+          label="Upcoming"
+          visits={upcoming}
+          onNavigate={onNavigate}
+          onContact={() => setContactOpen(true)}
+          emptyText="No upcoming visits."
+        />
+        <VisitGroup
+          label="Past"
+          visits={past}
+          onNavigate={onNavigate}
+          emptyText="No past visits yet."
+        />
+      </section>
+      <AnimatePresence>
+        {contactOpen && (
+          <ContactDrawer contractor={jason} onClose={() => setContactOpen(false)} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
-function VisitGroup({ label, visits, onNavigate, emptyText }) {
+function VisitGroup({ label, visits, onNavigate, onContact, emptyText }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
@@ -79,14 +99,14 @@ function VisitGroup({ label, visits, onNavigate, emptyText }) {
         </div>
       ) : (
         visits.map((v, i) => (
-          <VisitCard key={v.id} visit={v} index={i} onNavigate={onNavigate} />
+          <VisitCard key={v.id} visit={v} index={i} onNavigate={onNavigate} onContact={onContact} />
         ))
       )}
     </div>
   );
 }
 
-function VisitCard({ visit: v, index, onNavigate }) {
+function VisitCard({ visit: v, index, onNavigate, onContact }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 8 }}
@@ -121,12 +141,16 @@ function VisitCard({ visit: v, index, onNavigate }) {
         </span>
       </div>
       {v.scheduledState && (
-        <div className="mt-4 pt-4 border-t border-ink-100">
+        <div className="mt-4 pt-4 border-t border-ink-100 flex flex-col gap-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate?.('completion');
-            }}
+            onClick={(e) => { e.stopPropagation(); onContact?.(); }}
+            className="w-full h-10 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-medium transition-all"
+          >
+            <Phone size={12} strokeWidth={2} />
+            Call Jason
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onNavigate?.('completion'); }}
             className="w-full h-10 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
           >
             <CheckCircle2 size={13} strokeWidth={2.2} />
