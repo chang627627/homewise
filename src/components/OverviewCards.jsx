@@ -28,18 +28,34 @@ export default function OverviewCards({ onNavigate, decisionHandled }) {
           target: 'quote-compare',
           tone: 'ember',
         },
-    {
-      label: 'Quotes received',
-      value: '3',
-      target: 'quote-compare',
-      tone: 'ink',
-    },
-    {
-      label: 'Contractors verified',
-      value: '3',
-      target: 'contractor-compare',
-      tone: 'ink',
-    },
+    decisionHandled
+      ? {
+          label: 'Days until visit',
+          value: '2',
+          sub: 'Friday · 2 PM',
+          target: 'schedule',
+          tone: 'sage',
+        }
+      : {
+          label: 'Quotes received',
+          value: '3',
+          target: 'quote-compare',
+          tone: 'ink',
+        },
+    decisionHandled
+      ? {
+          label: 'Contractor booked',
+          value: '1',
+          sub: 'Jason Plumbing Co.',
+          target: 'schedule',
+          tone: 'ink',
+        }
+      : {
+          label: 'Contractors verified',
+          value: '3',
+          target: 'contractor-compare',
+          tone: 'ink',
+        },
   ];
 
   return (

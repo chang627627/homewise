@@ -98,16 +98,12 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
   const eyebrow = decisionHandled
     ? 'Schedule · 1 confirmed'
     : 'Schedule · 1 pending';
-  const description = decisionHandled
-    ? "Jason is booked for Friday. Homewise will check in once the visit is done, and re-engage your backup if anything changes."
-    : "One visit is proposed. Approve the contractor on the quote page to confirm the slot.";
 
   return (
     <div className="space-y-10">
       <PageHeader
         eyebrow={eyebrow}
         title="What's on the calendar."
-        description={description}
         trailing={
           <Pill tone={decisionHandled ? 'sage' : 'ember'} live={decisionHandled}>
             {decisionHandled ? 'Booked' : 'Awaiting'}
