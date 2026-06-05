@@ -10,7 +10,7 @@ export default function OverviewCards({ onNavigate, decisionHandled }) {
     {
       label: 'Task in motion',
       value: '1',
-      target: 'tasks',
+      target: 'overview',
       tone: 'ink',
     },
     decisionHandled
@@ -18,7 +18,7 @@ export default function OverviewCards({ onNavigate, decisionHandled }) {
           label: 'Decisions waiting',
           value: '0',
           sub: 'All clear',
-          target: 'tasks',
+          target: 'overview',
           tone: 'sage',
         }
       : {

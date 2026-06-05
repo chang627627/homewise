@@ -5,7 +5,6 @@ import {
   ChevronDown,
   MapPin,
   LayoutGrid,
-  MessagesSquare,
   CalendarDays,
   Settings,
   HelpCircle,
@@ -21,13 +20,6 @@ const homes = [
 
 const buildPrimaryNav = (hasStartedFirstTask) => [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
-  {
-    id: 'tasks',
-    label: 'Conversations',
-    icon: MessagesSquare,
-    badge: hasStartedFirstTask ? '1' : null,
-    tone: 'sage',
-  },
   {
     id: 'schedule',
     label: 'Schedule',

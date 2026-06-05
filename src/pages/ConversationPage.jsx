@@ -299,8 +299,8 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
   return (
     <div className="space-y-7">
       <BackBar
-        onBack={() => onNavigate?.('tasks')}
-        label="Back to active tasks"
+        onBack={() => onNavigate?.('overview')}
+        label="Back to overview"
         context={`Conversation · ${c.started}`}
       />
 
