@@ -90,8 +90,8 @@ const cols = [
     accent: 'ember',
     total: 175,
     verdict: { tone: 'ember', label: 'Low, missing details' },
-    status: 'conversation',
-    received: '4:15 PM today · clarifying',
+    status: 'received',
+    received: '4:15 PM today',
     bio: 'Same-day availability for small plumbing fixes. 3 years licensed. Currently has a pending insurance renewal.',
     rating: { score: 4.5, reviews: 41 },
     responseTime: 'Usually replies within 1 hour',
@@ -261,8 +261,8 @@ export default function QuoteComparePage({ onNavigate }) {
   return (
     <div className="space-y-8">
       <BackBar
-        onBack={() => onNavigate?.('contractor-compare')}
-        label="Back to contractors"
+        onBack={() => onNavigate?.('quote-tracking')}
+        label="Back to quotes"
         context="Apples-to-apples · Kitchen sink leak"
       />
 
@@ -273,11 +273,6 @@ export default function QuoteComparePage({ onNavigate }) {
         <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
           Three quotes, one normalized scope.
         </h1>
-        <div className="mt-4 flex items-center gap-2 flex-wrap">
-          <Pill tone="ember" icon={AlertTriangle}>
-            3 deviations flagged
-          </Pill>
-        </div>
       </header>
 
       {/* AI plain-language summary */}
@@ -291,7 +286,7 @@ export default function QuoteComparePage({ onNavigate }) {
           <Sparkles size={12} strokeWidth={2.2} />
         </span>
         <p className="editorial-italic text-[15px] leading-relaxed text-ink-900">
-          "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is in conversation, their quote is missing materials and warranty language."
+          "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is cheapest at $175 but their quote is missing materials and warranty language."
         </p>
       </motion.section>
 
@@ -482,6 +477,29 @@ export default function QuoteComparePage({ onNavigate }) {
           </div>
         </div>
 
+        {/* Ask before booking — its own section, before the commit row */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+          <div className="md:col-span-3 flex flex-col justify-center">
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              Ask before booking
+            </div>
+            <div className="text-[11.5px] text-ink-500 mt-0.5">
+              Optional. Talk first if you have questions.
+            </div>
+          </div>
+          {cols.map((c) => (
+            <div key={c.id} className="md:col-span-3">
+              <button
+                onClick={() => setContactOpen(c.id)}
+                className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+              >
+                <Phone size={12} strokeWidth={2} />
+                Ask {c.name.split(' ')[0]}
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* Per-contractor approve actions, with slot chips that respect overlap */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
           <div className="md:col-span-3 flex flex-col justify-center">
@@ -522,37 +540,27 @@ export default function QuoteComparePage({ onNavigate }) {
                   </div>
                 )}
 
-                {/* Commitment zone — separated from slot chips */}
-                <div className="flex flex-col gap-1.5 pt-2 mt-0.5 border-t border-ink-100">
-                  <button
-                    onClick={() => setContactOpen(c.id)}
-                    className="w-full h-9 rounded-2xl bg-white text-ink-500 hover:text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12px] font-medium transition-all"
-                  >
-                    <Phone size={11} strokeWidth={1.8} />
-                    Ask {c.name.split(' ')[0]} before booking
-                  </button>
-                  <button
-                    onClick={() =>
-                      onNavigate?.({
-                        page: 'overview',
-                        decisionHandled: true,
-                        scheduledSlot: sel?.time,
-                      })
-                    }
-                    disabled={noOverlap}
-                    className={`w-full h-10 rounded-2xl inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all ${
-                      noOverlap
-                        ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
-                        : c.aiPick
-                        ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
-                        : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
-                    }`}
-                  >
-                    {c.aiPick && !noOverlap && <Check size={13} strokeWidth={2.4} />}
-                    Approve {c.name.split(' ')[0]}
-                    {sel && ` · ${sel.time}`}
-                  </button>
-                </div>
+                <button
+                  onClick={() =>
+                    onNavigate?.({
+                      page: 'overview',
+                      decisionHandled: true,
+                      scheduledSlot: sel?.time,
+                    })
+                  }
+                  disabled={noOverlap}
+                  className={`w-full h-10 rounded-2xl inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all ${
+                    noOverlap
+                      ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                      : c.aiPick
+                      ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
+                      : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
+                  }`}
+                >
+                  {c.aiPick && !noOverlap && <Check size={13} strokeWidth={2.4} />}
+                  Approve {c.name.split(' ')[0]}
+                  {sel && ` · ${sel.time}`}
+                </button>
               </div>
             );
           })}
