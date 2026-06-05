@@ -35,6 +35,7 @@ export default function ActiveTasks({
           when: 'Friday · April 25 · 2:00 PM',
           pill: { tone: 'sage', label: `Scheduled · ${slotLabel}` },
           scheduledState: true,
+          prepNote: 'Clear under-sink access before Friday. Jason will need 2 to 3 hours.',
         }]
       : [{
           id: 1,
@@ -126,6 +127,11 @@ function VisitCard({ visit: v, index, onNavigate, onContact }) {
           <div className="text-[12.5px] text-ink-500">
             {v.contractor} · {v.when}
           </div>
+          {v.prepNote && (
+            <p className="mt-2.5 text-[12px] text-ink-500 leading-snug">
+              {v.prepNote}
+            </p>
+          )}
           {v.completedState && v.recommended === 'yes' && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-sage-50/60 border border-sage-100 px-3 py-2">
               <ThumbsUp size={11} strokeWidth={2.2} className="text-sage-600 shrink-0" />
