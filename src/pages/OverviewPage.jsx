@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
-import OverviewCards from '../components/OverviewCards';
 import ActiveTasks from '../components/ActiveTasks';
 
 const accentMap = {
@@ -145,63 +144,28 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
 
 function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot, jobCompleted, recommended }) {
   return (
-    <div className="space-y-12 lg:space-y-16">
-      {/* Hero */}
-      <section>
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
-              Good morning, Mara · April 23
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 border border-ink-100 px-2.5 py-1 text-[11px] text-ink-600">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
-              </span>
-              Homewise active
-            </span>
-          </div>
-        </div>
-        {(() => {
-          const hero = jobCompleted
-            ? {
-                primary: 'Job closed out.',
-                secondary:
-                  recommended === 'yes'
-                    ? 'You recommended Jason. Homewise is keeping a quiet eye.'
-                    : 'Recorded for your file.',
-              }
-            : decisionHandled
-              ? {
-                  primary: `${scheduledSlot || 'Friday 2 PM'} with Jason.`,
-                  secondary: 'Homewise is watching for changes.',
-                }
-              : {
-                  primary: '1 decision today.',
-                  secondary: 'Pick your plumber.',
-                };
-          return (
-            <>
-              <h1 className="editorial text-[28px] md:text-[34px] leading-[1.1] text-ink-900 tracking-tight max-w-2xl">
-                {hero.primary}
-                <span className="block text-ink-500">{hero.secondary}</span>
-              </h1>
-            </>
-          );
-        })()}
-      </section>
+    <div className="space-y-10">
+      {/* Greeting */}
+      <div className="flex items-center gap-2">
+        <span className="h-px w-6 bg-ink-300" />
+        <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
+          Good morning, Mara · April 23
+        </span>
+      </div>
 
-      <OverviewCards onNavigate={onNavigate} decisionHandled={decisionHandled} />
-      <ActiveTasks
-        onNavigate={onNavigate}
-        decisionHandled={decisionHandled}
-        scheduledSlot={scheduledSlot}
-        jobCompleted={jobCompleted}
-        recommended={recommended}
-      />
+      {/* Visits */}
+      <section className="space-y-6">
+        <h2 className="editorial text-[24px] md:text-[30px] leading-[1.1] text-ink-900 tracking-tight">
+          Visits
+        </h2>
+        <ActiveTasks
+          onNavigate={onNavigate}
+          decisionHandled={decisionHandled}
+          scheduledSlot={scheduledSlot}
+          jobCompleted={jobCompleted}
+          recommended={recommended}
+        />
+      </section>
     </div>
   );
 }
