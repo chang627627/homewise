@@ -241,57 +241,123 @@ const photoTone = {
   ember: 'from-ember-100 to-ember-200',
 };
 
-export default function ConversationPage({ onNavigate, conversationId = 'sink', decisionHandled = false }) {
+export default function ConversationPage({ onNavigate, conversationId = 'sink', decisionHandled = false, jobCompleted = false, recommended }) {
   let c = conversations[conversationId] || conversations.sink;
 
   // Once the user has approved Jason on the Quote Compare page, append the
   // booking-confirmation tail of the conversation and update the status.
   if (conversationId === 'sink' && decisionHandled) {
     const baseThread = c.thread.filter((m) => m.type !== 'live');
-    c = {
-      ...c,
-      statusPill: { tone: 'sage', label: 'Confirmed · Friday 2 PM' },
-      artifacts: c.artifacts.map((a) =>
-        a.id === 'quotes' ? { ...a, sub: 'Approved · Jason booked' } : a
-      ),
-      thread: [
-        ...baseThread,
-        {
-          type: 'action',
-          icon: CheckCircle2,
-          accent: 'sage',
-          title: 'You approved Jason · Friday 2 PM',
-          detail: 'Confirmed via Quote comparison',
-          time: '11:14 AM',
-        },
-        {
-          type: 'action',
-          icon: CheckCircle2,
-          accent: 'sage',
-          title: 'Booking confirmed with Jason Plumbing Co.',
-          detail: 'Friday, April 25 · 2:00–4:00 PM window',
-          time: '11:14 AM',
-        },
-        {
-          type: 'action',
-          icon: Calendar,
-          accent: 'sage',
-          title: 'Added to your calendar',
-          detail: 'Reminder set for 30 min before arrival',
-          time: '11:14 AM',
-        },
-        {
-          type: 'agent',
-          text: "Booked. Jason will text you 30 minutes before he arrives Friday at 2 PM. I'll check in once it's done, and if anything changes, I'll re-engage Bayline as backup.",
-          time: '11:15 AM',
-        },
-        {
-          type: 'live',
-          text: 'Confirmed · Friday April 25, 2:00 PM',
-          eta: '2 days away',
-        },
-      ],
-    };
+    const bookingTail = [
+      {
+        type: 'action',
+        icon: CheckCircle2,
+        accent: 'sage',
+        title: 'You approved Jason · Friday 2 PM',
+        detail: 'Confirmed via Quote comparison',
+        time: '11:14 AM',
+      },
+      {
+        type: 'action',
+        icon: CheckCircle2,
+        accent: 'sage',
+        title: 'Booking confirmed with Jason Plumbing Co.',
+        detail: 'Friday, April 25 · 2:00–4:00 PM window',
+        time: '11:14 AM',
+      },
+      {
+        type: 'action',
+        icon: Calendar,
+        accent: 'sage',
+        title: 'Added to your calendar',
+        detail: 'Reminder set for 30 min before arrival',
+        time: '11:14 AM',
+      },
+      {
+        type: 'agent',
+        text: "Booked. Jason will text you 30 minutes before he arrives Friday at 2 PM. I'll check in once it's done, and if anything changes, I'll re-engage Bayline as backup.",
+        time: '11:15 AM',
+      },
+    ];
+
+    if (jobCompleted) {
+      // After close-out, the thread tells the whole story through completion.
+      c = {
+        ...c,
+        statusPill: { tone: 'sage', label: 'Completed' },
+        artifacts: c.artifacts.map((a) =>
+          a.id === 'quotes' ? { ...a, sub: 'Approved · job closed out' } : a
+        ),
+        thread: [
+          ...baseThread,
+          ...bookingTail,
+          {
+            type: 'action',
+            icon: CheckCircle2,
+            accent: 'sage',
+            title: 'Jason marked the visit complete',
+            detail: 'Friday, April 25 · arrived on time',
+            time: '2:48 PM',
+          },
+          {
+            type: 'action',
+            icon: CheckCircle2,
+            accent: 'sage',
+            title: 'You confirmed the work is done',
+            detail: 'Leak resolved, no follow-up needed',
+            time: '2:50 PM',
+          },
+          ...(recommended === 'yes'
+            ? [
+                {
+                  type: 'action',
+                  icon: CheckCircle2,
+                  accent: 'sage',
+                  title: 'You recommended Jason',
+                  detail: "He's now Recommended by 13 Homewisers",
+                  time: '2:50 PM',
+                },
+              ]
+            : []),
+          {
+            type: 'action',
+            icon: CheckCircle2,
+            accent: 'sage',
+            title: 'Job closed out',
+            detail: 'Logged in your home file',
+            time: '2:50 PM',
+          },
+          {
+            type: 'agent',
+            text: "All wrapped up. The leak's fixed and the job's closed out. I'll keep a quiet eye out for any follow-ups.",
+            time: '2:51 PM',
+          },
+          {
+            type: 'live',
+            done: true,
+            text: 'Completed · Friday April 25, 2:00 PM',
+            eta: 'Closed out',
+          },
+        ],
+      };
+    } else {
+      c = {
+        ...c,
+        statusPill: { tone: 'sage', label: 'Confirmed · Friday 2 PM' },
+        artifacts: c.artifacts.map((a) =>
+          a.id === 'quotes' ? { ...a, sub: 'Approved · Jason booked' } : a
+        ),
+        thread: [
+          ...baseThread,
+          ...bookingTail,
+          {
+            type: 'live',
+            text: 'Confirmed · Friday April 25, 2:00 PM',
+            eta: '2 days away',
+          },
+        ],
+      };
+    }
   }
 
   const Icon = c.icon;
@@ -333,11 +399,13 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
           <div className="px-6 py-4 border-b border-ink-100/80 bg-gradient-to-b from-canvas-soft/40 to-white flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+                {!jobCompleted && (
+                  <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+                )}
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
               </span>
               <span className="text-[12px] font-semibold text-ink-900">
-                Live thread
+                {jobCompleted ? 'Completed thread' : 'Live thread'}
               </span>
               <span className="text-[11px] text-ink-500">· {c.thread.length} messages</span>
             </div>
@@ -446,7 +514,14 @@ export default function ConversationPage({ onNavigate, conversationId = 'sink', 
               </span>
             </div>
             <div className="space-y-1.5">
-              {(decisionHandled
+              {(jobCompleted
+                ? [
+                    'View the closed-out scope',
+                    'See Jason in the contractor showcase',
+                    'Start a new task',
+                    'Archive this conversation',
+                  ]
+                : decisionHandled
                 ? [
                     'Reschedule the visit',
                     'Message Jason a question',
@@ -703,10 +778,14 @@ function LiveIndicator({ m }) {
       transition={{ duration: 0.35 }}
       className="flex items-center gap-2.5 rounded-2xl bg-canvas-soft border border-dashed border-ink-200 px-3.5 py-3 mt-2"
     >
-      <span className="relative flex h-2 w-2 shrink-0">
-        <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
-      </span>
+      {m.done ? (
+        <CheckCircle2 size={14} strokeWidth={2.2} className="text-sage-600 shrink-0" />
+      ) : (
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
+        </span>
+      )}
       <div className="flex-1 text-[12.5px] text-ink-700">{m.text}</div>
       <span className="text-[10.5px] text-ink-500 shrink-0">{m.eta}</span>
     </motion.div>

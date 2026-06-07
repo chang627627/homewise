@@ -19,13 +19,13 @@ const homes = [
   { id: 2, label: 'Lake House', sub: 'Tahoe, CA' },
 ];
 
-const buildPrimaryNav = (hasStartedFirstTask) => [
+const buildPrimaryNav = (hasStartedFirstTask, jobCompleted) => [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
   {
     id: 'tasks',
     label: 'Conversations',
     icon: MessagesSquare,
-    badge: hasStartedFirstTask ? '1' : null,
+    badge: jobCompleted ? '1' : null, // Conversations holds finished conversations only
     tone: 'sage',
   },
   {
@@ -46,10 +46,11 @@ export default function Sidebar({
   activePage = 'overview',
   onNavigate,
   hasStartedFirstTask = false,
+  jobCompleted = false,
 }) {
   const [open, setOpen] = useState(false);
   const [home, setHome] = useState(homes[0]);
-  const primaryNav = buildPrimaryNav(hasStartedFirstTask);
+  const primaryNav = buildPrimaryNav(hasStartedFirstTask, jobCompleted);
 
   return (
     <aside className="flex h-full flex-col bg-white/80 backdrop-blur-md border-r border-ink-100/80 overflow-hidden">

@@ -106,6 +106,7 @@ export default function App() {
             activePage={page}
             onNavigate={handleNavigate}
             hasStartedFirstTask={hasStartedFirstTask}
+            jobCompleted={jobCompleted}
           />
         </div>
 
