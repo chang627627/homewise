@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import Button from '../components/ui/Button';
-import OverviewCards from '../components/OverviewCards';
 import ActiveTasks from '../components/ActiveTasks';
 
 const accentMap = {
@@ -30,6 +29,7 @@ export default function OverviewPage({
       scheduledSlot={scheduledSlot}
       jobCompleted={jobCompleted}
       recommended={recommended}
+      maintenanceItems={maintenanceItems}
     />
   );
 }
@@ -85,118 +85,101 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
         </div>
       </section>
 
-      {maintenanceItems.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
-              Your home's watchlist
-            </span>
-          </div>
-          <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
-            Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
-          </p>
-          <div className="space-y-2">
-            {maintenanceItems.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.05 * i }}
-                  className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
-                >
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent] || 'bg-canvas-soft text-ink-700 ring-ink-100'}`}>
-                    <Icon size={14} strokeWidth={1.8} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
-                          {item.title}
-                        </div>
-                        <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
-                      </div>
-                      {item.source && (
-                        <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
-                          {item.source}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
-                      {item.detail}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {maintenanceItems.length > 0 && <Watchlist items={maintenanceItems} />}
     </div>
   );
 }
 
-function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot, jobCompleted, recommended }) {
+function PopulatedOverview({ onNavigate, decisionHandled, scheduledSlot, jobCompleted, recommended, maintenanceItems = [] }) {
+  // Overview is the general, whole-home pulse: no contractor names, no per-job
+  // detail. A live job shows as one general "in progress" row; the specifics
+  // (and any finished job) live in Conversations. Once the job is closed out,
+  // nothing is live, so the page settles into a caught-up state.
+  const hero = jobCompleted
+    ? { primary: "You're all caught up.", secondary: 'Homewise is keeping a quiet eye.' }
+    : decisionHandled
+      ? null // booked: the active task card carries the status, so no separate hero line
+      : { primary: '1 decision is waiting.', secondary: 'Homewise has your options lined up.' };
+
   return (
     <div className="space-y-12 lg:space-y-16">
-      {/* Hero */}
-      <section>
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="h-px w-6 bg-ink-300" />
-            <span className="text-[11px] uppercase tracking-[0.22em] text-ink-500 font-medium">
-              Good morning, Mara · April 23
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 border border-ink-100 px-2.5 py-1 text-[11px] text-ink-600">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
-              </span>
-              Homewise active
-            </span>
-          </div>
-        </div>
-        {(() => {
-          const hero = jobCompleted
-            ? {
-                primary: 'Job closed out.',
-                secondary:
-                  recommended === 'yes'
-                    ? 'You recommended Jason. Homewise is keeping a quiet eye.'
-                    : 'Recorded for your file.',
-              }
-            : decisionHandled
-              ? {
-                  primary: `${scheduledSlot || 'Friday 2 PM'} with Jason.`,
-                  secondary: 'Homewise is watching for changes.',
-                }
-              : {
-                  primary: '1 decision today.',
-                  secondary: 'Pick your plumber.',
-                };
-          return (
-            <>
-              <h1 className="editorial text-[28px] md:text-[34px] leading-[1.1] text-ink-900 tracking-tight max-w-2xl">
-                {hero.primary}
-                <span className="block text-ink-500">{hero.secondary}</span>
-              </h1>
-            </>
-          );
-        })()}
-      </section>
+      {/* Hero — pending + caught-up states only; booked shows no hero line. */}
+      {hero && (
+        <section>
+          <h1 className="editorial text-[28px] md:text-[34px] leading-[1.1] text-ink-900 tracking-tight max-w-2xl">
+            {hero.primary}
+            <span className="block text-ink-500">{hero.secondary}</span>
+          </h1>
+        </section>
+      )}
 
-      <OverviewCards onNavigate={onNavigate} decisionHandled={decisionHandled} />
-      <ActiveTasks
-        onNavigate={onNavigate}
-        decisionHandled={decisionHandled}
-        scheduledSlot={scheduledSlot}
-        jobCompleted={jobCompleted}
-        recommended={recommended}
-      />
+      {/* While the job is live, the full task card lives here. Once it's closed out,
+          it drops off the Overview and lives in Conversations instead. */}
+      {!jobCompleted && (
+        <ActiveTasks
+          onNavigate={onNavigate}
+          decisionHandled={decisionHandled}
+          scheduledSlot={scheduledSlot}
+          jobCompleted={jobCompleted}
+          recommended={recommended}
+        />
+      )}
+
+      {maintenanceItems.length > 0 && <Watchlist items={maintenanceItems} />}
     </div>
+  );
+}
+
+// Shared watchlist: the home's standing maintenance plan. General and always
+// relevant, so it appears on every Overview state (cold-start, live, caught-up).
+function Watchlist({ items }) {
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="h-px w-6 bg-ink-300" />
+        <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
+          Your home's watchlist
+        </span>
+      </div>
+      <p className="text-[13px] text-ink-500 leading-relaxed mb-5">
+        Homewise tracks these, pings you before seasonal windows, and lines up vetted pros when you're ready.
+      </p>
+      <div className="space-y-2">
+        {items.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.05 * i }}
+              className="rounded-2xl bg-white border border-ink-100/80 p-4 flex items-start gap-3"
+            >
+              <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ring-1 shrink-0 ${accentMap[item.accent] || 'bg-canvas-soft text-ink-700 ring-ink-100'}`}>
+                <Icon size={14} strokeWidth={1.8} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">
+                      {item.title}
+                    </div>
+                    <div className="text-[11.5px] text-ink-500 mt-0.5">{item.cadence}</div>
+                  </div>
+                  {item.source && (
+                    <span className="shrink-0 inline-flex items-center rounded-full bg-canvas-soft border border-ink-100 px-2 py-0.5 text-[10.5px] font-semibold text-ink-500 whitespace-nowrap">
+                      {item.source}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1.5 text-[12.5px] text-ink-700 leading-relaxed">
+                  {item.detail}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
