@@ -272,6 +272,19 @@ components:
     rounded: "{rounded.lg}"
     height: 40px
 
+  button-hero:
+    role: "Flow-advance CTA. The large dark next-step button on the empty Overview and at the foot of focused-flow pages (Scope, Contractor Compare, Quote Tracking, Onboarding). One per page. API: variant=hero (sizing is self-contained, pass no size)."
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    fontSize: 13.5
+    fontWeight: 600                  # font-semibold — heavier than the standard button role for presence
+    rounded: "{rounded.lg}"          # rounded-2xl
+    height: 48px                     # h-12, self-contained — does NOT use the sm/md/lg size scale
+    padding: "pl-5 pr-3"             # asymmetric; the trailing chip balances the right edge
+    texture: "grain-dark + hairline-on-dark (no ring)"
+    trailingChip: "iconRight rides in a 32x32 (h-8 w-8) rounded-xl chip — bg-canvas-soft/15, group-hover bg-canvas-soft/25. ArrowRight for entry CTAs, ChevronRight to advance within a flow."
+    leadingIcon: "optional icon (e.g. Send) renders inline at 14px before the label."
+
   pill-neutral:
     backgroundColor: "{colors.ink-100}/80"
     textColor: "{colors.ink-700}"
@@ -449,7 +462,7 @@ The visual system is deliberately **calm and warm** where most AI brands lean co
 
 The accent never decorates — every sage or ember surface reinforces a meaning. A pill that's sage tells the user "this is the AI's pick." A pill that's ember tells them "before booking, look here."
 
-Type is **sans-only Geist** at editorial weight (600) with negative tracking (−0.028em) on headlines. The Empty Overview hero peaks at 52px (lg breakpoint). All other page headers sit at 24–30px. Sans at 76px reads shouty — the cap is the design.
+Type is **sans-only Geist** at editorial weight (500) with negative tracking (−0.040em) on headlines. The Empty Overview hero peaks at 52px (lg breakpoint). All other page headers sit at 24–30px. Sans at 76px reads shouty — the cap is the design.
 
 **Shadows are banned.** Every card relies on a `border-ink-100/70` hairline + `ring-1` + the underlying canvas/white contrast. Old `shadow-soft / card / glow` tokens still exist in [tailwind.config.js](tailwind.config.js) but must never be applied. The flatness is intentional — it reads as document-craft, not SaaS-dashboard.
 
@@ -483,7 +496,7 @@ Five surface tiers, layered shallowly. Every visible surface lives on exactly on
 
 ## Page template anatomy
 
-Every focused-flow page (Intake, Scope, Contractor Compare, Quote Compare, Conversation, Completion) follows this shell:
+Every focused-flow page (Intake, Scope, Contractor Compare, Quote Tracking, Quote Compare, Conversation, Completion) follows this shell:
 
 ```
 BackBar (top-left button + optional uppercase context eyebrow on the right)
@@ -494,9 +507,11 @@ PageHeader (eyebrow + hero-m title + description, CTAs in a row underneath when 
 
 CTAs appear **once per page**. No top + bottom duplication. The only exception is Quote Compare's per-contractor approve buttons (per-column decisions, not duplicates of a single top action).
 
+Two surfaces sit apart from this shell. **Quote Tracking** (the "watch quotes roll in" interstitial between Contractor Compare and Quote Compare) keeps BackBar + FlowProgress but swaps the PageHeader for a live agent-status header. **BidFormPage** (the contractor-facing `/bidform` and `/bid/:id` routes) is a separate surface that does not use the homeowner shell at all.
+
 ## Component principles
 
-- **All buttons go through [Button.jsx](src/components/ui/Button.jsx).** Six variants (primary, secondary, ghost, sage, soft, outline) × three sizes (sm/md/lg). Do not hand-roll button classes per page — that was the root cause of the Quote Compare sizing drift in Round 1 testing.
+- **All buttons go through [Button.jsx](src/components/ui/Button.jsx).** Six variants (primary, secondary, ghost, sage, soft, outline) × three sizes (sm/md/lg), plus a self-sized **hero** variant (the dark arrow-chip flow-advance CTA, see button-hero). Do not hand-roll button classes per page — that was the root cause of the Quote Compare sizing drift in Round 1 testing.
 - **All status pills go through [Pill.jsx](src/components/ui/Pill.jsx).** Six tones (neutral, sage, ember, sky, live, soft). `live` adds a pulsing 1.5×1.5 dot.
 - **All cards go through [Card.jsx](src/components/ui/Card.jsx).** Variants: default, quiet, glass, flat. Base radius is `rounded-3xl` (24px). Never `rounded-2xl` for cards (that's the button radius).
 - **Drawers must portal to document.body.** The App-level `motion.div` page-transition wrapper has a `y` transform which creates a containing block for any `position: fixed` descendant. Without `createPortal`, the drawer attaches to the padded main column instead of the viewport corner.
@@ -505,7 +520,7 @@ CTAs appear **once per page**. No top + bottom duplication. The only exception i
 
 Three pages have empty + populated variants driven by `hasStartedFirstTask`:
 
-- **Overview** — empty shows a "Tell it what happened" hero + How It Works grid. Populated shows a contextual hero that switches by state: pre-decision ("1 decision today. / Pick your plumber."), post-decision ("Fri 2 PM with Jason. / Homewise is watching for changes."), post-completion ("Job closed out. / [recommendation status].").
+- **Overview** — empty shows a "Tell it what happened" hero + "Your home's watchlist" (the maintenance items carried over from onboarding). Populated shows a contextual hero that switches by state: pre-decision ("1 decision today. / Pick your plumber."), post-decision ("Fri 2 PM with Jason. / Homewise is watching for changes."), post-completion ("Job closed out. / [recommendation status].").
 - **Tasks (Conversations)** — empty shows a prompt to start, populated shows the active task list.
 - **Schedule** — empty shows "Nothing scheduled yet," populated shows the week strip + visit card.
 

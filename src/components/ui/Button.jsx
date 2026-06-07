@@ -27,6 +27,29 @@ export default function Button({
   className = '',
   ...rest
 }) {
+  // Hero CTA (variant="hero") — the large dark "advance the flow" button used on
+  // the empty Overview and at the foot of focused-flow pages (Scope, Contractor
+  // Compare, Quote Tracking, Onboarding). The trailing icon rides in a rounded
+  // inset chip and the surface carries the dark-craft texture. Sizing is
+  // self-contained so it never collides with the size scale above; pass no
+  // `size`. Optional leading `icon` and a disabled state are both supported.
+  if (variant === 'hero') {
+    return (
+      <button
+        className={`group inline-flex items-center justify-center gap-2.5 h-12 pl-5 pr-3 rounded-2xl text-[13.5px] font-semibold tracking-[-0.005em] bg-ink-900 text-canvas-soft hover:bg-ink-700 hairline-on-dark grain-dark transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none ${className}`}
+        {...rest}
+      >
+        {Icon && <Icon size={14} strokeWidth={2} />}
+        {children}
+        {IconRight && (
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
+            <IconRight size={14} strokeWidth={2.2} />
+          </span>
+        )}
+      </button>
+    );
+  }
+
   return (
     <button
       className={`inline-flex items-center justify-center gap-2 font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none ${variants[variant]} ${sizes[size]} ${className}`}

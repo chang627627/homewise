@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import Button from '../components/ui/Button';
 import OverviewCards from '../components/OverviewCards';
 import ActiveTasks from '../components/ActiveTasks';
 
@@ -76,15 +77,9 @@ function EmptyOverview({ onNavigate, maintenanceItems = [] }) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-3"
           >
-            <button
-              onClick={() => onNavigate?.('intake')}
-              className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
-            >
+            <Button variant="hero" onClick={() => onNavigate?.('intake')} iconRight={ArrowRight}>
               Start your first task
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
-                <ArrowRight size={14} strokeWidth={2.2} />
-              </span>
-            </button>
+            </Button>
           </motion.div>
 
         </div>

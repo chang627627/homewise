@@ -7,6 +7,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
+import Button from '../components/ui/Button';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
 
@@ -203,15 +204,9 @@ export default function QuoteTrackingPage({ onNavigate }) {
               transition={{ duration: 0.4 }}
               className="flex flex-col sm:flex-row sm:items-center gap-3"
             >
-              <button
-                onClick={() => onNavigate?.('quote-compare')}
-                className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center justify-center gap-2.5 text-[13.5px] font-semibold transition-all"
-              >
+              <Button variant="hero" onClick={() => onNavigate?.('quote-compare')} iconRight={ArrowRight}>
                 Compare all 3
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
-                  <ArrowRight size={14} strokeWidth={2.2} />
-                </span>
-              </button>
+              </Button>
               <span className="text-[12px] text-ink-500">
                 Side-by-side breakdown with deviations and outliers flagged.
               </span>

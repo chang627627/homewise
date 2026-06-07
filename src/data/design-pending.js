@@ -42,19 +42,4 @@
  */
 
 /** @type {PendingAddition[]} */
-export const pendingAdditions = [
-  {
-    id: 'example-001',
-    type: 'color',
-    name: 'sage-tint',
-    description:
-      'A lighter sage variant (#F8FAF6) for very subtle AI-touched moments where sage-50 still feels too saturated. Would sit between canvas-soft and sage-50 on the trust scale. (Example proposal · delete me once you have real proposals.)',
-    proposedBy: 'Claude (example)',
-    proposedDate: '2026-05-12',
-    preview: {
-      kind: 'swatch',
-      bg: '#F8FAF6',
-      hex: '#F8FAF6',
-    },
-  },
-];
+export const pendingAdditions = [];

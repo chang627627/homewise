@@ -37,34 +37,28 @@ const script = [
   },
   {
     type: 'agent',
-    text: "Got it. Before I scope this for contractors, I need a couple of photos to rule things out. Specifically these shots:",
-    requestShots: [
-      'Under the sink: the P-trap area, with the cabinet doors open',
-      'The faucet base from above (where the spout meets the counter)',
-      "Inside the cabinet behind the back panel (only if you can reach safely)",
-    ],
+    text: "Got it. Before I scope this for contractors, I need one photo to rule things out. Snap the spot below and I'll check it.",
+    photoRequest: true,
     time: '10:28 AM',
   },
   {
     type: 'user',
-    text: 'Sending all three now.',
+    text: 'Here it is.',
     time: '10:30 AM',
   },
   {
     type: 'photos',
     photos: [
       { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
-      { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
-      { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
     ],
   },
   {
     type: 'agent-thinking',
-    text: 'Looking at your photos…',
+    text: 'Looking at it…',
   },
   {
     type: 'agent',
-    text: 'From your photos: standing water at the P-trap joint, slow drip at the faucet base, supply line behind the panel is dry. Two contained problems.',
+    text: "From the photo: standing water right at the P-trap joint, the slip nut is weeping. That's your leak.",
     time: '10:30 AM',
   },
   {
@@ -124,9 +118,9 @@ function getConversationState(step, photosUploaded, urgencyChosen, done, failedS
   if (done) return { label: 'Scoped', pulse: false };
   if (failedStep !== null) return { label: 'Hit a snag', pulse: false };
   if (step <= 1) return { label: null, pulse: false };
-  if (step === 4 && !photosUploaded) return { label: 'Photos needed', pulse: false };
+  if (step === 4 && !photosUploaded) return { label: 'Photo needed', pulse: false };
   if (step === 9 && !urgencyChosen) return { label: 'Your call', pulse: false };
-  if (step >= 6 && step <= 7) return { label: 'Analyzing photos', pulse: true };
+  if (step >= 6 && step <= 7) return { label: 'Analyzing photo', pulse: true };
   if (step >= 12) return { label: 'Building scope', pulse: true };
   const last = script[step - 1];
   if (last?.type === 'agent-thinking' || last?.type === 'user' || last?.type === 'photos') {
@@ -134,14 +128,6 @@ function getConversationState(step, photosUploaded, urgencyChosen, done, failedS
   }
   return { label: 'Working on it', pulse: false };
 }
-
-// Demo narrative: the first photo-analysis pass always fails once, then
-// recovers on retry. script[6] = "Looking at your photos…" (the agent-
-// thinking just after the first photo strip renders). The Thinking bubble
-// is only visible AFTER step advances past 6, so we inject the failure
-// when step === 7 — that way the bubble is already on screen and just
-// flips its content to the failure state.
-const FAILED_THINKING_INDEX = 6;
 
 export default function IntakePage({ onNavigate }) {
   const [step, setStep] = useState(1);
@@ -162,13 +148,6 @@ export default function IntakePage({ onNavigate }) {
     // Gate auto-advance while a thinking step is in a failed state
     if (failedStep !== null) return;
     const m = script[step];
-    // Inject a one-time failure on the first photo-analysis thinking step.
-    // Trigger when step === FAILED_THINKING_INDEX + 1 so the Thinking bubble
-    // is already on screen and just flips into the failure state.
-    if (step === FAILED_THINKING_INDEX + 1 && !hasShownFailure) {
-      const t = setTimeout(() => setFailedStep(FAILED_THINKING_INDEX), 2400);
-      return () => clearTimeout(t);
-    }
     const delay = m.type === 'agent-thinking' ? 900 : m.type === 'agent' ? 1100 : 700;
     const t = setTimeout(() => setStep((s) => s + 1), delay);
     return () => clearTimeout(t);
@@ -497,11 +476,22 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
 }
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-const REQUIRED_PHOTOS = 3;
+
+// One photo to scope. The user uploads a single image; the AI "checks" it and
+// either accepts it (pass, the conversation continues) or asks for another with
+// advice (fail). No real vision here, so the check is scripted: the first
+// attempt is rejected, the retry is accepted.
+const REQUEST_SHOT = {
+  label: 'Under the sink',
+  instruction: 'The P-trap area, with the cabinet doors open',
+  read: 'Standing water right at the P-trap joint. The slip nut is weeping.',
+  failHint: 'Too dark to read the joint. Try one with the cabinet light on, a bit closer in.',
+};
 
 function AgentMessage({ m, onUploadPhotos, uploaded }) {
   const [uploading, setUploading] = useState(false);
-  const [uploadedCount, setUploadedCount] = useState(0);
+  const [failNotice, setFailNotice] = useState(false); // last attempt failed
+  const [failedOnce, setFailedOnce] = useState(false); // first attempt already rejected
   const [formatError, setFormatError] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -512,32 +502,29 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
 
   function handleFileChange(e) {
     if (!e.target.files?.length) return;
-    const files = Array.from(e.target.files);
+    const file = e.target.files[0]; // one image
     e.target.value = '';
 
-    if (files.some((f) => !ALLOWED_IMAGE_TYPES.has(f.type))) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       setFormatError(true);
       return;
     }
 
     setFormatError(false);
+    setFailNotice(false);
     setUploading(true);
-    // Simulated upload latency. The script's photo strip + AI analysis
-    // is what actually drives the demo; this 1.5s pause is just to make
-    // the upload feel like a real product moment.
+    // The AI "checks" the photo: pass continues the conversation, fail asks for
+    // another with advice. Scripted: the first attempt is rejected, retry passes.
     setTimeout(() => {
       setUploading(false);
-      const newCount = Math.min(uploadedCount + files.length, REQUIRED_PHOTOS);
-      setUploadedCount(newCount);
-      // Only advance the conversation once all 3 shots are in.
-      if (newCount >= REQUIRED_PHOTOS) {
-        onUploadPhotos();
+      if (!failedOnce) {
+        setFailedOnce(true);
+        setFailNotice(true);
+        return; // ask for another
       }
-    }, 1500);
+      onUploadPhotos();
+    }, 1200);
   }
-
-  const remaining = Math.max(REQUIRED_PHOTOS - uploadedCount, 0);
-  const showProgress = !uploaded && uploadedCount > 0 && uploadedCount < REQUIRED_PHOTOS;
 
   return (
     <motion.div
@@ -552,74 +539,96 @@ function AgentMessage({ m, onUploadPhotos, uploaded }) {
       <div className="flex-1 min-w-0 max-w-[88%] space-y-2.5">
         <div className="rounded-3xl rounded-tl-md bg-white border border-ink-100 px-4 py-3">
           <p className="text-[14px] leading-relaxed text-ink-900">{m.text}</p>
-          {m.requestShots && (
+          {m.photoRequest && (
             <div className="mt-3 rounded-2xl bg-canvas-soft border border-dashed border-ink-200 p-3">
-              <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
+              <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2.5">
                 <Camera size={11} className="text-sage-600" />
-                Photos requested · 3 shots
+                {uploaded ? 'Photo checked' : 'Photo requested'}
               </div>
-              <ul className="space-y-1.5">
-                {m.requestShots.map((s, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-[13px] text-ink-700 leading-snug"
-                  >
-                    <span className="shrink-0 inline-flex h-[18px] w-[18px] items-center justify-center rounded-md bg-white text-sage-600 ring-1 ring-sage-100 text-[10px] font-bold tabular-nums">
-                      {i + 1}
-                    </span>
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
+
+              <div
+                className={`flex items-start gap-2 rounded-xl px-2 py-1.5 ${
+                  uploaded ? '' : 'bg-white ring-1 ring-sage-100'
+                }`}
+              >
+                <span
+                  className={`shrink-0 mt-0.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-md ring-1 ${
+                    uploaded
+                      ? 'bg-sage-500 text-white ring-sage-500'
+                      : 'bg-white text-sage-600 ring-sage-100'
+                  }`}
+                >
+                  {uploaded ? (
+                    <CheckCircle2 size={11} strokeWidth={2.5} />
+                  ) : (
+                    <Camera size={10} strokeWidth={2.2} />
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12.5px] font-medium text-ink-900 leading-snug">
+                    {REQUEST_SHOT.label}
+                  </div>
+                  <div className="text-[11.5px] text-ink-500 leading-snug">
+                    {REQUEST_SHOT.instruction}
+                  </div>
+                  {uploaded && (
+                    <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-sage-700">
+                      <Sparkles size={9} className="text-sage-500" strokeWidth={2.2} />
+                      {REQUEST_SHOT.read}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                multiple
                 className="hidden"
                 onChange={handleFileChange}
               />
-              {showProgress && (
-                <p className="mt-3 flex items-center gap-1.5 text-[11px] text-ink-500">
-                  <CheckCircle2 size={11} strokeWidth={2.2} className="shrink-0 text-sage-600" />
-                  <span className="tabular-nums">{uploadedCount} of {REQUIRED_PHOTOS} uploaded</span>
-                  <span className="text-ink-400">·</span>
-                  <span>{remaining} to go</span>
+
+              {failNotice && !uploaded && (
+                <p className="mt-2.5 flex items-start gap-1.5 text-[11.5px] text-ember-500 leading-snug">
+                  <AlertCircle size={12} strokeWidth={2.2} className="shrink-0 mt-0.5" />
+                  <span>Couldn't use that one. {REQUEST_SHOT.failHint}</span>
                 </p>
               )}
-              <button
-                onClick={handleUploadClick}
-                disabled={uploaded || uploading || !onUploadPhotos}
-                className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-xl transition-all text-[12.5px] font-semibold ${
-                  uploaded
-                    ? 'bg-sage-50 text-sage-700 ring-1 ring-sage-100'
-                    : uploading
-                    ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait'
-                    : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
-                }`}
-              >
-                {uploaded ? (
-                  <>
-                    <CheckCircle2 size={13} strokeWidth={2.2} />
-                    Photos uploaded
-                  </>
-                ) : uploading ? (
-                  <>
-                    <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
-                    Uploading…
-                  </>
-                ) : uploadedCount > 0 ? (
-                  <>
-                    <Camera size={13} strokeWidth={2} />
-                    Add {remaining} more
-                  </>
-                ) : (
-                  <>
-                    <Camera size={13} strokeWidth={2} />
-                    Upload photos
-                  </>
-                )}
-              </button>
+
+              {uploaded ? (
+                <div className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-sage-700">
+                  <CheckCircle2 size={13} strokeWidth={2.2} />
+                  Photo received
+                </div>
+              ) : (
+                <button
+                  onClick={handleUploadClick}
+                  disabled={uploading || !onUploadPhotos}
+                  className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-xl transition-all text-[12.5px] font-semibold ${
+                    uploading
+                      ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait'
+                      : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
+                  }`}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 size={13} strokeWidth={2.2} className="animate-spin" />
+                      Checking photo…
+                    </>
+                  ) : failNotice ? (
+                    <>
+                      <Camera size={13} strokeWidth={2} />
+                      Upload another
+                    </>
+                  ) : (
+                    <>
+                      <Camera size={13} strokeWidth={2} />
+                      Upload photo
+                    </>
+                  )}
+                </button>
+              )}
+
               {formatError && (
                 <p className="mt-2 flex items-center gap-1.5 text-[11px] text-ember-500">
                   <AlertCircle size={11} strokeWidth={2.2} className="shrink-0" />

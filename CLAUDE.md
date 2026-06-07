@@ -80,7 +80,7 @@ Or manually grep your diff for:
 ## Visual system (current)
 
 **Type:** Geist everywhere via `.editorial` class. Variable weights 300–800.
-Inter + system stack as fallback. No serif. Letter-spacing −0.028em on
+Inter + system stack as fallback. No serif. Letter-spacing −0.040em on
 editorial headings.
 
 **Type scale (rebalanced for sans — never go bigger than 52px):**
@@ -133,6 +133,7 @@ src/
 │       ├── Button.jsx
 │       ├── Confidence.jsx           ← animated confidence bar
 │       ├── SectionHeader.jsx
+│       ├── Rule.jsx                 ← hairline brand gesture (eyebrows + numbered sections), see DESIGN.md
 │       ├── PageHeader.jsx           ← used on deep pages (Tasks, Schedule)
 │       ├── BackBar.jsx              ← used on focused-flow pages
 │       └── FlowProgress.jsx         ← 3-step pill row (Scope → Contractors → Quotes), clickable back-nav
@@ -145,8 +146,10 @@ src/
     ├── IntakePage.jsx               ← ChatGPT-style intake (gated on Upload + Urgency clicks, reactive replies)
     ├── ScopePage.jsx                ← AI-generated scope (no 92% number — killed per testing)
     ├── ContractorComparePage.jsx    ← side-by-side 3 contractors + showcase drawer + recommendation row
+    ├── QuoteTrackingPage.jsx        ← "watch quotes roll in" interstitial (Contractor Compare → Quote Compare)
     ├── QuoteComparePage.jsx         ← apples-to-apples + availability windows + slot picker + contact drawer
-    └── CompletionPage.jsx           ← Flow 3 close-out: confirm work + photo opt-in + binary recommend
+    ├── CompletionPage.jsx           ← Flow 3 close-out: confirm work + photo opt-in + binary recommend
+    └── BidFormPage.jsx              ← contractor-facing bid form (/bidform, /bid/:id), outside the homeowner shell
 ```
 
 **Deleted, do not recreate:** `ApprovalsPage.jsx`, `ContractorsPage.jsx`,
@@ -249,7 +252,7 @@ footer to the screen edge.
 [ Empty Overview ]
   Hero: "Your AI is ready. Tell it what happened."
   + Big "Start your first task" CTA
-  + 4-step "How it works" grid
+  + "Your home's watchlist" (maintenance items carried over from onboarding)
   Sidebar: Overview · Conversations (no badge) · Schedule (no badge)
         │
         ▼  click CTA OR sidebar "+ New AI task"
@@ -786,8 +789,8 @@ threads for completeness.
 ## How to verify the demo end-to-end
 
 1. `npm run dev` → http://localhost:5173
-2. Land on **empty Overview**: hero, "Start your first task" CTA, 4-step
-   How It Works grid. Sidebar: Overview / Conversations / Schedule
+2. Land on **empty Overview**: hero, "Start your first task" CTA, the
+   "Your home's watchlist" panel. Sidebar: Overview / Conversations / Schedule
    (no badges).
 3. Click "Start your first task" → **Intake**. Conversation auto-plays in
    ~10 sec.

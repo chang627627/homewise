@@ -4,7 +4,7 @@ import PageHeader from '../components/ui/PageHeader';
 import ActiveTasks from '../components/ActiveTasks';
 import Pill from '../components/ui/Pill';
 
-export default function TasksPage({ onNavigate, hasStartedFirstTask, decisionHandled }) {
+export default function TasksPage({ onNavigate, hasStartedFirstTask, decisionHandled, scheduledSlot, jobCompleted, recommended }) {
   if (!hasStartedFirstTask) {
     return (
       <div className="space-y-10">
@@ -44,17 +44,27 @@ export default function TasksPage({ onNavigate, hasStartedFirstTask, decisionHan
   return (
     <div className="space-y-12 lg:space-y-14">
       <PageHeader
-        eyebrow="Conversations · 1 ongoing"
+        eyebrow={jobCompleted ? 'Conversations · 1 closed out' : 'Conversations · 1 ongoing'}
         title="Every job is a conversation."
         description="Click in to see the thread, the AI's actions, and every artifact it generated for that job."
         trailing={
-          <Pill tone="sage" live>
-            Live
-          </Pill>
+          jobCompleted ? (
+            <Pill tone="sage">Closed out</Pill>
+          ) : (
+            <Pill tone="sage" live>
+              Live
+            </Pill>
+          )
         }
       />
 
-      <ActiveTasks onNavigate={onNavigate} decisionHandled={decisionHandled} />
+      <ActiveTasks
+        onNavigate={onNavigate}
+        decisionHandled={decisionHandled}
+        scheduledSlot={scheduledSlot}
+        jobCompleted={jobCompleted}
+        recommended={recommended}
+      />
     </div>
   );
 }

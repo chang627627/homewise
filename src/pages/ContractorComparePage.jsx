@@ -20,6 +20,7 @@ import {
   ThumbsUp,
   Image as ImageIcon,
 } from 'lucide-react';
+import Button from '../components/ui/Button';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
 import Pill from '../components/ui/Pill';
@@ -492,20 +493,9 @@ export default function ContractorComparePage({ onNavigate, jobCompleted, recomm
               <X size={13} strokeWidth={1.8} />
               Reject all 3
             </button>
-            <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-              <RefreshCw size={13} strokeWidth={1.8} />
-              Show 3 different
-            </button>
-            <button
-              onClick={() => onNavigate?.('quote-tracking')}
-              className="group h-12 pl-5 pr-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all"
-            >
-              <Send size={14} strokeWidth={2} />
+            <Button variant="hero" onClick={() => onNavigate?.('quote-tracking')} icon={Send} iconRight={ChevronRight}>
               Approve all 3 &amp; send scope
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft/15 group-hover:bg-canvas-soft/25 transition-colors">
-                <ChevronRight size={14} strokeWidth={2.2} />
-              </span>
-            </button>
+            </Button>
           </div>
         </div>
       </section>

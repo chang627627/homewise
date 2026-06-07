@@ -26,11 +26,11 @@ const week = [
   { day: 'Sun', date: 27 },
 ];
 
-export default function SchedulePage({ onNavigate, hasStartedFirstTask, decisionHandled }) {
+export default function SchedulePage({ onNavigate, hasStartedFirstTask, decisionHandled, jobCompleted }) {
   if (!hasStartedFirstTask) {
     return <EmptySchedule onNavigate={onNavigate} />;
   }
-  return <PopulatedSchedule onNavigate={onNavigate} decisionHandled={decisionHandled} />;
+  return <PopulatedSchedule onNavigate={onNavigate} decisionHandled={decisionHandled} jobCompleted={jobCompleted} />;
 }
 
 // ──────────────────────────────────────────────────────────
@@ -74,8 +74,18 @@ function EmptySchedule({ onNavigate }) {
 // ──────────────────────────────────────────────────────────
 // Populated state — depends on whether the user has approved
 // ──────────────────────────────────────────────────────────
-function PopulatedSchedule({ onNavigate, decisionHandled }) {
-  const visit = decisionHandled
+function PopulatedSchedule({ onNavigate, decisionHandled, jobCompleted }) {
+  const visit = jobCompleted
+    ? {
+        when: 'Friday · April 25 · 2:00 PM',
+        durationLabel: '2-hour window',
+        title: 'Kitchen sink leak & drip repair',
+        contractor: 'Jason Plumbing Co.',
+        location: '124 Maple St · main bathroom',
+        statusPill: { tone: 'sage', label: 'Completed', icon: CheckCircle2 },
+        note: 'Visit complete. Jason closed out the job and your recommendation is logged.',
+      }
+    : decisionHandled
     ? {
         when: 'Friday · April 25 · 2:00 PM',
         durationLabel: '2-hour window',
@@ -95,10 +105,14 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
         note: 'Approve on the quote comparison to lock in this slot.',
       };
 
-  const eyebrow = decisionHandled
+  const eyebrow = jobCompleted
+    ? 'Schedule · 1 completed'
+    : decisionHandled
     ? 'Schedule · 1 confirmed'
     : 'Schedule · 1 pending';
-  const description = decisionHandled
+  const description = jobCompleted
+    ? "Jason's visit is done and the job is closed out. Homewise will keep an eye out for any follow-ups."
+    : decisionHandled
     ? "Jason is booked for Friday. Homewise will check in once the visit is done, and re-engage your backup if anything changes."
     : "One visit is proposed. Approve the contractor on the quote page to confirm the slot.";
 
@@ -109,8 +123,8 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
         title="What's on the calendar."
         description={description}
         trailing={
-          <Pill tone={decisionHandled ? 'sage' : 'ember'} live={decisionHandled}>
-            {decisionHandled ? 'Booked' : 'Awaiting'}
+          <Pill tone={decisionHandled ? 'sage' : 'ember'} live={decisionHandled && !jobCompleted}>
+            {jobCompleted ? 'Completed' : decisionHandled ? 'Booked' : 'Awaiting'}
           </Pill>
         }
       />
@@ -127,7 +141,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
                 Week of April 21
               </div>
               <div className="text-[11.5px] text-ink-500">
-                {decisionHandled ? '1 confirmed visit · Friday' : '1 visit awaiting approval · Friday'}
+                {jobCompleted ? '1 completed visit · Friday' : decisionHandled ? '1 confirmed visit · Friday' : '1 visit awaiting approval · Friday'}
               </div>
             </div>
           </div>
@@ -202,7 +216,7 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
         <div className="flex items-center gap-2 mb-1">
           <span className="h-px w-6 bg-ink-300" />
           <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
-            Upcoming
+            {jobCompleted ? 'Past visit' : 'Upcoming'}
           </span>
         </div>
 
@@ -247,7 +261,9 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
 
               {/* Status note */}
               <div className="mt-4 rounded-2xl bg-canvas-soft border border-ink-100 px-3.5 py-2.5 flex items-start gap-2">
-                {decisionHandled ? (
+                {jobCompleted ? (
+                  <CheckCircle2 size={12} className="text-sage-600 mt-0.5 shrink-0" strokeWidth={2} />
+                ) : decisionHandled ? (
                   <Bell size={12} className="text-sage-600 mt-0.5 shrink-0" strokeWidth={1.8} />
                 ) : (
                   <AlertCircle size={12} className="text-ember-500 mt-0.5 shrink-0" strokeWidth={2} />
@@ -259,7 +275,14 @@ function PopulatedSchedule({ onNavigate, decisionHandled }) {
 
               {/* Actions */}
               <div className="mt-4 flex items-center gap-2 flex-wrap">
-                {decisionHandled ? (
+                {jobCompleted ? (
+                  <button
+                    onClick={() => onNavigate?.({ page: 'conversation', conversationId: 'sink' })}
+                    className="h-9 px-3.5 rounded-xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12px] font-medium transition-all"
+                  >
+                    View job summary
+                  </button>
+                ) : decisionHandled ? (
                   <>
                     <button className="h-9 px-3.5 rounded-xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12px] font-medium transition-all">
                       Reschedule

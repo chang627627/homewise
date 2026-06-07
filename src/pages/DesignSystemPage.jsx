@@ -206,7 +206,7 @@ export default function DesignSystemPage() {
 
         {/* 03 Components */}
         <Section num="03" title="Components" sub="The shared primitives in src/components/ui/. Use them · don't hand-roll their classes per page.">
-          <SubSection label="Button · 6 variants, 3 sizes">
+          <SubSection label="Button · 7 variants (incl. hero), 3 sizes">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2.5">
                 <Button variant="primary">Primary</Button>
@@ -224,6 +224,10 @@ export default function DesignSystemPage() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <Button variant="primary" icon={Send}>With icon</Button>
                 <Button variant="secondary" iconRight={ArrowRight}>Trailing icon</Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Button variant="hero" iconRight={ArrowRight}>Start your first task</Button>
+                <Button variant="hero" icon={Send} iconRight={ArrowRight}>Approve &amp; send scope</Button>
               </div>
             </div>
           </SubSection>

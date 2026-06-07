@@ -141,8 +141,8 @@ export default function ActiveTasks({
   return (
     <section className="space-y-6">
       <SectionHeader
-        eyebrow="Active AI tasks"
-        title="What Homewise is working on right now."
+        eyebrow={jobCompleted ? 'Recent AI tasks' : 'Active AI tasks'}
+        title={jobCompleted ? 'What Homewise wrapped up.' : 'What Homewise is working on right now.'}
         description={
           jobCompleted
             ? 'One job, closed out. Click for the receipt, photos, and the recommendation you sent.'
@@ -151,9 +151,13 @@ export default function ActiveTasks({
               : "One job in motion. Click to see the conversation, what the AI's done, and what's next."
         }
         trailing={
-          <Pill tone="sage" live>
-            Live
-          </Pill>
+          jobCompleted ? (
+            <Pill tone="sage">Closed out</Pill>
+          ) : (
+            <Pill tone="sage" live>
+              Live
+            </Pill>
+          )
         }
       />
 
