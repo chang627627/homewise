@@ -243,6 +243,9 @@ export default function QuoteComparePage({ onNavigate }) {
   const [picked, setPicked] = useState({ jason: 'fri-2', bayline: 'sat-10', quickfix: 'today-5' });
   const [contactOpen, setContactOpen] = useState(null); // contractor id or null
   const openContractor = cols.find((c) => c.id === contactOpen);
+  // The AI-pick column gets a continuous sage tint, same pattern as
+  // Contractor Compare: computed once, applied to every per-column cell.
+  const aiPickIndex = cols.findIndex((c) => c.aiPick);
 
   const slotsFor = (c) => c.slots.filter((s) => windows.has(s.window));
   const pickedSlot = (c) => {
@@ -290,92 +293,57 @@ export default function QuoteComparePage({ onNavigate }) {
         </p>
       </motion.section>
 
-      {/* Total bar */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {cols.map((c, i) => (
-          <motion.div
-            key={c.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.05 }}
-            className={`relative rounded-3xl border p-4 ${
-              c.aiPick
-                ? 'bg-white border-sage-200 ring-1 ring-sage-100'
-                : 'bg-white border-ink-100/80'
-            }`}
-          >
-            {c.aiPick && (
-              <div className="absolute -top-2.5 left-4">
-                <Pill tone="sage" icon={Sparkles}>
-                  AI pick
-                </Pill>
-              </div>
-            )}
-            <div className="flex items-center gap-3">
-              <div
-                className={`relative h-10 w-10 rounded-2xl bg-gradient-to-br ${accentBg[c.accent]} ring-1 flex items-center justify-center shrink-0`}
-              >
-                <span className="editorial text-[15px]">{c.initials}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em] truncate">
-                  {c.name}
-                </div>
-                <Pill tone={c.verdict.tone} className="mt-0.5">
-                  {c.verdict.label}
-                </Pill>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="editorial text-[24px] leading-none text-ink-900 tabular-nums">
-                  ${c.total}
-                </div>
-                <div className="text-[10.5px] text-ink-500 mt-0.5">total</div>
-              </div>
-            </div>
-            {c.schedule && (
-              <div className="mt-2.5 flex items-center gap-1.5 text-[11.5px] text-ink-500">
-                <Calendar size={11} strokeWidth={1.8} className="text-ink-400 shrink-0" />
-                <span className="truncate">
-                  Start <span className="figure text-ink-700">{c.schedule.earliestStart}</span>
-                  <span className="text-ink-300 mx-1">·</span>
-                  {c.schedule.duration}
-                </span>
-              </div>
-            )}
-            {c.note && (
-              <div className="mt-3 pt-3 border-t border-ink-100/80">
-                <p className="text-[12px] leading-relaxed text-ink-500 italic">
-                  &ldquo;{c.note}&rdquo;
-                </p>
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </section>
-
-      {/* Comparison matrix */}
+      {/* Comparison matrix — the quote cards ARE the column headers */}
       <section className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
-        {/* Sticky-style header (column avatars) */}
-        <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40">
-          <div className="col-span-3">
+        {/* Column header cards: avatar + verdict + total + schedule + note */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40 items-stretch">
+          <div className="hidden md:flex md:col-span-3 items-end">
             <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
               Scope item
             </div>
           </div>
-          {cols.map((c) => (
-            <div key={c.id} className="col-span-3 flex items-center gap-2">
-              <span
-                className={`flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br ${accentBg[c.accent]} ring-1 text-[11px] editorial`}
-              >
-                {c.initials}
-              </span>
-              <span className="text-[12px] font-semibold text-ink-900 truncate">
-                {c.name}
-              </span>
-              {c.aiPick && (
-                <Sparkles size={11} className="text-sage-500 shrink-0" />
-              )}
-            </div>
+          {cols.map((c, i) => (
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.06 }}
+              className={`md:col-span-3 rounded-2xl p-3.5 ${
+                c.aiPick
+                  ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100'
+                  : 'bg-white border border-ink-100'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`relative h-10 w-10 rounded-2xl bg-gradient-to-br ${accentBg[c.accent]} ring-1 flex items-center justify-center shrink-0`}
+                >
+                  <span className="editorial text-[15px]">{c.initials}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em] truncate">
+                    {c.name}
+                  </div>
+                  {c.aiPick && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Sparkles size={10} className="text-sage-500" />
+                      <span className="text-[10px] uppercase tracking-[0.14em] text-sage-600 font-bold">
+                        AI pick
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <Pill tone={c.verdict.tone}>{c.verdict.label}</Pill>
+                <div className="text-right shrink-0">
+                  <span className="editorial text-[24px] leading-none text-ink-900 tabular-nums">
+                    ${c.total}
+                  </span>
+                  <div className="text-[10.5px] text-ink-500 mt-0.5">total</div>
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
 
@@ -397,10 +365,15 @@ export default function QuoteComparePage({ onNavigate }) {
               {row.cells.map((cell, i) => {
                 const meta = stateMap[cell.state];
                 const Icon = meta.icon;
+                const isPick = i === aiPickIndex;
                 return (
                   <div
                     key={i}
-                    className={`md:col-span-3 rounded-2xl px-3 py-2.5 ${meta.cell}`}
+                    className={
+                      isPick
+                        ? 'md:col-span-3 rounded-2xl px-3 py-2.5 md:rounded-none md:bg-sage-50/40 md:-my-4 md:py-[26px] md:-mx-1.5 md:px-[18px]'
+                        : `md:col-span-3 rounded-2xl px-3 py-2.5 ${meta.cell}`
+                    }
                   >
                     <div className="flex items-start gap-2">
                       <span
@@ -431,22 +404,60 @@ export default function QuoteComparePage({ onNavigate }) {
               })}
             </motion.div>
           ))}
-        </div>
 
-        {/* Total row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-deep/50 hairline-inset items-center">
-          <div className="md:col-span-3">
-            <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-              Total
+          {/* Earliest start — its own row instead of crammed into the header card */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 items-stretch">
+            <div className="md:col-span-3 min-w-0">
+              <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">
+                Earliest start
+              </div>
+              <div className="text-[11.5px] text-ink-500 mt-0.5">
+                Stated availability for this job
+              </div>
             </div>
+            {cols.map((c, i) => (
+              <div
+                key={c.id}
+                className={
+                  i === aiPickIndex
+                    ? 'md:col-span-3 px-3 py-2.5 md:bg-sage-50/40 md:-my-4 md:py-[26px] md:-mx-1.5 md:px-[18px]'
+                    : 'md:col-span-3 px-3 py-2.5'
+                }
+              >
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={12} strokeWidth={1.8} className="text-ink-400 shrink-0" />
+                  <span className="text-[12.5px] font-semibold text-ink-900">
+                    {c.schedule.earliestStart}
+                  </span>
+                </div>
+                <div className="text-[11px] text-ink-500 mt-0.5">{c.schedule.duration}</div>
+              </div>
+            ))}
           </div>
-          {cols.map((c) => (
-            <div key={c.id} className="md:col-span-3 text-right md:text-left">
-              <span className="editorial text-[20px] leading-none text-ink-900 tabular-nums">
-                ${c.total}
-              </span>
+
+          {/* Contractor note — its own row, reads like every other comparison row */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-5 py-4 items-stretch">
+            <div className="md:col-span-3 min-w-0">
+              <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">
+                Contractor note
+              </div>
+              <div className="text-[11.5px] text-ink-500 mt-0.5">In their own words</div>
             </div>
-          ))}
+            {cols.map((c, i) => (
+              <div
+                key={c.id}
+                className={
+                  i === aiPickIndex
+                    ? 'md:col-span-3 px-3 py-2.5 md:bg-sage-50/40 md:-my-4 md:py-[26px] md:-mx-1.5 md:px-[18px]'
+                    : 'md:col-span-3 px-3 py-2.5'
+                }
+              >
+                <p className="text-[12px] leading-relaxed text-ink-500 italic">
+                  &ldquo;{c.note}&rdquo;
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Your availability — drives which contractor slots show below */}
@@ -487,8 +498,15 @@ export default function QuoteComparePage({ onNavigate }) {
               Optional. Talk first if you have questions.
             </div>
           </div>
-          {cols.map((c) => (
-            <div key={c.id} className="md:col-span-3">
+          {cols.map((c, i) => (
+            <div
+              key={c.id}
+              className={`md:col-span-3 ${
+                i === aiPickIndex
+                  ? 'md:bg-sage-50/40 md:-my-4 md:py-4 md:-mx-1.5 md:px-1.5'
+                  : ''
+              }`}
+            >
               <button
                 onClick={() => setContactOpen(c.id)}
                 className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
@@ -507,12 +525,19 @@ export default function QuoteComparePage({ onNavigate }) {
               Pick a slot &amp; approve
             </div>
           </div>
-          {cols.map((c) => {
+          {cols.map((c, i) => {
             const valid = slotsFor(c);
             const sel = pickedSlot(c);
             const noOverlap = valid.length === 0;
             return (
-              <div key={c.id} className="md:col-span-3 flex flex-col gap-2">
+              <div
+                key={c.id}
+                className={`md:col-span-3 flex flex-col gap-2 ${
+                  i === aiPickIndex
+                    ? 'md:bg-sage-50/40 md:-my-4 md:py-4 md:-mx-1.5 md:px-1.5'
+                    : ''
+                }`}
+              >
                 {/* Slot chips */}
                 {noOverlap ? (
                   <div className="rounded-xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[11.5px] text-ink-700 leading-snug">
