@@ -144,13 +144,16 @@ function buildMaintenance(profile) {
 
 export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);
+  // Pre-filled with the demo home (Maple St, Oakland) so the profile screen
+  // lands answered and the Continue gate is already satisfied. Selections
+  // map to a coherent watchlist (HVAC + water heater + gutters + smoke test).
   const [profile, setProfile] = useState({
-    homeType: '',
-    yearBuilt: '',
-    address: '',
-    zip: '',
-    outdoor: new Set(),
-    systems: new Set(),
+    homeType: 'house',
+    yearBuilt: '1980-2000',
+    address: '512 Maple St, Oakland, CA',
+    zip: '94609',
+    outdoor: new Set(['yard', 'trees']),
+    systems: new Set(['central-hvac', 'water-heater']),
   });
 
   const toggle = (key, id) => {
