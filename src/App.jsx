@@ -32,6 +32,7 @@ export default function App() {
   const [scheduledSlot, setScheduledSlot] = useState(null);
   const [recommended, setRecommended] = useState(null);
   const [photosShared, setPhotosShared] = useState(false);
+  const [guttersPlanned, setGuttersPlanned] = useState(false);
   const [threadOpen, setThreadOpen] = useState(true);
   const [railOpen, setRailOpen] = useState(true);
 
@@ -45,6 +46,7 @@ export default function App() {
   // Thread script side effects: the thread narrates, then swaps the stage.
   const handleEffect = (e) => {
     if (e.type === 'task-started') setTaskStarted(true);
+    if (e.type === 'gutters-planned') setGuttersPlanned(true);
     if (e.type === 'stage') {
       setStaged(e.artifact);
       setUnlocked((prev) => new Set(prev).add(e.artifact));
@@ -86,6 +88,7 @@ export default function App() {
       <Rail
         open={railOpen}
         onToggle={setRailOpen}
+        guttersPlanned={guttersPlanned}
         taskStarted={taskStarted}
         taskStatus={taskStatus}
         booked={booked}

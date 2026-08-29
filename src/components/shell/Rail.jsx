@@ -4,6 +4,7 @@ import {
   MapPin,
   Sparkles,
   Droplets,
+  Wrench,
   LayoutGrid,
   CalendarDays,
   Bell,
@@ -23,6 +24,7 @@ import {
 export default function Rail({
   open = true,
   onToggle,
+  guttersPlanned,
   taskStarted,
   taskStatus,
   booked,
@@ -167,6 +169,24 @@ export default function Rail({
               No tasks yet. Tell the AI what happened and the first one starts here.
             </div>
           )
+        )}
+        {guttersPlanned && (
+          <div
+            title={open ? undefined : 'Gutter cleaning · Planned · early September'}
+            className={`mt-2 w-full rounded-2xl bg-canvas-soft ring-1 ring-ink-100 flex items-start gap-2.5 text-left transition-all duration-300 ${
+              open ? 'p-2.5' : 'p-1'
+            }`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-ember-50 text-ember-500 ring-1 ring-ember-100 shrink-0">
+              <Wrench size={13} strokeWidth={1.8} />
+            </span>
+            <FadeLabel open={open} className="flex-1 min-w-0">
+              <span className="block leading-tight">
+                <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">Gutter cleaning</span>
+                <span className="mt-0.5 block text-[10.5px] text-ink-500 whitespace-nowrap">Planned · early September</span>
+              </span>
+            </FadeLabel>
+          </div>
         )}
       </div>
 

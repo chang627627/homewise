@@ -14,6 +14,8 @@ import {
   X,
   Send,
   Image as ImageIcon,
+  FileText,
+  MapPin,
 } from 'lucide-react';
 import Button from '../ui/Button';
 import Pill from '../ui/Pill';
@@ -235,6 +237,45 @@ export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, 
         </div>
       </section>
 
+      {/* What each contractor receives: the gate shows exactly what leaves the house */}
+      <section className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-ink-100/80 bg-canvas-soft/40 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Send size={13} className="text-ink-500" strokeWidth={1.8} />
+            <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              What each contractor receives
+            </span>
+          </div>
+          {approved ? (
+            <Pill tone="sage" icon={CheckCircle2}>Sent · 10:42 AM</Pill>
+          ) : (
+            <Pill tone="neutral">Nothing sent yet</Pill>
+          )}
+        </div>
+        <div className="divide-y divide-ink-100">
+          <ShareRow
+            icon={FileText}
+            title="Scope of work · SOW-2026-0423-001"
+            sub="The same brief for all three, so bids come back apples-to-apples."
+          />
+          <ShareRow
+            icon={ImageIcon}
+            title="3 tagged photos"
+            sub="Under sink, faucet base, behind panel. No faces, no address markers."
+          />
+          <ShareRow
+            icon={MapPin}
+            title="Maple St + 94609 only"
+            sub="Enough to bid accurately. Your exact address and access details go only to the pro you book."
+          />
+          <ShareRow
+            icon={BadgeCheck}
+            title="Sent on your behalf"
+            sub={'Each message is signed "prepared by Mara\u2019s Homewise agent" so pros know who they are talking to.'}
+          />
+        </div>
+      </section>
+
       {/* Decision row */}
       <section className="pt-2">
         {approved ? (
@@ -261,6 +302,20 @@ export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, 
       <AnimatePresence>
         {open && <ShowcaseDrawer contractor={open} onClose={() => setShowcaseOpen(null)} />}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function ShareRow({ icon: Icon, title, sub }) {
+  return (
+    <div className="px-5 py-3 flex items-start gap-2.5">
+      <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0">
+        <Icon size={12} strokeWidth={1.8} />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[12.5px] font-semibold text-ink-900">{title}</div>
+        <div className="text-[11.5px] text-ink-500 leading-snug mt-0.5">{sub}</div>
+      </div>
     </div>
   );
 }

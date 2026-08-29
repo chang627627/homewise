@@ -89,6 +89,17 @@ const script = [
     },
     time: '10:32 AM',
   },
+  {
+    type: 'agent',
+    text: "Before I touch anything, here's the plan:",
+    plan: [
+      { label: 'Draft the scope of work', sub: 'From your photos and answers' },
+      { label: 'Verify + match 3 local pros', sub: 'License, insurance, relevant past work' },
+      { label: 'Send the same brief to all 3', sub: 'Quotes come back apples-to-apples', gate: true },
+      { label: 'You pick, I book', sub: 'Calendar + reminders handled', gate: true },
+    ],
+    time: '10:32 AM',
+  },
   { type: 'chips' },
   { type: 'gate', id: 'generate' },
   { type: 'thinking', text: 'Drafting the scope…' },
@@ -121,15 +132,28 @@ const script = [
   { type: 'live', text: 'Waiting on your call · Approve outreach to all 3', eta: 'On the board' },
   { type: 'gate', id: 'approve-outreach' },
   { type: 'action', icon: Send, accent: 'sky', title: 'Outreach sent to 3 contractors', detail: 'Same scope, same form. 5-day window.', time: '10:42 AM' },
+  { type: 'live', text: 'Waiting on 3 quotes · nothing needed from you', eta: 'Day 1 of 5' },
   {
     type: 'agent',
     text: "Jason Plumbing's quote just came in. $220, fair price for the scope, available Friday afternoon.",
     time: '11:08 AM',
   },
+  { type: 'live', text: 'Waiting on 2 more quotes · nothing needed from you', eta: 'Day 1 of 5' },
+  {
+    type: 'agent',
+    text: "Bayline hasn't replied yet. Normal for a Tuesday morning. I'll nudge them this afternoon, or I can swap in the next-best match if you'd rather not wait.",
+    time: '1:30 PM',
+  },
+  { type: 'action', icon: Send, accent: 'sky', title: 'Nudged Bayline Plumbing', detail: 'Friendly reminder · nothing needed from you', time: '1:45 PM' },
+  {
+    type: 'agent',
+    text: "Bayline's quote just came in: $390. Includes a 1-year warranty, but with a $75 service fee. Waiting on Quickfix.",
+    time: '2:42 PM',
+  },
   {
     type: 'agent',
     text: "All three are in. Quick side-by-side: Bayline came in at $390 (above market with a $75 service fee), Quickfix at $175 but their quote is missing materials and warranty language. I'd recommend Jason.",
-    time: '11:10 AM',
+    time: '4:15 PM',
   },
   { type: 'effect', effect: { type: 'stage', artifact: 'quotes' } },
   { type: 'live', text: 'Awaiting your approval · Pick a slot on the board', eta: 'No rush · slow leak' },
@@ -185,6 +209,36 @@ const script = [
     time: '2:51 PM',
   },
   { type: 'live', done: true, text: 'Completed · Friday April 25', eta: 'Closed out' },
+  {
+    type: 'agent',
+    text: 'One more thing. Gutter cleaning is on your watchlist for the fall. Want me to line it up the same way when the season gets close?',
+    time: '2:52 PM',
+  },
+  { type: 'gate', id: 'ladder' },
+  { type: 'user', text: 'Yes, plan the gutter cleaning.', time: '2:52 PM', when: (ctx) => ctx.ladderChoice === 'yes' },
+  { type: 'effect', effect: { type: 'gutters-planned' }, when: (ctx) => ctx.ladderChoice === 'yes' },
+  {
+    type: 'action',
+    icon: Calendar,
+    accent: 'sage',
+    title: 'Gutter cleaning · planned for early September',
+    detail: 'From your watchlist · same loop, same approval gates',
+    time: '2:52 PM',
+    when: (ctx) => ctx.ladderChoice === 'yes',
+  },
+  {
+    type: 'agent',
+    text: "Done. I'll start lining up gutter pros in early September and check with you before anyone sees your home.",
+    time: '2:53 PM',
+    when: (ctx) => ctx.ladderChoice === 'yes',
+  },
+  { type: 'user', text: 'Not now.', time: '2:52 PM', when: (ctx) => ctx.ladderChoice === 'no' },
+  {
+    type: 'agent',
+    text: "No problem. It stays on the watchlist and I'll remind you before leaf season.",
+    time: '2:52 PM',
+    when: (ctx) => ctx.ladderChoice === 'no',
+  },
 ];
 
 const delayFor = (m) =>
@@ -199,6 +253,7 @@ function stateLabelFor(step, local, gates, done) {
     if (m.id === 'upload') return { label: 'Photo needed', pulse: false };
     if (m.id === 'urgency') return { label: 'Your call', pulse: false };
     if (m.id === 'generate') return { label: 'Scoped', pulse: false };
+    if (m.id === 'ladder') return { label: 'One more thing', pulse: false };
     return { label: 'Waiting on you · see the board', pulse: false };
   }
   if (m.type === 'chips') return { label: 'Scoped', pulse: false };
@@ -214,18 +269,20 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
   const [urgency, setUrgency] = useState('soon');
   const [urgencyChosen, setUrgencyChosen] = useState(false);
   const [generateClicked, setGenerateClicked] = useState(false);
+  const [ladderChoice, setLadderChoice] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const firedEffects = useRef(new Set());
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
-  const ctx = { urgency, scheduledSlot, recommended, kickoffText };
+  const ctx = { urgency, scheduledSlot, recommended, kickoffText, ladderChoice };
 
   const localGateCleared = (id) => {
     if (id === 'kickoff') return kickoffClicked;
     if (id === 'upload') return photosUploaded;
     if (id === 'urgency') return urgencyChosen;
     if (id === 'generate') return generateClicked;
+    if (id === 'ladder') return ladderChoice !== null;
     return !!gates[id];
   };
 
@@ -252,7 +309,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
     }
     const t = setTimeout(() => setStep((s) => s + 1), delayFor(m));
     return () => clearTimeout(t);
-  }, [step, kickoffClicked, photosUploaded, urgencyChosen, generateClicked, gates, onEffect]);
+  }, [step, kickoffClicked, photosUploaded, urgencyChosen, generateClicked, ladderChoice, gates, onEffect]);
 
   // Auto-scroll on new messages (and when re-opening the pane)
   useEffect(() => {
@@ -264,6 +321,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
   const visible = script.slice(0, step).filter((m) => !['gate', 'effect'].includes(m.type));
   const done = step >= script.length;
   const atKickoff = script[step]?.type === 'gate' && script[step]?.id === 'kickoff';
+  const atLadder = script[step]?.type === 'gate' && script[step]?.id === 'ladder';
   const { label: stateLabel, pulse } = stateLabelFor(step, null, gates, done);
   const waitingOnBoard = script[step]?.type === 'gate' && ['approve-scope', 'approve-outreach', 'approve-jason', 'close-out'].includes(script[step]?.id);
 
@@ -382,6 +440,29 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
                 {p.label}
               </button>
             ))}
+          </motion.div>
+        )}
+
+        {atLadder && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
+          >
+            <button
+              onClick={() => setLadderChoice('no')}
+              className="h-9 px-3.5 rounded-full bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12.5px] font-medium transition-all"
+            >
+              Not now
+            </button>
+            <button
+              onClick={() => setLadderChoice('yes')}
+              className="h-9 px-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all"
+            >
+              <Sparkles size={12} strokeWidth={2.2} />
+              Yes, plan it
+            </button>
           </motion.div>
         )}
 
@@ -695,14 +776,14 @@ function ChipsRow({ onFocusInput, onGenerate, locked }) {
         onClick={onFocusInput}
         className="h-8 px-3 rounded-full bg-white border border-ink-200 hover:border-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12px] font-medium transition-all"
       >
-        Add or correct something
+        Adjust the plan
       </button>
       <button
         onClick={onGenerate}
         className="group h-8 pl-2.5 pr-3 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-1.5 text-[12px] font-semibold transition-all"
       >
         <Sparkles size={11} strokeWidth={2.2} />
-        Generate scope of work
+        Looks good, start
         <ArrowRight size={10} strokeWidth={2.2} className="opacity-70 group-hover:translate-x-0.5 transition-transform" />
       </button>
     </motion.div>
@@ -721,6 +802,27 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
       <div className="flex-1 min-w-0 max-w-[88%] space-y-2">
         <div className="rounded-2xl rounded-tl-md bg-white border border-ink-100 px-3.5 py-2.5">
           <p className="text-[13px] leading-relaxed text-ink-900">{m.text}</p>
+
+          {m.plan && (
+            <ol className="mt-2.5 space-y-1.5">
+              {m.plan.map((step, i) => (
+                <li key={i} className="flex items-center gap-2.5 rounded-xl bg-canvas-soft border border-ink-100 px-2.5 py-2">
+                  <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-sage-700 text-[10px] font-bold tabular-nums">
+                    {i + 1}
+                  </span>
+                  <span className="flex-1 min-w-0 leading-tight">
+                    <span className="block text-[12.5px] font-medium text-ink-900">{step.label}</span>
+                    <span className="block text-[11px] text-ink-500 mt-0.5">{step.sub}</span>
+                  </span>
+                  {step.gate && (
+                    <span className="shrink-0 inline-flex items-center rounded-full bg-sage-50 ring-1 ring-sage-100 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-sage-700">
+                      Asks you first
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
 
           {m.photoRequest && (
             <div className="mt-2.5 rounded-xl bg-canvas-soft border border-dashed border-ink-200 p-2.5">
