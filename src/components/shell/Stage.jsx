@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutGrid,
@@ -48,6 +48,7 @@ export default function Stage({
   onClearGate,
 }) {
   const Active = artifactMap[staged] || HomeArtifact;
+  const scrollRef = useRef(null);
 
   return (
     <section className="flex-1 min-w-0 h-full flex flex-col">
@@ -78,9 +79,14 @@ export default function Stage({
         </span>
       </header>
 
-      {/* Artifact surface */}
-      <div className="flex-1 overflow-y-auto">
-        <AnimatePresence mode="wait">
+      {/* Artifact surface: every newly staged artifact starts at the top.
+          The reset fires between the old artifact's exit and the new one's
+          entrance so neither view visibly jumps. */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <AnimatePresence
+          mode="wait"
+          onExitComplete={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' })}
+        >
           <motion.div
             key={staged}
             initial={{ opacity: 0, y: 10 }}

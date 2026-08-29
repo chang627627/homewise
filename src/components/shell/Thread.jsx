@@ -31,6 +31,12 @@ import {
 // decisions happen on artifacts, not in chat.
 // `effect` entries fire side effects upward (stage swaps, rail updates).
 
+const kickoffPrompts = [
+  { label: 'My kitchen sink is leaking', message: 'My kitchen sink is leaking and I need someone this week.', primary: true },
+  { label: "There's water under my sink", message: "There's standing water under my kitchen sink. Can you find someone this week?" },
+  { label: "My faucet won't stop dripping", message: "My kitchen faucet won't stop dripping and I want it fixed this week." },
+];
+
 const urgencyReplies = {
   urgent: 'Active leak right now. Need someone today.',
   soon: 'Slow leak. Sometime this week is fine.',
@@ -40,7 +46,7 @@ const urgencyReplies = {
 const script = [
   { type: 'agent', text: "What's happening at home?", time: '10:28 AM' },
   { type: 'gate', id: 'kickoff' },
-  { type: 'user', text: 'My kitchen sink is leaking and I need someone this week.', time: '10:28 AM' },
+  { type: 'user', text: (ctx) => ctx.kickoffText, time: '10:28 AM' },
   { type: 'effect', effect: { type: 'task-started' } },
   { type: 'thinking', text: 'One sec, figuring out what I need to see…' },
   {
@@ -202,6 +208,7 @@ function stateLabelFor(step, local, gates, done) {
 export default function Thread({ open, onToggle, gates, scheduledSlot, recommended, onEffect }) {
   const [step, setStep] = useState(1);
   const [kickoffClicked, setKickoffClicked] = useState(false);
+  const [kickoffText, setKickoffText] = useState(kickoffPrompts[0].message);
   const [photosUploaded, setPhotosUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [urgency, setUrgency] = useState('soon');
@@ -212,7 +219,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
-  const ctx = { urgency, scheduledSlot, recommended };
+  const ctx = { urgency, scheduledSlot, recommended, kickoffText };
 
   const localGateCleared = (id) => {
     if (id === 'kickoff') return kickoffClicked;
@@ -351,6 +358,33 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
           return null;
         })}
 
+        {atKickoff && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35 }}
+            className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
+          >
+            {kickoffPrompts.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  setKickoffText(p.message);
+                  setKickoffClicked(true);
+                }}
+                className={
+                  p.primary
+                    ? 'h-9 px-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all'
+                    : 'h-9 px-3.5 rounded-full bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all'
+                }
+              >
+                {p.primary && <Sparkles size={12} strokeWidth={2.2} />}
+                {p.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+
         {waitingOnBoard && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -363,22 +397,6 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
           </motion.div>
         )}
       </div>
-
-      {/* Kickoff suggestion */}
-      {atKickoff && (
-        <div className="shrink-0 px-4 pb-2 flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setKickoffClicked(true)}
-            className="h-9 px-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all"
-          >
-            <Sparkles size={12} strokeWidth={2.2} />
-            My kitchen sink is leaking
-          </button>
-          <span className="h-9 inline-flex items-center px-2 text-[11.5px] text-ink-400">
-            or describe it below
-          </span>
-        </div>
-      )}
 
       {/* Input dock */}
       <div className="shrink-0 border-t border-ink-100/80 px-3 py-2.5 flex items-center gap-1.5 bg-gradient-to-t from-canvas-soft/40 to-white">
