@@ -36,18 +36,23 @@ export default function Rail({
       style={{ width: open ? 240 : 64, transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
       className="shrink-0 h-full flex flex-col bg-white/80 backdrop-blur-md border-r border-ink-100/80 overflow-hidden"
     >
-      {/* Brand */}
-      <div className="px-4 pt-5">
-        <div className="flex items-center gap-2.5 h-8">
+      {/* Top row, Grok pattern: logo left, panel toggle right. The toggle
+          keeps its vertical position in both states; folded, the brand
+          collapses to zero width and the right-justified toggle rides the
+          narrowing edge into the icon column. */}
+      <div className="pt-5 px-3.5 flex items-center">
+        <span
+          style={{
+            maxWidth: open ? 160 : 0,
+            opacity: open ? 1 : 0,
+            transition: 'max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease-out',
+          }}
+          className="overflow-hidden flex items-center gap-2.5"
+        >
           <Logo />
-          <FadeLabel open={open} className="editorial text-[17px] leading-none text-ink-900">
-            Homewise
-          </FadeLabel>
-        </div>
-      </div>
-
-      {/* Panel toggle: right-justified, so it rides the collapsing edge */}
-      <div className="mt-3 px-3.5 flex justify-end">
+          <span className="editorial text-[17px] leading-none text-ink-900 whitespace-nowrap">Homewise</span>
+        </span>
+        <span className="flex-1" />
         <button
           onClick={() => onToggle?.(!open)}
           title={open ? 'Collapse the sidebar' : 'Open the sidebar'}
