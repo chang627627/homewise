@@ -432,9 +432,9 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
             <button
               onClick={() => onToggle(true)}
               title="Open the conversation"
-              className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-colors shrink-0"
+              className="h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
             >
-              <ChevronsRight size={15} strokeWidth={2} />
+              <ChevronsRight size={13} strokeWidth={2} />
             </button>
             <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10 shrink-0">
               <Sparkles size={13} strokeWidth={2.2} />
@@ -445,15 +445,6 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
               </span>
             )}
-            <button
-              onClick={() => onToggle(true)}
-              title="Open the conversation"
-              className="flex-1 flex flex-col items-center justify-center gap-2 w-full rounded-xl text-ink-500 hover:text-ink-900 hover:bg-canvas-soft/70 transition-colors"
-            >
-              <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] uppercase tracking-[0.2em] font-semibold">
-                Conversation
-              </span>
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
