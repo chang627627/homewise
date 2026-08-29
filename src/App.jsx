@@ -35,6 +35,13 @@ export default function App() {
   const [guttersPlanned, setGuttersPlanned] = useState(false);
   const [threadOpen, setThreadOpen] = useState(true);
   const [railOpen, setRailOpen] = useState(true);
+  // Multi-thread: 'sink' is the scripted primary; "New AI task" appends fresh
+  // threads (ChatGPT new-chat semantics). Inactive threads stay mounted so
+  // their scripts keep running in the background.
+  const [threads, setThreads] = useState([{ id: 'sink', variant: 'sink' }]);
+  const [activeThread, setActiveThread] = useState('sink');
+  const [startedThreads, setStartedThreads] = useState(() => new Set());
+  const [extraTasks, setExtraTasks] = useState([]);
 
   // URL-based escape hatches that bypass the app shell (same as v1).
   if (typeof window !== 'undefined') {
@@ -44,13 +51,38 @@ export default function App() {
   }
 
   // Thread script side effects: the thread narrates, then swaps the stage.
-  const handleEffect = (e) => {
-    if (e.type === 'task-started') setTaskStarted(true);
+  const handleEffect = (threadId) => (e) => {
+    if (e.type === 'task-started') {
+      setStartedThreads((prev) => new Set(prev).add(threadId));
+      if (threadId === 'sink') setTaskStarted(true);
+      else setExtraTasks((prev) => prev.some((t) => t.id === threadId) ? prev : [...prev, { id: threadId, title: e.title || 'New task' }]);
+    }
+    if (threadId !== 'sink') return;
     if (e.type === 'gutters-planned') setGuttersPlanned(true);
     if (e.type === 'stage') {
       setStaged(e.artifact);
       setUnlocked((prev) => new Set(prev).add(e.artifact));
     }
+  };
+
+  // New AI task: reuse an untouched fresh thread if one exists (clicking "new
+  // chat" on an empty chat stays put), otherwise append one.
+  const newTask = () => {
+    setThreadOpen(true);
+    if (!startedThreads.has(activeThread)) return;
+    const idle = threads.find((t) => !startedThreads.has(t.id));
+    if (idle) {
+      setActiveThread(idle.id);
+      return;
+    }
+    const id = `task-${threads.length}`;
+    setThreads((prev) => [...prev, { id, variant: 'fresh' }]);
+    setActiveThread(id);
+  };
+
+  const selectTask = (id) => {
+    setActiveThread(id);
+    setThreadOpen(true);
   };
 
   // Stage CTAs clear gates; the thread resumes and plays the follow-through.
@@ -94,17 +126,26 @@ export default function App() {
         booked={booked}
         staged={staged}
         unlocked={unlocked}
+        extraTasks={extraTasks}
+        activeThread={activeThread}
         onRestage={restage}
-        onOpenThread={() => setThreadOpen(true)}
+        onNewTask={newTask}
+        onSelectTask={selectTask}
       />
-      <Thread
-        open={threadOpen}
-        onToggle={setThreadOpen}
-        gates={gates}
-        scheduledSlot={scheduledSlot}
-        recommended={recommended}
-        onEffect={handleEffect}
-      />
+      {threads.map((t) => (
+        <Thread
+          key={t.id}
+          variant={t.variant}
+          active={t.id === activeThread}
+          open={threadOpen}
+          onToggle={setThreadOpen}
+          gates={gates}
+          scheduledSlot={scheduledSlot}
+          recommended={recommended}
+          onEffect={handleEffect(t.id)}
+          onRestage={restage}
+        />
+      ))}
       <Stage
         staged={staged}
         unlocked={unlocked}

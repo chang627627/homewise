@@ -440,7 +440,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           <CheckCircle2 size={15} strokeWidth={2.2} className="text-sage-600 shrink-0" />
           <div className="text-[12.5px] text-ink-700">
             <strong className="text-ink-900 font-semibold">Jason is booked for {scheduledSlot}.</strong>{' '}
-            The confirmation is in the conversation, and the visit is on your schedule.
+            Free to reschedule or cancel until Thursday 6 PM. The visit is on your schedule.
           </div>
         </div>
       )}

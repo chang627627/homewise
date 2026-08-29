@@ -5,6 +5,7 @@ import {
   Sparkles,
   Droplets,
   Wrench,
+  Wind,
   LayoutGrid,
   CalendarDays,
   Bell,
@@ -30,8 +31,11 @@ export default function Rail({
   booked,
   staged,
   unlocked,
+  extraTasks = [],
+  activeThread,
   onRestage,
-  onOpenThread,
+  onNewTask,
+  onSelectTask,
 }) {
   return (
     <aside
@@ -92,7 +96,7 @@ export default function Rail({
       {/* New AI task */}
       <div className="mt-3 px-3.5">
         <button
-          onClick={onOpenThread}
+          onClick={onNewTask}
           title="New AI task"
           className={`w-full rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center justify-center text-[12.5px] font-semibold transition-colors overflow-hidden ${
             open ? 'h-10 gap-1.5 grain-dark' : 'h-9'
@@ -131,11 +135,11 @@ export default function Rail({
         <GroupLabel open={open}>Tasks</GroupLabel>
         {taskStarted ? (
           <button
-            onClick={onOpenThread}
+            onClick={() => onSelectTask?.('sink')}
             title={open ? undefined : `Kitchen sink leak · ${taskStatus}`}
-            className={`w-full rounded-2xl bg-canvas-soft ring-1 ring-ink-100 hover:ring-ink-200 flex items-start gap-2.5 text-left transition-all duration-300 ${
-              open ? 'p-2.5' : 'p-1'
-            }`}
+            className={`w-full rounded-2xl bg-canvas-soft ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
+              activeThread === 'sink' ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
+            } ${open ? 'p-2.5' : 'p-1'}`}
           >
             <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
               <Droplets size={13} strokeWidth={1.8} />
@@ -170,6 +174,31 @@ export default function Rail({
             </div>
           )
         )}
+        {extraTasks.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => onSelectTask?.(t.id)}
+            className={`mt-2 w-full rounded-2xl bg-canvas-soft ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
+              activeThread === t.id ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
+            } ${open ? 'p-2.5' : 'p-1'}`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky2026-50 text-sky2026-700 ring-1 ring-sky2026-100 shrink-0">
+              <Wind size={13} strokeWidth={1.8} />
+            </span>
+            <FadeLabel open={open} className="flex-1 min-w-0">
+              <span className="block leading-tight">
+                <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">{t.title}</span>
+                <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-ink-500">
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
+                  </span>
+                  <span className="whitespace-nowrap">Scoping the job</span>
+                </span>
+              </span>
+            </FadeLabel>
+          </button>
+        ))}
         {guttersPlanned && (
           <div
             title={open ? undefined : 'Gutter cleaning · Planned · early September'}

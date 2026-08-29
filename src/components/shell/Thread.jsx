@@ -7,6 +7,7 @@ import {
   Mic,
   ArrowUp,
   ArrowRight,
+  ChevronRight,
   Image as ImageIcon,
   CheckCircle2,
   Clock,
@@ -31,7 +32,7 @@ import {
 // decisions happen on artifacts, not in chat.
 // `effect` entries fire side effects upward (stage swaps, rail updates).
 
-const kickoffPrompts = [
+const sinkKickoffs = [
   { label: 'My kitchen sink is leaking', message: 'My kitchen sink is leaking and I need someone this week.', primary: true },
   { label: "There's water under my sink", message: "There's standing water under my kitchen sink. Can you find someone this week?" },
   { label: "My faucet won't stop dripping", message: "My kitchen faucet won't stop dripping and I want it fixed this week." },
@@ -43,7 +44,44 @@ const urgencyReplies = {
   flexible: 'Just an annoyance. Whenever convenient.',
 };
 
-const script = [
+const freshKickoffs = [
+  { label: 'My AC is blowing warm air', message: 'My AC is running but blowing warm air.', railTitle: 'AC blowing warm air', primary: true },
+  { label: 'The AC runs but the house stays warm', message: 'The AC runs all day but the house stays warm.', railTitle: 'AC not cooling' },
+  { label: 'Upstairs is barely cooling', message: 'The upstairs AC is barely cooling.', railTitle: 'Upstairs AC weak' },
+];
+
+// A brand-new task: same opening moves as the sink flow, then the agent takes
+// the scoping offline and pings later. Keeps "New AI task" honest without a
+// second full scripted flow.
+const freshScript = [
+  { type: 'agent', text: "What's happening at home?", time: '4:22 PM' },
+  { type: 'gate', id: 'kickoff' },
+  { type: 'user', text: (ctx) => ctx.kickoffText, time: '4:22 PM' },
+  { type: 'effect', effect: { type: 'task-started' } },
+  { type: 'thinking', text: 'One sec, figuring out what I need to see…' },
+  {
+    type: 'agent',
+    text: "Got it. Before I scope this, I need one photo to rule things out. Snap the spot below and I'll check it.",
+    photoRequest: {
+      label: 'Outdoor condenser unit',
+      instruction: 'Wide enough to see the top fan and the side fins',
+      read: 'Fan runs, but the coil fins are matted with debris.',
+    },
+    time: '4:22 PM',
+  },
+  { type: 'gate', id: 'upload' },
+  { type: 'user', text: 'Here it is.', time: '4:24 PM' },
+  { type: 'photos', photos: [{ label: 'Outdoor condenser', tone: 'sky', tag: 'Clogged coil fins' }] },
+  { type: 'thinking', text: 'Looking at it…' },
+  {
+    type: 'agent',
+    text: "From the photo: the coil fins are clogged, so the unit runs without really cooling. Common and fixable. I'm drafting the scope now, I'll ping you here when it's ready for your review.",
+    time: '4:25 PM',
+  },
+  { type: 'live', text: 'Drafting the scope · nothing needed from you', eta: 'Ping soon' },
+];
+
+const sinkScript = [
   { type: 'agent', text: "What's happening at home?", time: '10:28 AM' },
   { type: 'gate', id: 'kickoff' },
   { type: 'user', text: (ctx) => ctx.kickoffText, time: '10:28 AM' },
@@ -52,7 +90,11 @@ const script = [
   {
     type: 'agent',
     text: "Got it. Before I scope this for contractors, I need one photo to rule things out. Snap the spot below and I'll check it.",
-    photoRequest: true,
+    photoRequest: {
+      label: 'Under the sink',
+      instruction: 'The P-trap area, with the cabinet doors open',
+      read: 'Standing water right at the P-trap joint. The slip nut is weeping.',
+    },
     time: '10:28 AM',
   },
   { type: 'gate', id: 'upload' },
@@ -107,7 +149,7 @@ const script = [
     type: 'action',
     icon: FileText,
     accent: 'sage',
-    title: 'Scope of work drafted',
+    title: 'Scope of work drafted', target: 'scope',
     detail: 'SOW-2026-0423-001 · 6 sections · benchmarked against 46 local jobs',
     time: '10:33 AM',
   },
@@ -119,10 +161,10 @@ const script = [
   },
   { type: 'live', text: 'Waiting on your review · Scope of work', eta: 'On the board' },
   { type: 'gate', id: 'approve-scope' },
-  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'You approved the scope', detail: 'Locked as SOW-2026-0423-001 · v1', time: '10:34 AM' },
-  { type: 'action', icon: ShieldCheck, accent: 'sage', title: 'Checked license records', detail: '3 contractors · all current with state board', time: '10:35 AM' },
-  { type: 'action', icon: BadgeCheck, accent: 'sage', title: 'Verified insurance status', detail: '2 of 3 GL + WC current · Quickfix renewal pending', time: '10:36 AM' },
-  { type: 'action', icon: TrendingUp, accent: 'sky', title: 'Compared local pricing benchmark', detail: '46 nearby plumbing jobs · last 90 days', time: '10:38 AM' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'You approved the scope', target: 'scope', detail: 'Locked as SOW-2026-0423-001 · v1', time: '10:34 AM' },
+  { type: 'action', icon: ShieldCheck, accent: 'sage', title: 'Checked license records', target: 'contractors', detail: '3 contractors · all current with state board', time: '10:35 AM' },
+  { type: 'action', icon: BadgeCheck, accent: 'sage', title: 'Verified insurance status', target: 'contractors', detail: '2 of 3 GL + WC current · Quickfix renewal pending', time: '10:36 AM' },
+  { type: 'action', icon: TrendingUp, accent: 'sky', title: 'Compared local pricing benchmark', target: 'scope', detail: '46 nearby plumbing jobs · last 90 days', time: '10:38 AM' },
   { type: 'effect', effect: { type: 'stage', artifact: 'contractors' } },
   {
     type: 'agent',
@@ -131,7 +173,7 @@ const script = [
   },
   { type: 'live', text: 'Waiting on your call · Approve outreach to all 3', eta: 'On the board' },
   { type: 'gate', id: 'approve-outreach' },
-  { type: 'action', icon: Send, accent: 'sky', title: 'Outreach sent to 3 contractors', detail: 'Same scope, same form. 5-day window.', time: '10:42 AM' },
+  { type: 'action', icon: Send, accent: 'sky', title: 'Outreach sent to 3 contractors', target: 'contractors', detail: 'Same scope, same form. 5-day window.', time: '10:42 AM' },
   { type: 'live', text: 'Waiting on 3 quotes · nothing needed from you', eta: 'Day 1 of 5' },
   {
     type: 'agent',
@@ -144,7 +186,7 @@ const script = [
     text: "Bayline hasn't replied yet. Normal for a Tuesday morning. I'll nudge them this afternoon, or I can swap in the next-best match if you'd rather not wait.",
     time: '1:30 PM',
   },
-  { type: 'action', icon: Send, accent: 'sky', title: 'Nudged Bayline Plumbing', detail: 'Friendly reminder · nothing needed from you', time: '1:45 PM' },
+  { type: 'action', icon: Send, accent: 'sky', title: 'Nudged Bayline Plumbing', target: 'contractors', detail: 'Friendly reminder · nothing needed from you', time: '1:45 PM' },
   {
     type: 'agent',
     text: "Bayline's quote just came in: $390. Includes a 1-year warranty, but with a $75 service fee. Waiting on Quickfix.",
@@ -163,6 +205,7 @@ const script = [
     icon: CheckCircle2,
     accent: 'sage',
     title: (ctx) => `You approved Jason · ${ctx.scheduledSlot || 'Fri 2 PM'}`,
+    target: 'quotes',
     detail: 'Confirmed via quote comparison',
     time: '11:14 AM',
   },
@@ -170,20 +213,20 @@ const script = [
     type: 'action',
     icon: CheckCircle2,
     accent: 'sage',
-    title: 'Booking confirmed with Jason Plumbing Co.',
+    title: 'Booking confirmed with Jason Plumbing Co.', target: 'schedule',
     detail: (ctx) => `${ctx.scheduledSlot || 'Fri 2 PM'} · 2-hour window`,
     time: '11:14 AM',
   },
-  { type: 'action', icon: Calendar, accent: 'sage', title: 'Added to your calendar', detail: 'Reminder set for 30 min before arrival', time: '11:14 AM' },
+  { type: 'action', icon: Calendar, accent: 'sage', title: 'Added to your calendar', target: 'schedule', detail: 'Reminder set for 30 min before arrival', time: '11:14 AM' },
   { type: 'effect', effect: { type: 'stage', artifact: 'schedule' } },
   {
     type: 'agent',
     text: "Booked. Jason will text you 30 minutes before he arrives. I'll check in once it's done, and if anything changes, I'll re-engage Bayline as backup.",
     time: '11:15 AM',
   },
-  { type: 'live', text: (ctx) => `Confirmed · ${ctx.scheduledSlot || 'Fri 2 PM'}`, eta: '2 days away' },
+  { type: 'live', text: (ctx) => `Confirmed · ${ctx.scheduledSlot || 'Fri 2 PM'}`, eta: 'Free to change until Thu 6 PM' },
   { type: 'date', label: 'Friday · April 25' },
-  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Jason marked the visit complete', detail: 'Friday, April 25 · arrived on time', time: '2:48 PM' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Jason marked the visit complete', target: 'completion', detail: 'Friday, April 25 · arrived on time', time: '2:48 PM' },
   { type: 'effect', effect: { type: 'stage', artifact: 'completion' } },
   {
     type: 'agent',
@@ -192,17 +235,17 @@ const script = [
   },
   { type: 'live', text: 'Waiting on you · Close out the job', eta: 'On the board' },
   { type: 'gate', id: 'close-out' },
-  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'You confirmed the work is done', detail: 'Leak resolved, no follow-up needed', time: '2:50 PM' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'You confirmed the work is done', target: 'completion', detail: 'Leak resolved, no follow-up needed', time: '2:50 PM' },
   {
     type: 'action',
     icon: CheckCircle2,
     accent: 'sage',
-    title: 'You recommended Jason',
+    title: 'You recommended Jason', target: 'contractors',
     detail: "He's now Recommended by 13 Homewisers",
     time: '2:50 PM',
     when: (ctx) => ctx.recommended === 'yes',
   },
-  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Job closed out', detail: 'Logged in your home file', time: '2:50 PM' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Job closed out', target: 'completion', detail: 'Logged in your home file', time: '2:50 PM' },
   {
     type: 'agent',
     text: "All wrapped up. The leak's fixed and the job's closed out. I'll keep a quiet eye out for any follow-ups.",
@@ -221,7 +264,7 @@ const script = [
     type: 'action',
     icon: Calendar,
     accent: 'sage',
-    title: 'Gutter cleaning · planned for early September',
+    title: 'Gutter cleaning · planned for early September', target: 'home',
     detail: 'From your watchlist · same loop, same approval gates',
     time: '2:52 PM',
     when: (ctx) => ctx.ladderChoice === 'yes',
@@ -244,8 +287,12 @@ const script = [
 const delayFor = (m) =>
   m.type === 'date' ? 6500 : m.type === 'thinking' ? 1000 : m.type === 'agent' ? 1150 : m.type === 'action' ? 950 : m.type === 'photos' ? 500 : m.type === 'live' ? 450 : 650;
 
-function stateLabelFor(step, local, gates, done) {
-  if (done) return { label: 'Closed out', pulse: false };
+function stateLabelFor(script, variant, step, gates, done) {
+  if (done) {
+    return variant === 'sink'
+      ? { label: 'Closed out', pulse: false }
+      : { label: 'Scoping the job', pulse: true };
+  }
   const m = script[step];
   if (!m) return { label: null, pulse: false };
   if (m.type === 'gate') {
@@ -260,10 +307,13 @@ function stateLabelFor(step, local, gates, done) {
   return { label: 'Working on it', pulse: true };
 }
 
-export default function Thread({ open, onToggle, gates, scheduledSlot, recommended, onEffect }) {
+export default function Thread({ open, onToggle, gates, scheduledSlot, recommended, onEffect, onRestage, variant = 'sink', active = true }) {
+  const script = variant === 'sink' ? sinkScript : freshScript;
+  const kickoffPrompts = variant === 'sink' ? sinkKickoffs : freshKickoffs;
   const [step, setStep] = useState(1);
   const [kickoffClicked, setKickoffClicked] = useState(false);
   const [kickoffText, setKickoffText] = useState(kickoffPrompts[0].message);
+  const [kickoffTitle, setKickoffTitle] = useState(kickoffPrompts[0].railTitle || null);
   const [photosUploaded, setPhotosUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [urgency, setUrgency] = useState('soon');
@@ -302,7 +352,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
     if (m.type === 'effect') {
       if (!firedEffects.current.has(step)) {
         firedEffects.current.add(step);
-        onEffect?.(m.effect);
+        onEffect?.(m.effect.type === 'task-started' ? { ...m.effect, title: kickoffTitle } : m.effect);
       }
       setStep((s) => s + 1);
       return;
@@ -322,7 +372,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
   const done = step >= script.length;
   const atKickoff = script[step]?.type === 'gate' && script[step]?.id === 'kickoff';
   const atLadder = script[step]?.type === 'gate' && script[step]?.id === 'ladder';
-  const { label: stateLabel, pulse } = stateLabelFor(step, null, gates, done);
+  const { label: stateLabel, pulse } = stateLabelFor(script, variant, step, gates, done);
   const waitingOnBoard = script[step]?.type === 'gate' && ['approve-scope', 'approve-outreach', 'approve-jason', 'close-out'].includes(script[step]?.id);
 
   function handleUpload() {
@@ -333,6 +383,10 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
       setPhotosUploaded(true);
     }, 1200);
   }
+
+  // Inactive threads stay mounted so their scripts keep advancing in the
+  // background, but they render nothing.
+  if (!active) return null;
 
   return (
     <div
@@ -379,7 +433,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
           if (m.type === 'user') return <UserMessage key={i} m={m} ctx={ctx} />;
           if (m.type === 'photos') return <PhotoStrip key={i} m={m} />;
           if (m.type === 'thinking') return <Thinking key={i} m={m} />;
-          if (m.type === 'action') return <ActionItem key={i} m={m} ctx={ctx} />;
+          if (m.type === 'action') return <ActionItem key={i} m={m} ctx={ctx} onOpen={onRestage} />;
           if (m.type === 'live') return (m.done || isLast) ? <LiveIndicator key={i} m={m} ctx={ctx} /> : null;
           if (m.type === 'urgency')
             return (
@@ -428,6 +482,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
                 key={p.label}
                 onClick={() => {
                   setKickoffText(p.message);
+                  setKickoffTitle(p.railTitle || null);
                   setKickoffClicked(true);
                 }}
                 className={
@@ -664,25 +719,44 @@ function Thinking({ m }) {
   );
 }
 
-function ActionItem({ m, ctx }) {
+function ActionItem({ m, ctx, onOpen }) {
   const Icon = m.icon;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="flex items-start gap-2.5 pl-1"
-    >
+  const body = (
+    <>
       <span className={`shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-xl ring-1 bg-white ${actionAccentMap[m.accent]}`}>
         <Icon size={12} strokeWidth={1.8} />
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[12px] font-medium text-ink-900">{resolve(m.title, ctx)}</span>
+          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-900">
+            {resolve(m.title, ctx)}
+            {m.target && (
+              <ChevronRight
+                size={10}
+                strokeWidth={2}
+                className="text-ink-300 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all shrink-0"
+              />
+            )}
+          </span>
           <span className="text-[10px] tabular-nums text-ink-400 shrink-0">{m.time}</span>
         </div>
         <div className="text-[11px] text-ink-500 mt-0.5">{resolve(m.detail, ctx)}</div>
       </div>
+    </>
+  );
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="pl-1">
+      {m.target ? (
+        <button
+          onClick={() => onOpen?.(m.target)}
+          title="Open on the board"
+          className="group w-full flex items-start gap-2.5 text-left rounded-xl -mx-1.5 px-1.5 py-1 -my-1 hover:bg-canvas-soft/80 transition-colors"
+        >
+          {body}
+        </button>
+      ) : (
+        <div className="flex items-start gap-2.5">{body}</div>
+      )}
     </motion.div>
   );
 }
@@ -839,12 +913,12 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
                   {uploaded ? <CheckCircle2 size={10} strokeWidth={2.5} /> : <Camera size={9} strokeWidth={2.2} />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-medium text-ink-900 leading-snug">Under the sink</div>
-                  <div className="text-[11px] text-ink-500 leading-snug">The P-trap area, with the cabinet doors open</div>
+                  <div className="text-[12px] font-medium text-ink-900 leading-snug">{m.photoRequest.label}</div>
+                  <div className="text-[11px] text-ink-500 leading-snug">{m.photoRequest.instruction}</div>
                   {uploaded && (
                     <div className="mt-1 inline-flex items-center gap-1 text-[10.5px] text-sage-700">
                       <Sparkles size={9} className="text-sage-500" strokeWidth={2.2} />
-                      Standing water right at the P-trap joint. The slip nut is weeping.
+                      {m.photoRequest.read}
                     </div>
                   )}
                 </div>

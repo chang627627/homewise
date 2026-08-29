@@ -128,7 +128,7 @@ export default function ScheduleArtifact({ scheduledSlot, jobCompleted }) {
         <div className="mt-4 rounded-2xl bg-canvas-soft border border-ink-100 px-3.5 py-2.5 text-[12px] text-ink-700 leading-relaxed">
           {jobCompleted
             ? 'Visit complete. Jason closed out the job and your recommendation is logged.'
-            : 'Jason will text you 30 min before arrival. Reminder set.'}
+            : 'Jason will text you 30 min before arrival. Free to reschedule or cancel until Thursday 6 PM.'}
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button className="h-9 px-3 rounded-xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12px] font-medium transition-all">
