@@ -9,12 +9,19 @@ import {
   Bell,
   Settings,
   HelpCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 // Left rail: brand, the task switcher, and two board shortcuts. In the v2
 // shell the rail replaces v1's page nav; "Conversations" dissolves into the
 // task list here, and Overview/Schedule are artifacts staged on the board.
+// Collapsible to a 64px icon strip; the expand control is the same bordered
+// panel-toggle button the thread strip uses, so the affordance reads once
+// and applies everywhere.
 export default function Rail({
+  open = true,
+  onToggle,
   taskStarted,
   taskStatus,
   booked,
@@ -23,6 +30,72 @@ export default function Rail({
   onRestage,
   onOpenThread,
 }) {
+  if (!open) {
+    return (
+      <aside className="w-16 shrink-0 h-full flex flex-col items-center py-4 gap-3 bg-white/80 backdrop-blur-md border-r border-ink-100/80">
+        <Logo />
+        <button
+          onClick={() => onToggle?.(true)}
+          title="Open the sidebar"
+          className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-all shrink-0"
+        >
+          <PanelLeftOpen size={15} strokeWidth={2} />
+        </button>
+        <button
+          onClick={onOpenThread}
+          title="New AI task"
+          className="h-9 w-9 rounded-xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark flex items-center justify-center transition-all shrink-0"
+        >
+          <Sparkles size={14} strokeWidth={2.2} />
+        </button>
+
+        <span className="h-px w-6 bg-ink-100 shrink-0" />
+
+        <IconNavButton
+          icon={LayoutGrid}
+          title="Home"
+          active={staged === 'home'}
+          onClick={() => onRestage('home')}
+        />
+        <IconNavButton
+          icon={CalendarDays}
+          title="Schedule"
+          active={staged === 'schedule'}
+          disabled={!unlocked.has('schedule')}
+          dot={booked}
+          onClick={() => onRestage('schedule')}
+        />
+
+        {taskStarted && (
+          <>
+            <span className="h-px w-6 bg-ink-100 shrink-0" />
+            <button
+              onClick={onOpenThread}
+              title={`Kitchen sink leak · ${taskStatus}`}
+              className="relative h-9 w-9 rounded-xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 hover:ring-sage-200 flex items-center justify-center transition-all shrink-0"
+            >
+              <Droplets size={14} strokeWidth={1.8} />
+              {!booked && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500 ring-2 ring-white" />
+                </span>
+              )}
+            </button>
+          </>
+        )}
+
+        <div className="flex-1" />
+
+        <span className="h-9 w-9 rounded-xl ring-1 ring-ink-100 overflow-hidden shrink-0">
+          <span className="h-full w-full bg-gradient-to-br from-sage-200 via-sage-100 to-ember-100 flex items-center justify-center">
+            <span className="editorial text-[13px] text-sage-700">M</span>
+          </span>
+        </span>
+      </aside>
+    );
+  }
+
   return (
     <aside className="w-[240px] shrink-0 h-full flex flex-col bg-white/80 backdrop-blur-md border-r border-ink-100/80">
       {/* Brand + home */}
@@ -30,7 +103,14 @@ export default function Rail({
         <div className="flex items-center gap-2.5 px-1.5">
           <Logo />
           <span className="editorial text-[17px] leading-none text-ink-900">Homewise</span>
-          <span className="flex-1 h-px bg-ink-200/70 ml-1" />
+          <span className="flex-1" />
+          <button
+            onClick={() => onToggle?.(false)}
+            title="Collapse the sidebar"
+            className="h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+          >
+            <PanelLeftClose size={13} strokeWidth={2} />
+          </button>
         </div>
 
         <div className="mt-4 w-full flex items-center gap-2.5 rounded-2xl bg-canvas-soft border border-ink-100 p-2">
@@ -134,6 +214,26 @@ export default function Rail({
   );
 }
 
+function IconNavButton({ icon: Icon, title, active, disabled, dot, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`relative h-9 w-9 rounded-xl flex items-center justify-center transition-all shrink-0 ${
+        active
+          ? 'bg-canvas-soft text-sage-600 ring-1 ring-ink-100'
+          : disabled
+            ? 'text-ink-300'
+            : 'text-ink-500 hover:text-ink-900 hover:bg-canvas-soft/70'
+      }`}
+    >
+      <Icon size={15} strokeWidth={1.8} />
+      {dot && <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-sage-500 ring-2 ring-white" />}
+    </button>
+  );
+}
+
 function GroupLabel({ children }) {
   return (
     <div className="px-2.5 mb-2 flex items-center gap-2">
@@ -187,7 +287,7 @@ function FooterLink({ icon: Icon, label }) {
 
 function Logo() {
   return (
-    <div className="relative h-8 w-8 rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 ring-1 ring-sage-700/10 flex items-center justify-center">
+    <div className="relative h-8 w-8 rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 ring-1 ring-sage-700/10 flex items-center justify-center shrink-0">
       <svg viewBox="0 0 24 24" className="h-4 w-4 text-canvas-soft">
         <path d="M4 11.5 12 4l8 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />

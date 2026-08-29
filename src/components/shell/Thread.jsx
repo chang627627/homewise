@@ -20,7 +20,7 @@ import {
   Send,
   FileText,
   PanelLeftClose,
-  MessagesSquare,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 // ── The conversation spine ───────────────────────────────────────────────────
@@ -239,14 +239,18 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
   }
 
   // Collapsed strip: the conversation stays present while a wide artifact has
-  // the floor. Click anywhere to bring it back.
+  // the floor. The expand control is the same bordered panel-toggle button the
+  // rail uses; the label and the rest of the strip are clickable too.
   if (!open) {
     return (
-      <button
-        onClick={() => onToggle(true)}
-        title="Open the conversation"
-        className="w-14 shrink-0 h-full flex flex-col items-center gap-3 py-4 bg-white/80 backdrop-blur-md border-r border-ink-100/80 hover:bg-canvas-soft/80 transition-colors"
-      >
+      <div className="w-14 shrink-0 h-full flex flex-col items-center py-4 gap-3 bg-white/80 backdrop-blur-md border-r border-ink-100/80">
+        <button
+          onClick={() => onToggle(true)}
+          title="Open the conversation"
+          className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-all shrink-0"
+        >
+          <PanelLeftOpen size={15} strokeWidth={2} />
+        </button>
         <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10 shrink-0">
           <Sparkles size={13} strokeWidth={2.2} />
         </span>
@@ -256,13 +260,16 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
             <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
           </span>
         )}
-        <span className="flex-1 flex items-center">
-          <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] uppercase tracking-[0.2em] text-ink-500 font-semibold">
+        <button
+          onClick={() => onToggle(true)}
+          title="Open the conversation"
+          className="flex-1 flex flex-col items-center justify-center gap-2 w-full rounded-xl text-ink-500 hover:text-ink-900 hover:bg-canvas-soft/70 transition-colors"
+        >
+          <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] uppercase tracking-[0.2em] font-semibold">
             Conversation
           </span>
-        </span>
-        <MessagesSquare size={14} strokeWidth={1.8} className="text-ink-500 shrink-0" />
-      </button>
+        </button>
+      </div>
     );
   }
 

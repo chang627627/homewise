@@ -33,6 +33,7 @@ export default function App() {
   const [taskStarted, setTaskStarted] = useState(false);
   const [scheduledSlot, setScheduledSlot] = useState(null);
   const [threadOpen, setThreadOpen] = useState(true);
+  const [railOpen, setRailOpen] = useState(true);
 
   // URL-based escape hatches that bypass the app shell (same as v1).
   if (typeof window !== 'undefined') {
@@ -80,6 +81,8 @@ export default function App() {
   return (
     <div className="h-screen overflow-hidden bg-canvas text-ink-900 selection:bg-sage-200/40 flex">
       <Rail
+        open={railOpen}
+        onToggle={setRailOpen}
         taskStarted={taskStarted}
         taskStatus={taskStatus}
         booked={booked}
