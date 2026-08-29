@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   Camera,
@@ -19,8 +19,8 @@ import {
   TrendingUp,
   Send,
   FileText,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
 
 // ── The conversation spine ───────────────────────────────────────────────────
@@ -238,43 +238,21 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
     }, 1200);
   }
 
-  // Collapsed strip: the conversation stays present while a wide artifact has
-  // the floor. The expand control is the same bordered panel-toggle button the
-  // rail uses; the label and the rest of the strip are clickable too.
-  if (!open) {
-    return (
-      <div className="w-14 shrink-0 h-full flex flex-col items-center py-4 gap-3 bg-white/80 backdrop-blur-md border-r border-ink-100/80">
-        <button
-          onClick={() => onToggle(true)}
-          title="Open the conversation"
-          className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-all shrink-0"
-        >
-          <PanelLeftOpen size={15} strokeWidth={2} />
-        </button>
-        <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10 shrink-0">
-          <Sparkles size={13} strokeWidth={2.2} />
-        </span>
-        {!done && (
-          <span className="relative flex h-2 w-2 shrink-0">
-            <span className={`absolute inset-0 rounded-full bg-sage-300 ${pulse ? 'animate-pulseDot' : ''}`} />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
-          </span>
-        )}
-        <button
-          onClick={() => onToggle(true)}
-          title="Open the conversation"
-          className="flex-1 flex flex-col items-center justify-center gap-2 w-full rounded-xl text-ink-500 hover:text-ink-900 hover:bg-canvas-soft/70 transition-colors"
-        >
-          <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] uppercase tracking-[0.2em] font-semibold">
-            Conversation
-          </span>
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-[460px] shrink-0 h-full flex flex-col bg-white/60 backdrop-blur-md border-r border-ink-100/80">
+    <div
+      style={{ width: open ? 460 : 56, transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
+      className="shrink-0 h-full bg-white/60 backdrop-blur-md border-r border-ink-100/80 overflow-hidden"
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        {open ? (
+          <motion.div
+            key="full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16 }}
+            className="w-[460px] h-full flex flex-col"
+          >
       {/* Thread header */}
       <div className="shrink-0 px-4 py-3 border-b border-ink-100/80 flex items-center gap-2 bg-gradient-to-b from-white to-canvas-soft/20">
         <span className="relative flex h-2 w-2 shrink-0">
@@ -289,7 +267,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
           title="Collapse the conversation"
           className="ml-auto h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
         >
-          <PanelLeftClose size={12} strokeWidth={2} />
+          <ChevronsLeft size={13} strokeWidth={2} />
         </button>
       </div>
 
@@ -408,6 +386,44 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
           <Mic size={13} strokeWidth={1.8} />
         </button>
       </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="strip"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16 }}
+            className="w-14 h-full flex flex-col items-center py-4 gap-3"
+          >
+            <button
+              onClick={() => onToggle(true)}
+              title="Open the conversation"
+              className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-colors shrink-0"
+            >
+              <ChevronsRight size={15} strokeWidth={2} />
+            </button>
+            <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10 shrink-0">
+              <Sparkles size={13} strokeWidth={2.2} />
+            </span>
+            {!done && (
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className={`absolute inset-0 rounded-full bg-sage-300 ${pulse ? 'animate-pulseDot' : ''}`} />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
+              </span>
+            )}
+            <button
+              onClick={() => onToggle(true)}
+              title="Open the conversation"
+              className="flex-1 flex flex-col items-center justify-center gap-2 w-full rounded-xl text-ink-500 hover:text-ink-900 hover:bg-canvas-soft/70 transition-colors"
+            >
+              <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] uppercase tracking-[0.2em] font-semibold">
+                Conversation
+              </span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
