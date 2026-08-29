@@ -96,11 +96,17 @@ const accentBg = {
   ember: 'from-ember-100 to-ember-300 ring-ember-300/40 text-ember-500',
 };
 
-export default function ContractorsArtifact({ gates, onClearGate }) {
+export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, recommended }) {
   const approved = !!gates['approve-outreach'];
   const [showcaseOpen, setShowcaseOpen] = useState(null);
-  const aiPickIndex = contractors.findIndex((c) => c.aiPick);
-  const open = contractors.find((c) => c.id === showcaseOpen);
+  // After close-out with a yes, Jason's count bumps by one with a "+1 you" badge
+  const liveContractors = contractors.map((c) =>
+    c.id === 'jason' && jobCompleted && recommended === 'yes'
+      ? { ...c, recommendCount: c.recommendCount + 1, justRecommended: true }
+      : c
+  );
+  const aiPickIndex = liveContractors.findIndex((c) => c.aiPick);
+  const open = liveContractors.find((c) => c.id === showcaseOpen);
 
   return (
     <div className="space-y-5">
@@ -130,7 +136,7 @@ export default function ContractorsArtifact({ gates, onClearGate }) {
             <div className="col-span-3">
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Criterion</div>
             </div>
-            {contractors.map((c, idx) => (
+            {liveContractors.map((c, idx) => (
               <motion.div
                 key={c.id}
                 initial={{ opacity: 0, y: 6 }}
@@ -171,28 +177,28 @@ export default function ContractorsArtifact({ gates, onClearGate }) {
 
           <div className="divide-y divide-ink-100">
             <CompareRow label="Rating" sub="With number of reviews" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellRating key={c.id} c={c.rating} />)}
+              {liveContractors.map((c) => <CellRating key={c.id} c={c.rating} />)}
             </CompareRow>
             <CompareRow label="Years licensed" sub="Verified with state board" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellSimple key={c.id} value={`${c.yearsLicensed} yrs`} />)}
+              {liveContractors.map((c) => <CellSimple key={c.id} value={`${c.yearsLicensed} yrs`} />)}
             </CompareRow>
             <CompareRow label="License" sub="Verified or flagged" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellCheck key={c.id} ok={c.license.ok} text={c.license.label} />)}
+              {liveContractors.map((c) => <CellCheck key={c.id} ok={c.license.ok} text={c.license.label} />)}
             </CompareRow>
             <CompareRow label="Insurance" sub="GL + workers comp current" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellCheck key={c.id} ok={c.insurance.ok} text={c.insurance.label} />)}
+              {liveContractors.map((c) => <CellCheck key={c.id} ok={c.insurance.ok} text={c.insurance.label} />)}
             </CompareRow>
             <CompareRow label="Relevant past work" sub="Same job type · 12 mo · pulled from permit records" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellRelevant key={c.id} v={c.relevantWork} />)}
+              {liveContractors.map((c) => <CellRelevant key={c.id} v={c.relevantWork} />)}
             </CompareRow>
             <CompareRow label="Permit history" sub="Total permits pulled · 12 mo" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellPermits key={c.id} v={c.permitHistory} />)}
+              {liveContractors.map((c) => <CellPermits key={c.id} v={c.permitHistory} />)}
             </CompareRow>
             <CompareRow label="Earliest availability" sub="Stated availability for this scope" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => <CellAvailability key={c.id} v={c.earliest} />)}
+              {liveContractors.map((c) => <CellAvailability key={c.id} v={c.earliest} />)}
             </CompareRow>
             <CompareRow label="Recommended by Homewisers" sub="Real homeowners on completed Homewise jobs · tap to see work" aiPickIndex={aiPickIndex}>
-              {contractors.map((c) => (
+              {liveContractors.map((c) => (
                 <CellRecommend key={c.id} c={c} onOpen={() => c.showcase.length > 0 && setShowcaseOpen(c.id)} />
               ))}
             </CompareRow>
@@ -357,7 +363,9 @@ function CellRecommend({ c, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className="group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 transition-all bg-white border-ink-200 hover:border-ink-300"
+      className={`group inline-flex items-center gap-2 rounded-full border px-2.5 py-1 transition-all ${
+        c.justRecommended ? 'bg-sage-50 border-sage-200 hover:border-sage-300' : 'bg-white border-ink-200 hover:border-ink-300'
+      }`}
     >
       <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sage-50 text-sage-600 ring-1 ring-sage-100">
         <ThumbsUp size={10} strokeWidth={2.4} />
@@ -365,6 +373,11 @@ function CellRecommend({ c, onOpen }) {
       <span className="text-[12px] font-semibold text-ink-900 tabular-nums">{c.recommendCount}</span>
       <span className="text-[10.5px] text-ink-500">Homewisers</span>
       <ChevronRight size={11} className="text-ink-400 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all" strokeWidth={2} />
+      {c.justRecommended && (
+        <span className="ml-1 inline-flex items-center rounded-full bg-sage-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-white">
+          +1 you
+        </span>
+      )}
     </button>
   );
 }

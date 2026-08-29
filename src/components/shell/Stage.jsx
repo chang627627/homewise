@@ -6,12 +6,14 @@ import {
   ShieldCheck,
   TrendingUp,
   CalendarDays,
+  ClipboardCheck,
 } from 'lucide-react';
 import HomeArtifact from '../artifacts/HomeArtifact';
 import ScopeArtifact from '../artifacts/ScopeArtifact';
 import ContractorsArtifact from '../artifacts/ContractorsArtifact';
 import QuotesArtifact from '../artifacts/QuotesArtifact';
 import ScheduleArtifact from '../artifacts/ScheduleArtifact';
+import CompletionArtifact from '../artifacts/CompletionArtifact';
 
 // The stage: the artifact board. One artifact at a time; the pills row is the
 // board's memory, every artifact the flow has produced stays reachable.
@@ -21,6 +23,7 @@ const ARTIFACTS = [
   { id: 'contractors', label: 'Contractors', icon: ShieldCheck },
   { id: 'quotes', label: 'Quotes', icon: TrendingUp },
   { id: 'schedule', label: 'Schedule', icon: CalendarDays },
+  { id: 'completion', label: 'Close-out', icon: ClipboardCheck },
 ];
 
 const artifactMap = {
@@ -29,6 +32,7 @@ const artifactMap = {
   contractors: ContractorsArtifact,
   quotes: QuotesArtifact,
   schedule: ScheduleArtifact,
+  completion: CompletionArtifact,
 };
 
 export default function Stage({
@@ -37,6 +41,9 @@ export default function Stage({
   gates,
   scheduledSlot,
   taskStarted,
+  jobCompleted,
+  recommended,
+  photosShared,
   onRestage,
   onClearGate,
 }) {
@@ -85,6 +92,9 @@ export default function Stage({
             <Active
               gates={gates}
               unlocked={unlocked}
+              jobCompleted={jobCompleted}
+              recommended={recommended}
+              photosShared={photosShared}
               scheduledSlot={scheduledSlot}
               taskStarted={taskStarted}
               onClearGate={onClearGate}

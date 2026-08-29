@@ -49,13 +49,18 @@ const accentMap = {
   ember: 'bg-ember-50 text-ember-500 ring-ember-100',
 };
 
-export default function HomeArtifact({ gates, scheduledSlot, taskStarted, unlocked }) {
+export default function HomeArtifact({ gates, scheduledSlot, taskStarted, unlocked, jobCompleted, recommended }) {
   const booked = !!gates['approve-jason'];
   const quotesIn = !!gates['approve-outreach'];
   const contractorsIn = !!gates['approve-scope'];
   const decisionPending = !booked && !!unlocked?.has('scope');
 
-  const hero = booked
+  const hero = jobCompleted
+    ? {
+        primary: 'Job closed out.',
+        secondary: recommended === 'yes' ? 'You recommended Jason. Homewise is keeping a quiet eye.' : 'Homewise is keeping a quiet eye.',
+      }
+    : booked
     ? { primary: `${scheduledSlot || 'Fri 2 PM'} with Jason.`, secondary: 'Homewise is watching for changes.' }
     : taskStarted
       ? { primary: 'One job in motion.', secondary: 'The conversation carries it. Decisions land here.' }
@@ -80,7 +85,7 @@ export default function HomeArtifact({ gates, scheduledSlot, taskStarted, unlock
         )}
       </section>
 
-      {taskStarted && (
+      {taskStarted && !jobCompleted && (
         <section>
           <div className="flex items-center gap-2 mb-4">
             <span className="h-px w-6 bg-ink-300" />

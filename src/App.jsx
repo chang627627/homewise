@@ -30,6 +30,8 @@ export default function App() {
   const [gates, setGates] = useState({});
   const [taskStarted, setTaskStarted] = useState(false);
   const [scheduledSlot, setScheduledSlot] = useState(null);
+  const [recommended, setRecommended] = useState(null);
+  const [photosShared, setPhotosShared] = useState(false);
   const [threadOpen, setThreadOpen] = useState(true);
   const [railOpen, setRailOpen] = useState(true);
 
@@ -52,6 +54,8 @@ export default function App() {
   // Stage CTAs clear gates; the thread resumes and plays the follow-through.
   const clearGate = (id, extra = {}) => {
     if (extra.slot) setScheduledSlot(extra.slot);
+    if (extra.recommended) setRecommended(extra.recommended);
+    if (extra.photosShared !== undefined) setPhotosShared(extra.photosShared);
     setGates((g) => ({ ...g, [id]: true }));
   };
 
@@ -62,15 +66,20 @@ export default function App() {
   };
 
   const booked = !!gates['approve-jason'];
-  const taskStatus = booked
-    ? `Booked · ${scheduledSlot || 'Fri 2 PM'}`
-    : gates['approve-outreach']
-      ? 'Quotes in · your call'
-      : gates['approve-scope']
-        ? 'Contractors matched'
-        : unlocked.has('scope')
-          ? 'Scope ready · review it'
-          : 'Scoping the job';
+  const jobCompleted = !!gates['close-out'];
+  const taskStatus = jobCompleted
+    ? 'Completed'
+    : unlocked.has('completion')
+      ? 'Visit done · close it out'
+      : booked
+        ? `Booked · ${scheduledSlot || 'Fri 2 PM'}`
+        : gates['approve-outreach']
+          ? 'Quotes in · your call'
+          : gates['approve-scope']
+            ? 'Contractors matched'
+            : unlocked.has('scope')
+              ? 'Scope ready · review it'
+              : 'Scoping the job';
 
   return (
     <div className="h-screen overflow-hidden bg-canvas text-ink-900 selection:bg-sage-200/40 flex">
@@ -90,6 +99,7 @@ export default function App() {
         onToggle={setThreadOpen}
         gates={gates}
         scheduledSlot={scheduledSlot}
+        recommended={recommended}
         onEffect={handleEffect}
       />
       <Stage
@@ -98,6 +108,9 @@ export default function App() {
         gates={gates}
         scheduledSlot={scheduledSlot}
         taskStarted={taskStarted}
+        jobCompleted={jobCompleted}
+        recommended={recommended}
+        photosShared={photosShared}
         onRestage={restage}
         onClearGate={clearGate}
       />

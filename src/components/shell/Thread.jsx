@@ -151,14 +151,41 @@ const script = [
     text: "Booked. Jason will text you 30 minutes before he arrives. I'll check in once it's done, and if anything changes, I'll re-engage Bayline as backup.",
     time: '11:15 AM',
   },
-  { type: 'live', done: true, text: (ctx) => `Confirmed · ${ctx.scheduledSlot || 'Fri 2 PM'}`, eta: '2 days away' },
+  { type: 'live', text: (ctx) => `Confirmed · ${ctx.scheduledSlot || 'Fri 2 PM'}`, eta: '2 days away' },
+  { type: 'date', label: 'Friday · April 25' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Jason marked the visit complete', detail: 'Friday, April 25 · arrived on time', time: '2:48 PM' },
+  { type: 'effect', effect: { type: 'stage', artifact: 'completion' } },
+  {
+    type: 'agent',
+    text: "Jason says it's done and sent three after photos. When you've had a look, close out the job on your board.",
+    time: '2:49 PM',
+  },
+  { type: 'live', text: 'Waiting on you · Close out the job', eta: 'On the board' },
+  { type: 'gate', id: 'close-out' },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'You confirmed the work is done', detail: 'Leak resolved, no follow-up needed', time: '2:50 PM' },
+  {
+    type: 'action',
+    icon: CheckCircle2,
+    accent: 'sage',
+    title: 'You recommended Jason',
+    detail: "He's now Recommended by 13 Homewisers",
+    time: '2:50 PM',
+    when: (ctx) => ctx.recommended === 'yes',
+  },
+  { type: 'action', icon: CheckCircle2, accent: 'sage', title: 'Job closed out', detail: 'Logged in your home file', time: '2:50 PM' },
+  {
+    type: 'agent',
+    text: "All wrapped up. The leak's fixed and the job's closed out. I'll keep a quiet eye out for any follow-ups.",
+    time: '2:51 PM',
+  },
+  { type: 'live', done: true, text: 'Completed · Friday April 25', eta: 'Closed out' },
 ];
 
 const delayFor = (m) =>
-  m.type === 'thinking' ? 1000 : m.type === 'agent' ? 1150 : m.type === 'action' ? 950 : m.type === 'photos' ? 500 : m.type === 'live' ? 450 : 650;
+  m.type === 'date' ? 6500 : m.type === 'thinking' ? 1000 : m.type === 'agent' ? 1150 : m.type === 'action' ? 950 : m.type === 'photos' ? 500 : m.type === 'live' ? 450 : 650;
 
 function stateLabelFor(step, local, gates, done) {
-  if (done) return { label: 'Booked', pulse: false };
+  if (done) return { label: 'Closed out', pulse: false };
   const m = script[step];
   if (!m) return { label: null, pulse: false };
   if (m.type === 'gate') {
@@ -172,7 +199,7 @@ function stateLabelFor(step, local, gates, done) {
   return { label: 'Working on it', pulse: true };
 }
 
-export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect }) {
+export default function Thread({ open, onToggle, gates, scheduledSlot, recommended, onEffect }) {
   const [step, setStep] = useState(1);
   const [kickoffClicked, setKickoffClicked] = useState(false);
   const [photosUploaded, setPhotosUploaded] = useState(false);
@@ -185,7 +212,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
-  const ctx = { urgency, scheduledSlot };
+  const ctx = { urgency, scheduledSlot, recommended };
 
   const localGateCleared = (id) => {
     if (id === 'kickoff') return kickoffClicked;
@@ -201,6 +228,10 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
     const m = script[step];
     if (m.type === 'gate') {
       if (!localGateCleared(m.id)) return;
+      setStep((s) => s + 1);
+      return;
+    }
+    if (m.when && !m.when(ctx)) {
       setStep((s) => s + 1);
       return;
     }
@@ -227,7 +258,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
   const done = step >= script.length;
   const atKickoff = script[step]?.type === 'gate' && script[step]?.id === 'kickoff';
   const { label: stateLabel, pulse } = stateLabelFor(step, null, gates, done);
-  const waitingOnBoard = script[step]?.type === 'gate' && ['approve-scope', 'approve-outreach', 'approve-jason'].includes(script[step]?.id);
+  const waitingOnBoard = script[step]?.type === 'gate' && ['approve-scope', 'approve-outreach', 'approve-jason', 'close-out'].includes(script[step]?.id);
 
   function handleUpload() {
     if (uploading || photosUploaded) return;
@@ -278,6 +309,8 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, onEffect 
       >
         {visible.map((m, i) => {
           const isLast = i === visible.length - 1;
+          if (m.when && !m.when(ctx)) return null;
+          if (m.type === 'date') return <DateDivider key={i} m={m} />;
           if (m.type === 'user') return <UserMessage key={i} m={m} ctx={ctx} />;
           if (m.type === 'photos') return <PhotoStrip key={i} m={m} />;
           if (m.type === 'thinking') return <Thinking key={i} m={m} />;
@@ -449,6 +482,23 @@ function AgentAvatar() {
     <span className="shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10">
       <Sparkles size={12} strokeWidth={2.2} />
     </span>
+  );
+}
+
+function DateDivider({ m }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-center gap-3 pt-2"
+    >
+      <span className="flex-1 h-px bg-ink-100" />
+      <span className="text-[10px] uppercase tracking-[0.2em] text-ink-500 font-semibold whitespace-nowrap">
+        {m.label}
+      </span>
+      <span className="flex-1 h-px bg-ink-100" />
+    </motion.div>
   );
 }
 
