@@ -16,15 +16,13 @@ import BidFormPage from './pages/BidFormPage';
 // 2. Decisions happen on artifacts, narration happens in the thread. Deep
 //    artifacts stay documents and tables, not chat.
 //
-// Breathing layout: when a wide artifact (a comparison matrix) is staged, the
-// thread auto-collapses to a strip so the matrix keeps the width the Round 1
-// layouts were tested at. Approving anything re-opens the thread so the user
-// watches the AI work, then it breathes closed again on the next wide artifact.
+// Pane widths are user-controlled only: the rail and thread fold or expand
+// exclusively via their toggles, never as a side effect of staging or
+// approving. Wide artifacts (the comparison matrices) scroll horizontally
+// inside the stage when the thread is open.
 //
 // Onboarding is bypassed in this exploration: the demo lands straight in the
 // shell with the demo home's watchlist preloaded.
-
-const WIDE_ARTIFACTS = new Set(['contractors', 'quotes']);
 
 export default function App() {
   const [staged, setStaged] = useState('home');
@@ -48,23 +46,19 @@ export default function App() {
     if (e.type === 'stage') {
       setStaged(e.artifact);
       setUnlocked((prev) => new Set(prev).add(e.artifact));
-      setThreadOpen(!WIDE_ARTIFACTS.has(e.artifact));
     }
   };
 
   // Stage CTAs clear gates; the thread resumes and plays the follow-through.
-  // Re-open the thread on every approval so the AI's work stays visible.
   const clearGate = (id, extra = {}) => {
     if (extra.slot) setScheduledSlot(extra.slot);
     setGates((g) => ({ ...g, [id]: true }));
-    setThreadOpen(true);
   };
 
-  // Manual restage via stage pills or rail items. Same breathing rule.
+  // Manual restage via stage pills or rail items. Pane widths untouched.
   const restage = (artifact) => {
     if (!unlocked.has(artifact)) return;
     setStaged(artifact);
-    setThreadOpen(!WIDE_ARTIFACTS.has(artifact));
   };
 
   const booked = !!gates['approve-jason'];
