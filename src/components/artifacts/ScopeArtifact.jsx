@@ -129,14 +129,14 @@ export default function ScopeArtifact({ gates, onClearGate }) {
             <ol className="divide-y divide-ink-100 rounded-2xl border border-ink-100 overflow-hidden">
               {tasks.map((t) => (
                 <li key={t.n} className="grid grid-cols-12 gap-3 px-4 py-3.5 hover:bg-canvas-soft/50 transition-colors">
-                  <div className="figure col-span-1 text-[12px] text-ink-400">{String(t.n).padStart(2, '0')}</div>
+                  <div className="figure col-span-1 text-[12px] text-ink-500">{String(t.n).padStart(2, '0')}</div>
                   <div className="col-span-9 min-w-0">
                     <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">{t.title}</div>
                     <div className="text-[12px] text-ink-500 mt-0.5">{t.detail}</div>
                   </div>
                   <div className="col-span-2 text-right">
                     <div className="figure inline-flex items-center gap-1 text-[12px] text-ink-700">
-                      <Clock size={11} className="text-ink-400" strokeWidth={1.8} />
+                      <Clock size={11} className="text-ink-300" strokeWidth={1.8} />
                       {t.hours} hr
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export default function ScopeArtifact({ gates, onClearGate }) {
                   <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-500 text-white text-[10px] font-bold tabular-nums shrink-0">
                     {i + 1}
                   </span>
-                  <span className="text-[12.5px] text-ink-800 leading-snug">{a}</span>
+                  <span className="text-[12.5px] text-ink-700 leading-snug">{a}</span>
                 </li>
               ))}
             </ol>

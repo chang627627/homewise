@@ -161,7 +161,7 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
           className={`group h-12 pl-5 pr-3 rounded-2xl inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all ${
             canSubmit
               ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
-              : 'bg-ink-100 text-ink-400 cursor-not-allowed'
+              : 'bg-ink-100 text-ink-300 cursor-not-allowed'
           }`}
         >
           Close out the job
@@ -195,7 +195,7 @@ function Section({ num, title, sub, children }) {
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-3 flex-wrap">
-        <span className="text-[11px] tabular-nums text-ink-400 font-bold">{num}</span>
+        <span className="text-[11px] tabular-nums text-ink-500 font-bold">{num}</span>
         <span className="h-px w-4 bg-ink-200" />
         <h3 className="editorial text-[17px] leading-tight text-ink-900">{title}</h3>
       </div>

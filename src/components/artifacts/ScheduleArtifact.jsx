@@ -137,7 +137,7 @@ export default function ScheduleArtifact({ scheduledSlot, jobCompleted }) {
           </button>
           <button className="h-9 px-3 rounded-xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12px] font-medium transition-all">
             <Phone size={12} strokeWidth={1.8} />
-            Message Jason
+            Call Jason
           </button>
           <button className="h-9 px-3 rounded-xl bg-white text-ink-500 ring-1 ring-ink-100 hover:ring-ink-200 inline-flex items-center gap-1.5 text-[12px] font-medium transition-all">
             <X size={12} strokeWidth={1.8} />

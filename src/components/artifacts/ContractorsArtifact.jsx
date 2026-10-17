@@ -128,9 +128,9 @@ export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, 
 
       {/* Comparison matrix */}
       <div className="overflow-x-auto">
-        <section className="min-w-[920px] rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
-          <div className="grid grid-cols-12 gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40">
-            <div className="col-span-3">
+        <section className="min-w-[600px] rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
+          <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40">
+            <div>
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Criterion</div>
             </div>
             {liveContractors.map((c, idx) => (
@@ -139,7 +139,7 @@ export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, 
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: idx * 0.06 }}
-                className={`col-span-3 rounded-2xl p-3 ${
+                className={`rounded-2xl p-3 ${
                   c.aiPick ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100' : 'bg-white border border-ink-100'
                 }`}
               >
@@ -153,7 +153,7 @@ export default function ContractorsArtifact({ gates, onClearGate, jobCompleted, 
                     )}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em] truncate">{c.name}</div>
+                    <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em] leading-snug">{c.name}</div>
                     {c.aiPick && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <Sparkles size={10} className="text-sage-500" />
@@ -317,13 +317,13 @@ function ShareRow({ icon: Icon, title, sub }) {
 
 function CompareRow({ label, sub, children, aiPickIndex }) {
   return (
-    <div className="grid grid-cols-12 gap-3 px-5 py-4">
-      <div className="col-span-3 min-w-0">
+    <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4">
+      <div className="min-w-0">
         <div className="text-[12.5px] font-semibold text-ink-900 tracking-[-0.005em]">{label}</div>
         {sub && <div className="text-[11px] text-ink-500 mt-0.5">{sub}</div>}
       </div>
       {React.Children.map(children, (child, i) => (
-        <div key={i} className={`col-span-3 ${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
+        <div key={i} className={`${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
           {child}
         </div>
       ))}
@@ -384,7 +384,7 @@ function CellRelevant({ v }) {
 function CellPermits({ v }) {
   return (
     <div className="flex items-center gap-1.5">
-      <FileBadge size={12} className="text-ink-400" strokeWidth={1.8} />
+      <FileBadge size={12} className="text-ink-300" strokeWidth={1.8} />
       <span className="text-[13px] font-semibold text-ink-900 tabular-nums">{v.value}</span>
       <span className="text-[11px] text-ink-500">{v.label}</span>
     </div>
@@ -405,7 +405,7 @@ function CellRecommend({ c, onOpen }) {
   if (c.recommendCount < 3) {
     return (
       <div className="inline-flex items-center gap-1.5 text-[12px] text-ink-500">
-        <Sparkles size={11} className="text-ink-400" strokeWidth={2} />
+        <Sparkles size={11} className="text-ink-300" strokeWidth={2} />
         <span>New to Homewise</span>
       </div>
     );
@@ -422,7 +422,7 @@ function CellRecommend({ c, onOpen }) {
       </span>
       <span className="text-[12px] font-semibold text-ink-900 tabular-nums">{c.recommendCount}</span>
       <span className="text-[10.5px] text-ink-500">Homewisers</span>
-      <ChevronRight size={11} className="text-ink-400 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all" strokeWidth={2} />
+      <ChevronRight size={11} className="text-ink-300 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all" strokeWidth={2} />
       {c.justRecommended && (
         <span className="ml-1 inline-flex items-center rounded-full bg-sage-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-white">
           +1 you
@@ -522,7 +522,7 @@ function ShowcaseDrawer({ contractor, onClose }) {
               </motion.div>
             ))}
           </div>
-          <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
+          <p className="mt-5 text-[11px] text-ink-500 leading-relaxed">
             Showcase only includes jobs scoped and completed through Homewise. Other Homewisers chose to share their photos. No names or addresses appear.
           </p>
         </div>

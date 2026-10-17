@@ -211,10 +211,10 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
 
       {/* Matrix */}
       <div className="overflow-x-auto">
-        <section className="min-w-[920px] rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
+        <section className="min-w-[600px] rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
           {/* Quote cards as column headers */}
-          <div className="grid grid-cols-12 gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40 items-stretch">
-            <div className="col-span-3 flex items-end">
+          <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40 items-stretch">
+            <div className="flex items-end">
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Scope item</div>
             </div>
             {cols.map((c, i) => (
@@ -223,7 +223,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: i * 0.06 }}
-                className={`col-span-3 rounded-2xl p-3.5 ${
+                className={`rounded-2xl p-3.5 ${
                   c.aiPick ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100' : 'bg-white border border-ink-100'
                 }`}
               >
@@ -232,7 +232,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                     <span className="editorial text-[15px]">{c.initials}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em] truncate">{c.name}</div>
+                    <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em] leading-snug">{c.name}</div>
                     {c.aiPick && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <Sparkles size={10} className="text-sage-500" />
@@ -241,7 +241,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                     )}
                   </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-2">
+                <div className="mt-3 flex flex-wrap items-end justify-between gap-x-2 gap-y-1.5">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-wide ring-1 ${toneClass[c.verdict.tone]}`}>
                     {c.verdict.label}
                   </span>
@@ -256,8 +256,8 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
 
           <div className="divide-y divide-ink-100">
             {rows.map((row) => (
-              <div key={row.label} className="grid grid-cols-12 gap-3 px-5 py-4 items-stretch">
-                <div className="col-span-3 min-w-0">
+              <div key={row.label} className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
+                <div className="min-w-0">
                   <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">{row.label}</div>
                   {row.sub && <div className="text-[11.5px] text-ink-500 mt-0.5">{row.sub}</div>}
                 </div>
@@ -270,8 +270,8 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                       key={i}
                       className={
                         isPick
-                          ? 'col-span-3 rounded-none px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5'
-                          : `col-span-3 rounded-2xl px-3 py-2.5 ${meta.cell}`
+                          ? 'rounded-none px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5'
+                          : `rounded-2xl px-3 py-2.5 ${meta.cell}`
                       }
                     >
                       <div className="flex items-start gap-2">
@@ -297,15 +297,15 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
             ))}
 
             {/* Earliest start */}
-            <div className="grid grid-cols-12 gap-3 px-5 py-4 items-stretch">
-              <div className="col-span-3 min-w-0">
+            <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
+              <div className="min-w-0">
                 <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">Earliest start</div>
                 <div className="text-[11.5px] text-ink-500 mt-0.5">Stated availability for this job</div>
               </div>
               {cols.map((c, i) => (
-                <div key={c.id} className={i === aiPickIndex ? 'col-span-3 px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'col-span-3 px-3 py-2.5'}>
+                <div key={c.id} className={i === aiPickIndex ? 'px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'px-3 py-2.5'}>
                   <div className="flex items-center gap-1.5">
-                    <Calendar size={12} strokeWidth={1.8} className="text-ink-400 shrink-0" />
+                    <Calendar size={12} strokeWidth={1.8} className="text-ink-300 shrink-0" />
                     <span className="text-[12.5px] font-semibold text-ink-900">{c.schedule.earliestStart}</span>
                   </div>
                   <div className="text-[11px] text-ink-500 mt-0.5">{c.schedule.duration}</div>
@@ -314,13 +314,13 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
             </div>
 
             {/* Contractor note */}
-            <div className="grid grid-cols-12 gap-3 px-5 py-4 items-stretch">
-              <div className="col-span-3 min-w-0">
+            <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
+              <div className="min-w-0">
                 <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">Contractor note</div>
                 <div className="text-[11.5px] text-ink-500 mt-0.5">In their own words</div>
               </div>
               {cols.map((c, i) => (
-                <div key={c.id} className={i === aiPickIndex ? 'col-span-3 px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'col-span-3 px-3 py-2.5'}>
+                <div key={c.id} className={i === aiPickIndex ? 'px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'px-3 py-2.5'}>
                   <p className="text-[12px] leading-relaxed text-ink-500 italic">&ldquo;{c.note}&rdquo;</p>
                 </div>
               ))}
@@ -328,11 +328,11 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           </div>
 
           {/* Your availability */}
-          <div className="grid grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
-            <div className="col-span-3">
+          <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+            <div>
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Your availability</div>
             </div>
-            <div className="col-span-9 flex flex-wrap gap-1.5">
+            <div className="col-span-3 flex flex-wrap gap-1.5">
               {WINDOWS.map((w) => {
                 const on = windows.has(w.id);
                 return (
@@ -352,13 +352,13 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           </div>
 
           {/* Ask before booking */}
-          <div className="grid grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
-            <div className="col-span-3 flex flex-col justify-center">
+          <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
+            <div className="flex flex-col justify-center">
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Ask before booking</div>
               <div className="text-[11.5px] text-ink-500 mt-0.5">Optional. Talk first if you have questions.</div>
             </div>
             {cols.map((c, i) => (
-              <div key={c.id} className={`col-span-3 ${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
+              <div key={c.id} className={`${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
                 <button
                   onClick={() => setContactOpen(c.id)}
                   className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
@@ -371,8 +371,8 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           </div>
 
           {/* Pick a slot & approve */}
-          <div className="grid grid-cols-12 gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
-            <div className="col-span-3 flex flex-col justify-center">
+          <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
+            <div className="flex flex-col justify-center">
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Pick a slot &amp; approve</div>
             </div>
             {cols.map((c, i) => {
@@ -381,7 +381,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
               const noOverlap = valid.length === 0;
               const isBookedCol = booked && c.aiPick;
               return (
-                <div key={c.id} className={`col-span-3 flex flex-col gap-2 ${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
+                <div key={c.id} className={`flex flex-col gap-2 ${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
                   {noOverlap ? (
                     <div className="rounded-xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[11.5px] text-ink-700 leading-snug">
                       No overlap with your availability. Add a window above or ask {c.name.split(' ')[0]} for more times.
@@ -398,7 +398,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                               on ? 'bg-sage-500 text-white ring-1 ring-sage-500 hairline-on-dark' : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
                             } ${booked && !on ? 'opacity-50' : ''}`}
                           >
-                            <Clock size={10} strokeWidth={2} className={on ? 'opacity-90' : 'text-ink-400'} />
+                            <Clock size={10} strokeWidth={2} className={on ? 'opacity-90' : 'text-ink-300'} />
                             {s.time}
                           </button>
                         );
@@ -407,7 +407,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                   )}
 
                   {isBookedCol ? (
-                    <div className="w-full h-10 rounded-2xl bg-sage-50 ring-1 ring-sage-200 inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold text-sage-700">
+                    <div className="w-full min-h-[40px] px-2 py-2 rounded-2xl bg-sage-50 ring-1 ring-sage-200 inline-flex flex-wrap items-center justify-center gap-x-1.5 leading-snug text-center text-[12.5px] font-semibold text-sage-700">
                       <CheckCircle2 size={13} strokeWidth={2.4} />
                       Booked · {scheduledSlot}
                     </div>
@@ -415,9 +415,9 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                     <button
                       onClick={() => !booked && onClearGate('approve-jason', { slot: sel?.time })}
                       disabled={noOverlap || booked}
-                      className={`w-full h-10 rounded-2xl inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all ${
+                      className={`w-full min-h-[40px] px-2 py-2 rounded-2xl inline-flex flex-wrap items-center justify-center gap-x-1.5 leading-snug text-center text-[12.5px] font-semibold transition-all ${
                         noOverlap || booked
-                          ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                          ? 'bg-ink-100 text-ink-300 cursor-not-allowed'
                           : c.aiPick
                             ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
                             : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'

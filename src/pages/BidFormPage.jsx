@@ -313,7 +313,7 @@ export default function BidFormPage() {
               </div>
 
               <div className="flex items-start gap-2 text-[11.5px] text-ink-500 leading-relaxed">
-                <Calendar size={12} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-400" />
+                <Calendar size={12} strokeWidth={1.8} className="mt-0.5 shrink-0 text-ink-300" />
                 <span>
                   These give {homeowner.name.split(' ')[0]} three specific slots to choose from. She picks one when she books · you don't commit to a single time here.
                 </span>
@@ -342,7 +342,7 @@ export default function BidFormPage() {
               className={`group h-12 pl-5 pr-3 rounded-2xl inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all ${
                 canSubmit
                   ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
-                  : 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                  : 'bg-ink-100 text-ink-300 cursor-not-allowed'
               }`}
             >
               Submit bid to {homeowner.name.split(' ')[0]}
@@ -455,7 +455,7 @@ function ConfirmationView({ form, computedTotal }) {
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {form.slots.filter((s) => s.date && s.time).map((s, i) => (
                     <span key={i} className="figure inline-flex items-center gap-1.5 rounded-full bg-white ring-1 ring-ink-100 px-2.5 py-1 text-[12px] text-ink-700">
-                      <Calendar size={11} strokeWidth={1.8} className="text-ink-400" />
+                      <Calendar size={11} strokeWidth={1.8} className="text-ink-300" />
                       {formatSlot(s)}
                     </span>
                   ))}
@@ -562,7 +562,7 @@ function ScopeSummary({ open, onToggle }) {
                       key={t.n}
                       className="grid grid-cols-12 gap-3 px-3 py-2 rounded-xl bg-canvas-soft/40 border border-ink-100"
                     >
-                      <div className="figure col-span-1 text-[11.5px] text-ink-400">
+                      <div className="figure col-span-1 text-[11.5px] text-ink-500">
                         {String(t.n).padStart(2, '0')}
                       </div>
                       <div className="col-span-9 min-w-0">
@@ -595,7 +595,7 @@ function ScopeSummary({ open, onToggle }) {
                       <span className="figure mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-500 text-white text-[10px] shrink-0">
                         {i + 1}
                       </span>
-                      <span className="text-[12.5px] text-ink-800 leading-snug">{a}</span>
+                      <span className="text-[12.5px] text-ink-700 leading-snug">{a}</span>
                     </li>
                   ))}
                 </ol>
@@ -623,7 +623,7 @@ function FormSection({ num, title, optional = false, children }) {
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-4 flex-wrap">
-        <span className="figure text-[11px] text-ink-400">{num}</span>
+        <span className="figure text-[11px] text-ink-500">{num}</span>
         <span className="h-px w-4 bg-ink-200" />
         <h2 className="editorial text-[20px] leading-tight text-ink-900">{title}</h2>
         {optional && (
@@ -690,7 +690,7 @@ function NotesField({ value, onChange }) {
     ? 'text-ember-500'
     : nearLimit
     ? 'text-ember-400'
-    : 'text-ink-400';
+    : 'text-ink-500';
 
   return (
     <div className="space-y-1.5">
@@ -700,7 +700,7 @@ function NotesField({ value, onChange }) {
         rows={4}
         maxLength={NOTES_MAX}
         placeholder="e.g. price assumes faucet cartridge is a Moen 1225. If it turns out to be a Delta, please confirm before scheduling."
-        className="w-full px-3.5 py-3 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] leading-relaxed placeholder:text-ink-400 focus:outline-none focus:border-ink-300 resize-none"
+        className="w-full px-3.5 py-3 rounded-2xl bg-canvas-soft border border-ink-100 text-[13px] leading-relaxed placeholder:text-ink-300 focus:outline-none focus:border-ink-300 resize-none"
       />
       <div className={`figure text-[11px] text-right ${counterCls}`}>
         {len} / {NOTES_MAX}
@@ -712,7 +712,7 @@ function NotesField({ value, onChange }) {
 function PriceInput({ value, onChange, placeholder }) {
   return (
     <div className="relative">
-      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 figure text-[14px] text-ink-400 pointer-events-none">
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 figure text-[14px] text-ink-500 pointer-events-none">
         $
       </span>
       <input
@@ -721,7 +721,7 @@ function PriceInput({ value, onChange, placeholder }) {
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
         placeholder={placeholder}
-        className="figure w-full h-10 pl-7 pr-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[14px] focus:outline-none focus:border-ink-300"
+        className="figure w-full h-10 pl-7 pr-3.5 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-300 text-[14px] focus:outline-none focus:border-ink-300"
       />
     </div>
   );
@@ -731,7 +731,7 @@ function LineItemRow({ task, item, onChange }) {
   const total = (parseFloat(item.rate) || 0) * (parseFloat(item.hours) || 0);
   return (
     <div className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-canvas-soft/40 transition-colors">
-      <div className="figure col-span-1 text-[11.5px] text-ink-400">
+      <div className="figure col-span-1 text-[11.5px] text-ink-500">
         {String(task.n).padStart(2, '0')}
       </div>
       <div className="col-span-4 min-w-0">
@@ -760,7 +760,7 @@ function LineItemRow({ task, item, onChange }) {
 function RateInput({ value, onChange, placeholder }) {
   return (
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 figure text-[13px] text-ink-400 pointer-events-none">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 figure text-[13px] text-ink-500 pointer-events-none">
         $
       </span>
       <input
@@ -769,9 +769,9 @@ function RateInput({ value, onChange, placeholder }) {
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
         placeholder={placeholder}
-        className="figure w-full h-10 pl-6 pr-10 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+        className="figure w-full h-10 pl-6 pr-10 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-300 text-[13px] focus:outline-none focus:border-ink-300"
       />
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-400 pointer-events-none">
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-500 pointer-events-none">
         /hr
       </span>
     </div>
@@ -786,9 +786,9 @@ function HoursInput({ value, onChange }) {
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
-        className="figure w-full h-10 pl-3 pr-8 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[13px] focus:outline-none focus:border-ink-300"
+        className="figure w-full h-10 pl-3 pr-8 rounded-2xl bg-canvas-soft border border-ink-100 placeholder:text-ink-300 text-[13px] focus:outline-none focus:border-ink-300"
       />
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-400 pointer-events-none">
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-500 pointer-events-none">
         hr
       </span>
     </div>
@@ -798,7 +798,7 @@ function HoursInput({ value, onChange }) {
 function SlotRow({ index, slot, onChange }) {
   return (
     <div className="grid grid-cols-12 gap-3 items-center px-4 py-3 hover:bg-canvas-soft/40 transition-colors">
-      <div className="figure col-span-1 text-[11.5px] text-ink-400">
+      <div className="figure col-span-1 text-[11.5px] text-ink-500">
         {String(index + 1).padStart(2, '0')}
       </div>
       <div className="col-span-7">

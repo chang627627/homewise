@@ -151,7 +151,7 @@ const sinkScript = [
     icon: FileText,
     accent: 'sage',
     title: 'Scope of work drafted', target: 'scope',
-    detail: 'SOW-2026-0423-001 · 6 sections · benchmarked against 46 local jobs',
+    detail: 'SOW-2026-0423-001 · 5 sections · benchmarked against 46 local jobs',
     time: '10:33 AM',
   },
   { type: 'effect', effect: { type: 'stage', artifact: 'scope' } },
@@ -208,7 +208,7 @@ const sinkScript = [
     title: (ctx) => `You approved Jason · ${ctx.scheduledSlot || 'Fri 2 PM'}`,
     target: 'quotes',
     detail: 'Confirmed via quote comparison',
-    time: '11:14 AM',
+    time: '4:22 PM',
   },
   {
     type: 'action',
@@ -216,14 +216,14 @@ const sinkScript = [
     accent: 'sage',
     title: 'Booking confirmed with Jason Plumbing Co.', target: 'schedule',
     detail: (ctx) => `${ctx.scheduledSlot || 'Fri 2 PM'} · 2-hour window`,
-    time: '11:14 AM',
+    time: '4:22 PM',
   },
-  { type: 'action', icon: Calendar, accent: 'sage', title: 'Added to your calendar', target: 'schedule', detail: 'Reminder set for 30 min before arrival', time: '11:14 AM' },
+  { type: 'action', icon: Calendar, accent: 'sage', title: 'Added to your calendar', target: 'schedule', detail: 'Reminder set for 30 min before arrival', time: '4:22 PM' },
   { type: 'effect', effect: { type: 'stage', artifact: 'schedule' } },
   {
     type: 'agent',
     text: "Booked. Jason will text you 30 minutes before he arrives. I'll check in once it's done, and if anything changes, I'll re-engage Bayline as backup.",
-    time: '11:15 AM',
+    time: '4:23 PM',
   },
   { type: 'live', text: (ctx) => `Confirmed · ${ctx.scheduledSlot || 'Fri 2 PM'}`, eta: 'Free to change until Thu 6 PM' },
   { type: 'date', label: 'Friday · April 25' },
@@ -527,7 +527,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-1.5 justify-center text-[11px] text-ink-400 pt-1"
+            className="flex items-center gap-1.5 justify-center text-[11px] text-ink-500 pt-1"
           >
             The decision lives on the board
             <ArrowRight size={11} strokeWidth={2} />
@@ -553,7 +553,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
               }
             }}
             placeholder="Reply to Homewise…"
-            className="w-full h-9 pl-3 pr-9 rounded-xl bg-canvas-soft border border-ink-100 placeholder:text-ink-400 text-[12.5px] focus:outline-none focus:border-ink-300"
+            className="w-full h-9 pl-3 pr-9 rounded-xl bg-canvas-soft border border-ink-100 placeholder:text-ink-300 text-[12.5px] focus:outline-none focus:border-ink-300"
           />
           <button
             onClick={() => {
@@ -732,7 +732,7 @@ function ActionItem({ m, ctx, onOpen }) {
               />
             )}
           </span>
-          <span className="text-[10px] tabular-nums text-ink-400 shrink-0">{m.time}</span>
+          <span className="text-[10px] tabular-nums text-ink-500 shrink-0">{m.time}</span>
         </div>
         <div className="text-[11px] text-ink-500 mt-0.5">{resolve(m.detail, ctx)}</div>
       </div>
@@ -824,7 +824,7 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
           })}
         </div>
         <div className="mt-1.5 flex items-center justify-end">
-          <span className="text-[10px] tabular-nums text-ink-400">{m.time}</span>
+          <span className="text-[10px] tabular-nums text-ink-500">{m.time}</span>
         </div>
       </div>
     </motion.div>
@@ -960,7 +960,7 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
           )}
 
           <div className="mt-1.5 flex items-center justify-end">
-            <span className="text-[10px] tabular-nums text-ink-400">{m.time}</span>
+            <span className="text-[10px] tabular-nums text-ink-500">{m.time}</span>
           </div>
         </div>
 
