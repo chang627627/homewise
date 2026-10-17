@@ -42,6 +42,22 @@ textarea:-webkit-autofill:focus {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* V2 shell. Portaled V2 layers (drawers) carry the class too. */
+.v2 {
+  caret-color: #1A1A17;
+}
+.v2 ::selection {
+  background: rgba(26, 26, 23, 0.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2,
+  .v2 *,
+  .v2 *::before,
+  .v2 *::after {
+    transition-duration: 0s !important;
+  }
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
@@ -175,6 +191,30 @@ textarea:-webkit-autofill:focus {
       rgba(255, 255, 255, 0) 100%
     );
     background-size: 200% 100%;
+  }
+
+  .shimmer-text {
+    /* Status text while the agent is working: ink-500 copy with a soft ink-300
+       highlight sweeping across. Pair with animate-shimmer. Never decorative:
+       only on the one line that says the agent is busy right now. */
+    background: linear-gradient(
+      90deg,
+      rgba(107, 107, 101, 1) 0%,
+      rgba(107, 107, 101, 1) 40%,
+      rgba(168, 168, 161, 1) 50%,
+      rgba(107, 107, 101, 1) 60%,
+      rgba(107, 107, 101, 1) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer-text {
+      animation: none;
+      color: rgba(107, 107, 101, 1);
+    }
   }
 
   .no-scrollbar::-webkit-scrollbar {

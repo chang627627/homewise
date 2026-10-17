@@ -1,5 +1,5 @@
 // Generated photography for every photo slot in the app (Figma AI, gpt-image).
-// Keys are referenced by the `photo` field on slot data; ui/PhotoFill renders them.
+// Keys are referenced by the `photo` field on slot data; v2/Photo (and V1's PhotoFill) render them.
 
 import acCondenser from '../assets/photos/ac-condenser.jpg';
 import baylinePipeRepair from '../assets/photos/bayline-pipe-repair.jpg';
@@ -35,4 +35,15 @@ export const photos = {
   'sarahwells-bathroom': sarahwellsBathroom,
   'under-sink': underSink,
   'under-sink-after': underSinkAfter,
+};
+
+// Photo-read pins: the spot the agent read, as % of the 4:3 frame, measured
+// on the images themselves. The after shots are framed differently, so each
+// carries its own coordinates for the same physical spot.
+export const photoPins = {
+  'under-sink': { x: 53.5, y: 50 }, // where the drip leaves the P-trap
+  'faucet-base': { x: 52.5, y: 70.5 }, // water pooled at the front of the base
+  'under-sink-after': { x: 52, y: 52 }, // same trap bend, new PVC, dry
+  'faucet-base-after': { x: 52, y: 58 }, // same edge of the base, dry
+  'ac-condenser': { x: 36, y: 59 }, // matted fins on the side coil
 };

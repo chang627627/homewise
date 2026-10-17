@@ -1,296 +1,276 @@
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import Button from '../v2/Button';
+import DecisionBar from '../v2/DecisionBar';
+import Evidence from '../v2/Evidence';
+import LabelValue from '../v2/LabelValue';
+import Photo from '../v2/Photo';
+import SectionHeading from '../v2/SectionHeading';
+import { StatusText } from '../v2/Status';
+import { enter, prefersReducedMotion } from '../v2/motion';
+import { usePrefersReducedMotion } from '../v2/useMediaQuery';
+import { DocTitle, FactsLine, StatusLine } from './doc/DocParts';
 import {
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Box,
-  Lightbulb,
-  GitBranch,
-  Send,
-  ChevronRight,
-  Pencil,
-  Download,
-} from 'lucide-react';
-import Button from '../ui/Button';
-import Pill from '../ui/Pill';
-import { ScopePhotoStrip } from '../../pages/ScopePage';
+  AT,
+  BENCHMARK,
+  CONTRACTORS,
+  DEFAULT_URGENCY,
+  GATES,
+  INTAKE,
+  SCOPE,
+  SCOPE_TOTALS,
+  URGENCY,
+  artifactStatus,
+  benchmarkRange,
+  fmtUsd,
+} from '../../data/demo';
 
-// The scope-of-work artifact. Research Finding 2: this is the most important
-// deliverable in the product; it stays a first-class document on the stage.
-const tasks = [
-  { n: 1, title: 'Diagnose faucet & under-sink supply', detail: 'Confirm leak source. Test cartridge and supply valves.', hours: 0.25 },
-  { n: 2, title: 'Replace P-trap assembly', detail: 'Remove existing trap, install new 1-1/2" PVC trap and tailpiece. Test for seal.', hours: 0.75 },
-  { n: 3, title: 'Replace single-handle faucet cartridge', detail: 'Manufacturer-matched cartridge. Reseat and test for drip-free operation.', hours: 0.5 },
-  { n: 4, title: 'Test, clean up, and document', detail: 'Run full hot/cold cycle. Photograph completed work. Wipe down workspace.', hours: 0.25 },
+const TITLE = 'Kitchen sink: P-trap leak and faucet cartridge';
+const ADD_ONS = 'Add-ons';
+
+// demo.js points the alternative diagnosis at a numbered section; V2 sections
+// are unnumbered, so the pointer names the heading instead.
+const ALTERNATIVE = SCOPE.diagnosis.alternative.replace(/in section \d+/, `under ${ADD_ONS}`);
+
+const withPeriod = (s) => (/[.!?]$/.test(s) ? s : `${s}.`);
+
+const LABOR_COLS = 'grid grid-cols-[minmax(0,1fr)_72px] gap-4';
+// Below sm the spec moves under the item name, so four columns never squeeze.
+const MATERIAL_COLS = 'grid grid-cols-[minmax(0,1fr)_48px_72px] gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_48px_72px]';
+const ADD_ON_COLS = 'grid grid-cols-[minmax(0,1fr)_96px] gap-4';
+const COL_HEAD = 'pb-2 text-meta font-medium text-ink-500';
+
+// The column shows demo.js's gross price ("+$71 + faucet"); the cartridge
+// credit stays in the detail line, so the column never wraps.
+const addOnAmount = (a) => a.cost.split(', minus')[0];
+// 'Low (5%)' reads 'low likelihood (5%)', 'Very low' reads 'very low likelihood'.
+const likelihood = (s) => {
+  const [, word, pct] = s.match(/^(.*?)\s*(\(.*\))?$/);
+  return `${word.toLowerCase()} likelihood${pct ? ` ${pct}` : ''}`;
+};
+const addOnDetail = (a) => {
+  const credit = a.credit ? `, minus the ${fmtUsd(a.credit.cost)} ${a.credit.name}` : '';
+  return `${a.add}${credit}, ${likelihood(a.likelihood)}`;
+};
+
+// Stream reveal: blocks assemble in order (header, diagnosis, labor,
+// materials, add-ons, done when, totals) once per session, and only when the
+// agent stages the draft where it can be seen. User clicks, hidden mounts and
+// reduced motion render it complete.
+let streamedOnce = false;
+const STEP_MS = 180;
+const SKELETONS = [
+  ['w-1/3', 'w-2/3', 'w-1/2'],
+  ['w-2/3', 'w-5/6', 'w-1/2'],
+  ['w-1/2', 'w-5/6', 'w-2/3'],
+  ['w-2/3', 'w-1/2'],
+  ['w-5/6', 'w-1/2'],
+  ['w-2/3', 'w-5/6', 'w-1/2'],
+  ['w-1/2', 'w-2/3'],
 ];
 
-const materials = [
-  { item: 'P-trap assembly', spec: 'PVC, 1-1/2"', qty: 1, est: 14 },
-  { item: 'Faucet cartridge', spec: 'Mfr-matched, single-handle', qty: 1, est: 38 },
-  { item: "Plumber's tape & misc.", spec: 'Sealant, washers', qty: 1, est: 8 },
-];
+export default function ScopeArtifact({ gates = {}, urgency, stagedBy, onClearGate }) {
+  const approved = !!gates[GATES.approveScope];
+  const sent = !!gates[GATES.approveOutreach];
 
-const unitPriced = [
-  { if: 'Each additional supply valve found corroded', add: '+0.5 hr labor + $18 valve', cost: '+$58', likelihood: 'Low (5%)' },
-  { if: 'Per sq ft of water-damaged cabinet base requiring replacement', add: 'Out of scope: separate ticket', cost: 'TBD', likelihood: 'Very low' },
-];
+  const rootRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
+  const [streaming, setStreaming] = useState(() => !streamedOnce && stagedBy === 'agent' && !prefersReducedMotion());
+  const [shown, setShown] = useState(0);
+  const done = reduced || !streaming || shown >= SKELETONS.length;
 
-const acceptance = [
-  'No visible drip from faucet base after 5 min run cycle (hot + cold)',
-  'No water beading at P-trap joints after 2 min full-flow test',
-  'Cabinet floor dry to touch 30 min post-repair',
-  'Photo evidence of completed work uploaded to job thread',
-];
+  // Decided once, before the first paint, so a hidden mount never flashes
+  // skeletons and never spends the stream.
+  useLayoutEffect(() => {
+    if (!streaming) return;
+    if (rootRef.current?.getClientRects().length) streamedOnce = true;
+    else setStreaming(false);
+  }, []);
 
-const totalHours = tasks.reduce((s, t) => s + t.hours, 0);
-const totalMaterials = materials.reduce((s, m) => s + m.est, 0);
-const labor = 95;
-const laborTotal = Math.round(totalHours * labor);
+  useEffect(() => {
+    if (done) return undefined;
+    const t = setTimeout(() => setShown((n) => n + 1), STEP_MS);
+    return () => clearTimeout(t);
+  }, [shown, done]);
 
-export default function ScopeArtifact({ gates, onClearGate }) {
-  const approved = !!gates['approve-scope'];
+  const reveal = { shown: done ? SKELETONS.length : shown, streaming: streaming && !reduced };
+
+  const base = artifactStatus('scope', { gates });
+  const status = approved ? { ...base, label: `${base.label} ${AT.scopeApproved}` } : base;
+  const sentence = !approved
+    ? 'AI draft from your photos and answers. Edit anything before contractors see it.'
+    : sent
+      ? `Locked as v1, sent to ${CONTRACTORS.length} contractors`
+      : 'Locked as v1';
+  const timing = (URGENCY[urgency] || URGENCY[DEFAULT_URGENCY]).scope;
 
   return (
-    <div className="space-y-5">
-      {/* AI disclaimer */}
-      <div className="rounded-2xl bg-ember-50/60 border border-ember-100 px-4 py-3 flex items-start gap-2.5">
-        <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100 shrink-0">
-          <AlertCircle size={12} strokeWidth={2} />
-        </span>
-        <div className="text-[12.5px] text-ink-700 leading-[1.5]">
-          <strong className="font-medium text-ink-900">AI-generated, please review.</strong>{' '}
-          Homewise drafted this scope from your conversation and photo. Edit any section or ask questions in the thread before contractors see it.
-        </div>
+    <div ref={rootRef} className="mx-auto flex w-full max-w-[720px] flex-1 flex-col">
+      <div className="flex-1" aria-busy={!done || undefined}>
+        <Block i={0} {...reveal}>
+          <DocTitle>{TITLE}</DocTitle>
+          <StatusLine status={status} sentence={sentence} />
+          <FactsLine>{`${SCOPE.issuedLabel} · ${SCOPE.property} · ${timing}`}</FactsLine>
+        </Block>
+
+        <Block i={1} className="mt-8" {...reveal}>
+          <SectionHeading title="Diagnosis" />
+          <LabelValue
+            items={[
+              {
+                label: 'Most likely',
+                value: (
+                  <>
+                    <span className="font-medium">{withPeriod(SCOPE.diagnosis.likely)}</span>
+                    <span className="text-ink-700"> {SCOPE.diagnosis.likelyDetail}</span>
+                  </>
+                ),
+              },
+              { label: 'Alternative', value: <span className="text-ink-700">{ALTERNATIVE}</span> },
+            ]}
+          />
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {INTAKE.photos.map((p) => (
+              <Photo key={p.id} photo={p.photo} label={p.label} note={p.tag} pin />
+            ))}
+          </div>
+        </Block>
+
+        <Block i={2} className="mt-10" {...reveal}>
+          <SectionHeading title="Labor" meta={`${SCOPE_TOTALS.hours} hr at ${fmtUsd(SCOPE.laborRate)}/hr`} />
+          <div role="table" aria-label="Labor">
+            <div role="row" className={`${LABOR_COLS} ${COL_HEAD}`}>
+              <span role="columnheader">Task</span>
+              <span role="columnheader" className="text-right">Hours</span>
+            </div>
+            {SCOPE.tasks.map((t) => (
+              <div role="row" key={t.id} className={`${LABOR_COLS} border-b border-line py-3`}>
+                <div role="cell" className="min-w-0">
+                  <div className="text-ui font-medium text-ink-900">{t.title}</div>
+                  <div className="mt-0.5 text-meta text-ink-500">{t.detail}</div>
+                </div>
+                <div role="cell" className="text-right text-ui tabular-nums text-ink-700">{t.hours.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        </Block>
+
+        <Block i={3} className="mt-10" {...reveal}>
+          <SectionHeading title="Materials" meta="Contractor may substitute equivalents" />
+          <div role="table" aria-label="Materials">
+            <div role="row" className={`${MATERIAL_COLS} ${COL_HEAD}`}>
+              <span role="columnheader">Item</span>
+              <span role="columnheader" className="hidden sm:block">Spec</span>
+              <span role="columnheader" className="text-right">Qty</span>
+              <span role="columnheader" className="text-right">Est.</span>
+            </div>
+            {SCOPE.materials.map((m) => (
+              <div role="row" key={m.id} className={`${MATERIAL_COLS} min-h-11 items-center border-b border-line py-2.5 text-ui`}>
+                <div role="cell" className="min-w-0">
+                  <div className="font-medium text-ink-900">{m.item}</div>
+                  <div className="text-meta text-ink-500 sm:hidden">{m.spec}</div>
+                </div>
+                <div role="cell" className="hidden min-w-0 text-ink-700 sm:block">{m.spec}</div>
+                <div role="cell" className="text-right tabular-nums text-ink-700">{m.qty}</div>
+                <div role="cell" className="text-right tabular-nums text-ink-900">{fmtUsd(m.est * m.qty)}</div>
+              </div>
+            ))}
+          </div>
+        </Block>
+
+        <Block i={4} className="mt-10" {...reveal}>
+          <SectionHeading title={ADD_ONS} meta="Pre-agreed if the scope grows" />
+          <div role="table" aria-label={ADD_ONS}>
+            <div role="row" className={`${ADD_ON_COLS} ${COL_HEAD}`}>
+              <span role="columnheader">Item</span>
+              <span role="columnheader" className="text-right">Amount</span>
+            </div>
+            {SCOPE.addOns.map((a) => (
+              <div role="row" key={a.id} className={`${ADD_ON_COLS} border-b border-line py-3`}>
+                <div role="cell" className="min-w-0">
+                  <div className="text-ui font-medium text-ink-900">{a.if}</div>
+                  <div className="mt-0.5 text-meta tabular-nums text-ink-500">{addOnDetail(a)}</div>
+                </div>
+                <div role="cell" className={`whitespace-nowrap text-right text-ui tabular-nums ${a.dollars == null ? 'text-ink-500' : 'text-ink-900'}`}>
+                  {addOnAmount(a)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Block>
+
+        <Block i={5} className="mt-10" {...reveal}>
+          <SectionHeading title="Done when" />
+          <ol className="space-y-2 text-ui leading-[22px] tabular-nums text-ink-700">
+            {SCOPE.acceptance.map((line, i) => (
+              <li key={line} className="grid grid-cols-[20px_1fr]">
+                <span className="text-meta leading-[22px] tabular-nums text-ink-500">{i + 1}.</span>
+                <span className="text-pretty">{line}</span>
+              </li>
+            ))}
+          </ol>
+        </Block>
+
+        <Block i={6} className="mt-8" {...reveal}>
+          <Evidence id="totals" className="ml-auto w-[280px] max-w-full">
+            <dl>
+              <div className="flex justify-between gap-4 py-1 text-ui">
+                <dt className="tabular-nums text-ink-700">{`Labor, ${SCOPE_TOTALS.hours} hr`}</dt>
+                <dd className="tabular-nums text-ink-900">{fmtUsd(SCOPE_TOTALS.labor)}</dd>
+              </div>
+              <div className="flex justify-between gap-4 py-1 text-ui">
+                <dt className="tabular-nums text-ink-700">{`Materials, ${SCOPE.materials.length} items`}</dt>
+                <dd className="tabular-nums text-ink-900">{fmtUsd(SCOPE_TOTALS.materials)}</dd>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line pt-3">
+                <dt className="text-ui font-semibold text-ink-900">Estimated total</dt>
+                <dd className="text-figure tabular-nums text-ink-900">{fmtUsd(SCOPE_TOTALS.total)}</dd>
+              </div>
+            </dl>
+            <p className="mt-1 text-right text-meta tabular-nums text-pretty text-ink-500">
+              {`Local range ${benchmarkRange()}, ${BENCHMARK.jobs} jobs in the ${BENCHMARK.window}. Add-ons excluded.`}
+            </p>
+          </Evidence>
+        </Block>
       </div>
 
-      {/* Document */}
-      <article className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
-        <div className="px-6 md:px-8 pt-7 pb-5 border-b border-ink-100/80">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="h-px w-6 bg-ink-300" />
-              <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500">
-                Scope of work · SOW-2026-0423-001
-              </span>
-            </div>
-            <Pill tone="sage" icon={CheckCircle2}>
-              {approved ? 'Approved · sent' : 'Ready to send'}
-            </Pill>
-          </div>
-          <h2 className="editorial editorial-s text-[22px] leading-[1.2] text-ink-900 mt-3">
-            Kitchen sink: P-trap leak and faucet cartridge replacement
-          </h2>
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-[12px]">
-            <MetaCell label="Property" value="124 Maple St, Oakland" />
-            <MetaCell label="Trade" value="Plumbing" />
-            <MetaCell label="Issued" value="Apr 23, 2026" />
-            <MetaCell label="Urgency" value="This week" />
-          </div>
+      {/* Held back until the stream finishes, so nobody approves a half-drawn
+          scope. `contents` keeps the bar a flex child (sticky) on screen and
+          drops it from the exported PDF. */}
+      {done && (
+        <div className="contents print:hidden">
+          <DecisionBar
+            note={approved ? <StatusText state={status.state}>{status.label}</StatusText> : `Next: Homewise verifies ${CONTRACTORS.length} local plumbers.`}
+            actions={
+              approved ? null : (
+                <>
+                  <Button variant="ghost">Edit scope</Button>
+                  <Button onClick={() => onClearGate?.(GATES.approveScope)}>Approve and find contractors</Button>
+                </>
+              )
+            }
+          />
         </div>
-
-        <div className="px-6 md:px-8 py-6 space-y-8">
-          <SectionBlock label="01 · Diagnosis" eyebrow="Most likely root cause + alternatives">
-            <div className="rounded-2xl bg-canvas-soft divide-y divide-ink-100 overflow-hidden">
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-sage-50 text-sage-600 ring-1 ring-sage-100">
-                    <Lightbulb size={12} strokeWidth={2} />
-                  </span>
-                  <span className="text-[12px] font-medium text-ink-500">
-                    Most likely cause
-                  </span>
-                </div>
-                <div className="text-[15px] font-medium text-ink-900 leading-[1.3]">
-                  Worn P-trap seal + worn faucet cartridge (independent issues)
-                </div>
-                <p className="mt-1.5 text-[12.5px] text-ink-500 leading-[1.5]">
-                  Standing water under the trap and the slow drip at the spout base are unrelated. The photo rules out a higher-pressure supply leak.
-                </p>
-                <ScopePhotoStrip />
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-white text-ink-700 ring-1 ring-ink-100">
-                    <GitBranch size={12} strokeWidth={2} />
-                  </span>
-                  <span className="text-[12px] font-medium text-ink-500">
-                    Alternative if cartridge swap doesn't resolve drip
-                  </span>
-                </div>
-                <div className="text-[12.5px] text-ink-700 leading-[1.5]">
-                  O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during the diagnostic step. If found, see unit pricing in section 04.
-                </div>
-              </div>
-            </div>
-          </SectionBlock>
-
-          <SectionBlock label="02 · Itemized labor" eyebrow={`${totalHours} hrs total · @ $${labor}/hr`}>
-            <ol className="divide-y divide-ink-100 rounded-2xl bg-canvas-soft overflow-hidden">
-              {tasks.map((t) => (
-                <li key={t.n} className="grid grid-cols-12 gap-3 px-4 py-3.5">
-                  <div className="figure col-span-1 text-[12px] text-ink-500">{String(t.n).padStart(2, '0')}</div>
-                  <div className="col-span-9 min-w-0">
-                    <div className="text-[13.5px] font-medium text-ink-900">{t.title}</div>
-                    <div className="text-[12px] text-ink-500 mt-0.5">{t.detail}</div>
-                  </div>
-                  <div className="col-span-2 text-right">
-                    <div className="figure inline-flex items-center gap-1 text-[12px] text-ink-700">
-                      <Clock size={12} className="text-ink-300" strokeWidth={2} />
-                      {t.hours} hr
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </SectionBlock>
-
-          <SectionBlock label="03 · Materials" eyebrow="Estimated · contractor may substitute equivalents">
-            <div className="rounded-2xl bg-canvas-soft overflow-hidden">
-              <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-ink-100 text-[12px] font-medium text-ink-500">
-                <div className="col-span-5">Item</div>
-                <div className="col-span-4">Spec</div>
-                <div className="col-span-1 text-center">Qty</div>
-                <div className="col-span-2 text-right">Est. cost</div>
-              </div>
-              <div className="divide-y divide-ink-100">
-                {materials.map((m, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3 items-center">
-                    <div className="col-span-5 flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-ink-700 ring-1 ring-ink-100 shrink-0">
-                        <Box size={12} strokeWidth={2} />
-                      </span>
-                      <span className="text-[13.5px] font-medium text-ink-900">{m.item}</span>
-                    </div>
-                    <div className="col-span-4 text-[12px] text-ink-500">{m.spec}</div>
-                    <div className="figure col-span-1 text-center text-[12.5px] text-ink-700">{m.qty}</div>
-                    <div className="figure col-span-2 text-right text-[12.5px] text-ink-900">${m.est}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </SectionBlock>
-
-          <SectionBlock label="04 · Unit-priced add-ons" eyebrow="Pre-agreed pricing if scope expands during the job">
-            <div className="rounded-2xl bg-ember-50/40 divide-y divide-ember-100 overflow-hidden">
-              {unitPriced.map((c, i) => (
-                <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3.5">
-                  <div className="col-span-1">
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100">
-                      <AlertCircle size={12} strokeWidth={2} />
-                    </span>
-                  </div>
-                  <div className="col-span-7 min-w-0">
-                    <div className="text-[13.5px] font-medium text-ink-900">{c.if}</div>
-                    <div className="text-[12px] text-ink-500 mt-0.5">{c.add}</div>
-                    <div className="text-[12px] font-medium text-ink-500 mt-1">
-                      Likelihood: {c.likelihood}
-                    </div>
-                  </div>
-                  <div className="col-span-4 text-right text-[14px] font-medium tabular-nums text-ember-500">{c.cost}</div>
-                </div>
-              ))}
-            </div>
-          </SectionBlock>
-
-          <SectionBlock label="05 · Acceptance criteria" eyebrow="What 'done' looks like">
-            <ol className="rounded-2xl bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
-              {acceptance.map((a, i) => (
-                <li key={i} className="flex items-start gap-3 px-4 py-3">
-                  <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-500 text-white text-[12px] font-medium tabular-nums shrink-0">
-                    {i + 1}
-                  </span>
-                  <span className="text-[12.5px] text-ink-700 leading-[1.5]">{a}</span>
-                </li>
-              ))}
-            </ol>
-          </SectionBlock>
-        </div>
-
-        <div className="px-6 md:px-8 py-5 border-t border-ink-100/80 bg-canvas-deep/50 hairline-inset">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Total label="Labor" value={`$${laborTotal}`} sub={`${totalHours} hrs`} />
-            <Total label="Materials" value={`$${totalMaterials}`} sub={`${materials.length} items`} />
-            <Total label="Estimated total" value={`$${laborTotal + totalMaterials}`} sub="excl. add-ons" highlight />
-            <Total label="Local benchmark" value="$180–$320" sub="Inside range" tone="sage" />
-          </div>
-        </div>
-      </article>
-
-      {/* Decision row */}
-      <section className="pt-2">
-        {approved ? (
-          <div className="flex items-center gap-2.5 rounded-2xl bg-sage-50/60 border border-sage-100 px-4 py-3">
-            <CheckCircle2 size={14} strokeWidth={1.8} className="text-sage-600 shrink-0" />
-            <div className="text-[12.5px] leading-[1.5] text-ink-700">
-              <strong className="font-medium text-ink-900">Scope approved.</strong>{' '}
-              Homewise is verifying contractors, follow along in the conversation.
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="md" icon={Download}>
-              Export PDF
-            </Button>
-            <Button variant="secondary" size="md" icon={Pencil}>
-              Edit scope
-            </Button>
-            <Button variant="hero" onClick={() => onClearGate('approve-scope')} icon={Send} iconRight={ChevronRight}>
-              Approve &amp; find contractors
-            </Button>
-          </div>
-        )}
-      </section>
+      )}
     </div>
   );
 }
 
-function MetaCell({ label, value }) {
-  return (
-    <div>
-      <div className="text-[12px] font-medium text-ink-500">{label}</div>
-      <div className="text-ink-900 mt-0.5">{value}</div>
-    </div>
-  );
+// One streamed block: static skeleton bars until its turn, then the content.
+// The enter motion plays only during the stream.
+function Block({ i, shown, streaming, className = '', children }) {
+  let body = children;
+  if (shown <= i) body = <Skeleton bars={SKELETONS[i]} />;
+  else if (streaming) body = <motion.div {...enter}>{children}</motion.div>;
+  return <div className={className}>{body}</div>;
 }
 
-function SectionBlock({ label, eyebrow, children }) {
+function Skeleton({ bars }) {
   return (
-    <section>
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2.5">
-          <span className="h-px w-4 bg-ink-200" />
-          <h3 className="editorial editorial-xs text-[17px] leading-[1.25] text-ink-900">{label}</h3>
-        </div>
-        {eyebrow && <span className="text-[12px] text-ink-500">{eyebrow}</span>}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-// Totals strip. The estimated total is data, not a CTA, so it is marked with
-// a canvas-deep inset instead of an ink-900 fill: the stage keeps one dark
-// element, the Approve CTA. Siblings drop their border (third stroke level
-// inside the document card) and group by white fill on the tinted footer.
-function Total({ label, value, sub, highlight = false, tone }) {
-  const colorCls = tone === 'sage' ? 'text-sage-600' : 'text-ink-900';
-  return (
-    <div
-      className={`rounded-2xl px-3.5 py-3 ${
-        highlight ? 'bg-canvas-deep hairline-inset text-ink-900' : 'bg-white'
-      }`}
-    >
-      <div className="text-[12px] font-medium text-ink-500">
-        {label}
-      </div>
-      <div
-        className={`editorial leading-none mt-1 tabular-nums ${
-          highlight ? 'editorial-s text-[22px] text-ink-900' : `editorial-xs text-[20px] ${colorCls}`
-        }`}
-      >
-        {value}
-      </div>
-      <div className="text-[12px] mt-1 text-ink-500">{sub}</div>
+    <div aria-hidden="true" className="space-y-2.5">
+      {bars.map((w, i) => (
+        <div key={i} className={`h-3 rounded-full bg-shade-2 ${w}`} />
+      ))}
     </div>
   );
 }

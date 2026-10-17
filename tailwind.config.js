@@ -9,11 +9,19 @@ export default {
         serif: ['Geist', 'Inter', 'system-ui', 'sans-serif'],
         display: ['Geist', 'Inter', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        meta: ['12px', { lineHeight: '16px' }],
+        ui: ['14px', { lineHeight: '20px', letterSpacing: '-0.006em' }],
+        heading: ['16px', { lineHeight: '24px', letterSpacing: '-0.011em', fontWeight: '600' }],
+        figure: ['20px', { lineHeight: '24px', letterSpacing: '-0.02em', fontWeight: '600' }],
+        title: ['26px', { lineHeight: '32px', letterSpacing: '-0.025em', fontWeight: '600' }],
+      },
       colors: {
         canvas: {
           DEFAULT: '#F6F4EF',
           soft: '#FAF8F3',
           deep: '#EEEAE1',
+          v2: '#F4F3EE',
         },
         ink: {
           900: '#1A1A17',
@@ -32,6 +40,7 @@ export default {
           500: '#4F6942',
           600: '#3D5333',
           700: '#2F4027',
+          wash: '#ECF0E7',
         },
         ember: {
           50: '#FBF3EA',
@@ -40,6 +49,7 @@ export default {
           300: '#D9A461',
           400: '#B98132',
           500: '#8E601E',
+          wash: '#FBF0E3',
         },
         sky2026: {
           50: '#EEF3F5',
@@ -47,6 +57,13 @@ export default {
           300: '#8FAAB3',
           500: '#4E6F7A',
           700: '#2E4850',
+          wash: '#ECF2F4',
+        },
+        line: 'rgba(26, 26, 23, 0.09)',
+        shade: {
+          1: 'rgba(26, 26, 23, 0.04)',
+          2: 'rgba(26, 26, 23, 0.07)',
+          3: 'rgba(26, 26, 23, 0.10)',
         },
       },
       boxShadow: {
@@ -54,6 +71,7 @@ export default {
         'card': '0 1px 2px rgba(20, 24, 28, 0.04), 0 8px 24px -12px rgba(20, 24, 28, 0.08)',
         'glow': '0 0 0 1px rgba(79, 105, 66, 0.06), 0 20px 60px -20px rgba(79, 105, 66, 0.20)',
         'inset-soft': 'inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.03)',
+        float: '0 0 0 1px rgba(26,26,23,0.06), 0 16px 48px -12px rgba(26,26,23,0.18)',
       },
       backgroundImage: {
         'grain': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",

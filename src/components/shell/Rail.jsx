@@ -1,297 +1,225 @@
-import React from 'react';
-import {
-  Home,
-  MapPin,
-  Sparkles,
-  Droplets,
-  Wrench,
-  Wind,
-  Bell,
-  Settings,
-  HelpCircle,
-  ChevronsLeft,
-  ChevronsRight,
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
+import Row from '../v2/Row';
+import IconButton from '../v2/IconButton';
+import HouseMark from '../v2/HouseMark';
+import Avatar from '../v2/Avatar';
+import { StatusGlyph } from '../v2/Status';
+import { dur, ease, fade, prefersReducedMotion } from '../v2/motion';
+import { HOME } from '../../data/demo';
 
-// Left rail: brand, home switcher, New AI task, and the task switcher. Artifact
-// navigation lives in the Stage tabs, so the rail carries no board shortcuts.
-// Collapsible to a 64px icon strip. One DOM tree for both states: the aside
-// animates its width while icons stay anchored in place and labels fade, so
-// the collapse reads as a smooth fold instead of a re-layout jump. Widths
-// animate with a plain CSS transition; the right-justified toggle simply rides
-// the moving edge as the container narrows.
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const OPEN_W = 224;
+const COLLAPSED_W = 56;
+const OWNER = `${HOME.owner.first} ${HOME.owner.last}`;
 
-export default function Rail({
-  open = true,
-  onToggle,
-  guttersPlanned,
-  taskStarted,
-  taskStatus,
-  booked,
-  extraTasks = [],
-  activeThread,
-  onNewTask,
-  onSelectTask,
-}) {
+// tasks: [{ id, title, state, progress, meta, muted, selected, tooltip }],
+// newest first. home: { selected, preview }.
+export default function Rail({ variant = 'docked', ...props }) {
+  return variant === 'overlay' ? <OverlayRail {...props} /> : <DockedRail {...props} />;
+}
+
+// One DOM tree for both widths. Every lead glyph sits on x=28 in both
+// layouts, so the fold reads as the labels leaving, not the rows moving.
+// Collapse: labels fade out (150ms) while the width animates (300ms), then
+// the square layout swaps in. Open: the full layout swaps in at once with
+// labels hidden, and they fade in after 150ms.
+// `focus` closes the rail to width 0; `gone` then drops it from the layout.
+function DockedRail({ open = true, focus = false, gone = false, onToggle, ...body }) {
+  const [narrow, setNarrow] = useState(!open);
+  const [labels, setLabels] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setNarrow(false);
+      // Two frames, so the labels are painted at opacity 0 before they fade.
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setLabels(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setLabels(false);
+    const t = setTimeout(() => setNarrow(true), prefersReducedMotion() ? 0 : dur.slow * 1000);
+    return () => clearTimeout(t);
+  }, [open]);
+
+  const width = focus ? 0 : open ? OPEN_W : COLLAPSED_W;
   return (
     <aside
-      style={{ width: open ? 240 : 64, transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-      className="shrink-0 h-full flex flex-col bg-canvas-soft border-r border-ink-100 overflow-hidden"
+      aria-label="Sidebar"
+      inert={focus ? '' : undefined}
+      style={{ width }}
+      className={`h-full shrink-0 overflow-hidden border-line bg-canvas-v2 transition-[width,visibility] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] print:hidden
+        ${focus ? 'invisible border-r-0' : 'visible border-r'} ${gone ? 'hidden' : ''}`}
     >
-      {/* Top row, Grok pattern: logo left, panel toggle right. The toggle
-          keeps its vertical position in both states; folded, the brand
-          collapses to zero width and the right-justified toggle rides the
-          narrowing edge into the icon column. */}
-      <div className="shrink-0 h-14 px-3.5 flex items-center border-b border-ink-100">
-        <span
-          style={{
-            maxWidth: open ? 160 : 0,
-            opacity: open ? 1 : 0,
-            transition: 'max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease-out',
-          }}
-          className="overflow-hidden flex items-center gap-2.5"
-        >
-          <Logo />
-          <span className="editorial editorial-xs text-[17px] font-semibold leading-none text-ink-900 whitespace-nowrap">
-            Homewise
-          </span>
-        </span>
-        <span className="flex-1" />
-        <button
-          onClick={() => onToggle?.(!open)}
-          title={open ? 'Collapse the sidebar' : 'Open the sidebar'}
-          className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-colors shrink-0"
-        >
-          {open ? <ChevronsLeft size={14} strokeWidth={1.8} /> : <ChevronsRight size={14} strokeWidth={1.8} />}
-        </button>
-      </div>
-
-      {/* Home */}
-      <div className="mt-3 px-3.5">
-        <div
-          className={`flex items-center gap-2.5 rounded-2xl border transition-all duration-300 ${
-            open ? 'bg-white border-ink-100 p-2' : 'bg-transparent border-transparent p-0'
-          }`}
-        >
-          <span
-            title="Maple Street · Oakland, CA"
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0"
-          >
-            <Home size={14} strokeWidth={1.8} />
-          </span>
-          <FadeLabel open={open} className="flex-1 min-w-0">
-            <span className="flex flex-col items-start leading-tight">
-              <span className="text-[13.5px] font-medium text-ink-900 whitespace-nowrap">Maple Street</span>
-              <span className="mt-0.5 flex items-center gap-1 text-[12px] text-ink-500 whitespace-nowrap">
-                <MapPin size={12} strokeWidth={2} />
-                Oakland, CA
-              </span>
-            </span>
-          </FadeLabel>
-        </div>
-      </div>
-
-      {/* New AI task */}
-      <div className="mt-3 px-3.5">
-        <button
-          onClick={onNewTask}
-          title="New AI task"
-          className={`w-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center justify-center text-[13.5px] font-medium transition-colors overflow-hidden ${
-            open ? 'h-10 rounded-2xl gap-1.5 grain-dark' : 'h-9 rounded-xl'
-          }`}
-        >
-          <Sparkles size={14} strokeWidth={2.2} className="shrink-0" />
-          <FadeWidth open={open}>
-            <span className="pl-1.5 whitespace-nowrap">New AI task</span>
-          </FadeWidth>
-        </button>
-      </div>
-
-      {/* Tasks */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden mt-5 px-3 pb-3">
-        <GroupLabel open={open}>Tasks</GroupLabel>
-        {taskStarted ? (
-          <button
-            onClick={() => onSelectTask?.('sink')}
-            title={open ? undefined : `Kitchen sink leak · ${taskStatus}`}
-            className={`w-full rounded-2xl bg-white ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
-              activeThread === 'sink' ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
-            } ${open ? 'p-2.5' : 'p-1'}`}
-          >
-            <TaskTile icon={Droplets}>
-              {!open && !booked && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                  <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500 ring-2 ring-white" />
-                </span>
-              )}
-            </TaskTile>
-            <FadeLabel open={open} className="flex-1 min-w-0">
-              <span className="block leading-tight">
-                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">
-                  Kitchen sink leak
-                </span>
-                <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-ink-500">
-                  {!booked && <LiveDot />}
-                  <span className="min-w-0 truncate">{taskStatus}</span>
-                </span>
-              </span>
-            </FadeLabel>
-          </button>
+      {/* Focus mode clips a fixed-width body, so nothing reflows on the way out. */}
+      <div className="flex h-full flex-col px-3" style={{ width: focus ? (narrow ? COLLAPSED_W : OPEN_W) : '100%' }}>
+        {narrow ? (
+          <NarrowBody onToggle={onToggle} {...body} />
         ) : (
-          open && (
-            <div className="rounded-2xl border border-dashed border-ink-200 px-3 py-3 text-[12px] leading-[1.5] text-ink-500">
-              No tasks yet. Tell the AI what happened and the first one starts here.
-            </div>
-          )
-        )}
-        {extraTasks.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => onSelectTask?.(t.id)}
-            className={`mt-2 w-full rounded-2xl bg-white ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
-              activeThread === t.id ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
-            } ${open ? 'p-2.5' : 'p-1'}`}
-          >
-            <TaskTile icon={Wind} />
-            <FadeLabel open={open} className="flex-1 min-w-0">
-              <span className="block leading-tight">
-                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">{t.title}</span>
-                <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-ink-500">
-                  <LiveDot />
-                  <span className="min-w-0 truncate">Scoping the job</span>
-                </span>
-              </span>
-            </FadeLabel>
-          </button>
-        ))}
-        {guttersPlanned && (
-          <div
-            title={open ? undefined : 'Gutter cleaning · Planned · early September'}
-            className={`mt-2 w-full rounded-2xl bg-white ring-1 ring-ink-100 flex items-start gap-2.5 text-left transition-all duration-300 ${
-              open ? 'p-2.5' : 'p-1'
-            }`}
-          >
-            <TaskTile icon={Wrench} />
-            <FadeLabel open={open} className="flex-1 min-w-0">
-              <span className="block leading-tight">
-                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">Gutter cleaning</span>
-                <span className="mt-0.5 block text-[12px] text-ink-500 min-w-0 truncate">Planned · early September</span>
-              </span>
-            </FadeLabel>
-          </div>
-        )}
-      </div>
-
-      {/* User */}
-      <div className="shrink-0 border-t border-ink-100 p-3">
-        <div className="flex items-center gap-2">
-          <span
-            className="h-9 w-9 rounded-xl bg-canvas-deep hairline-inset flex items-center justify-center shrink-0"
-            title="Mara Halligan"
-          >
-            <span className="editorial editorial-xs text-[14px] leading-none text-ink-700">M</span>
-          </span>
-          <FadeLabel open={open} className="flex-1 min-w-0">
-            <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">Mara Halligan</span>
-          </FadeLabel>
-          <FadeLabel open={open}>
-            <span className="relative h-9 w-9 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-colors cursor-pointer">
-              <Bell size={14} strokeWidth={1.8} />
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-ember-300 ring-2 ring-canvas-soft" />
-            </span>
-          </FadeLabel>
-        </div>
-        {open && (
-          <div className="mt-2 flex items-center gap-1">
-            <FooterLink icon={Settings} label="Settings" />
-            <FooterLink icon={HelpCircle} label="Help" />
-          </div>
+          <WideBody labels={labels} onToggle={onToggle} closeLabel="Collapse sidebar" {...body} />
         )}
       </div>
     </aside>
   );
 }
 
-// Opacity-only fade: the aside's overflow-hidden clips the label as the rail
-// narrows, so the icon column never shifts. Used wherever the icon is
-// left-anchored.
-function FadeLabel({ open, children, className = '' }) {
+// Below 1024 the Rail leaves the layout and opens over the Stage.
+function OverlayRail({ open = false, onToggle, ...body }) {
   return (
-    <span
-      className={`transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${className}`}
-    >
+    <AnimatePresence>
+      {open && <OverlayPanel key="rail" onClose={() => onToggle?.(false)} {...body} />}
+    </AnimatePresence>
+  );
+}
+
+function OverlayPanel({ onClose, ...body }) {
+  const panel = useRef(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+
+  useEffect(() => {
+    const opener = document.activeElement;
+    panel.current?.focus({ preventScroll: true });
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      close.current?.();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus({ preventScroll: true });
+    };
+  }, []);
+
+  // Same trap as the Drawer: Tab never walks out behind the scrim.
+  const trapTab = (e) => {
+    if (e.key !== 'Tab' || !panel.current) return;
+    const nodes = [...panel.current.querySelectorAll(FOCUSABLE)].filter((n) => n.getClientRects().length > 0);
+    if (!nodes.length) {
+      e.preventDefault();
+      return;
+    }
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    const current = document.activeElement;
+    if (e.shiftKey && (current === first || current === panel.current)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && current === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <>
+      <motion.div {...fade} aria-hidden="true" onClick={onClose} className="fixed inset-0 z-40 bg-ink-900/20" />
+      <motion.aside
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Sidebar"
+        tabIndex={-1}
+        onKeyDown={trapTab}
+        initial={{ x: '-110%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '-110%' }}
+        transition={{ duration: dur.slow, ease }}
+        className="fixed inset-y-2 left-2 z-50 flex w-[240px] flex-col overflow-hidden rounded-xl bg-canvas-v2 px-3 shadow-float focus:outline-none"
+      >
+        <WideBody labels onToggle={onClose} closeLabel="Close sidebar" {...body} />
+      </motion.aside>
+    </>
+  );
+}
+
+// Labels fade on their own; the row geometry never depends on them.
+function Label({ shown, className = '', children }) {
+  return (
+    <span className={`transition-opacity duration-150 ${shown ? 'opacity-100 delay-150' : 'opacity-0'} ${className}`}>
       {children}
     </span>
   );
 }
 
-// Width-collapsing fade: for centered content (the New AI task button) where a
-// hidden label would push the icon off-center.
-function FadeWidth({ open, children }) {
+function WideBody({ labels, onToggle, closeLabel, home = {}, tasks = [], onHome, onNewTask, onSelectTask }) {
   return (
-    <span
-      style={{
-        maxWidth: open ? 140 : 0,
-        opacity: open ? 1 : 0,
-        transition: 'max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease-out',
-      }}
-      className="overflow-hidden whitespace-nowrap inline-flex items-center"
-    >
-      {children}
-    </span>
+    <>
+      <div className="flex h-14 shrink-0 items-center gap-1">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <Row
+            lead={<HouseMark />}
+            title={<Label shown={labels}>{HOME.name}</Label>}
+            selected={home.selected}
+            preview={home.preview}
+            onClick={onHome}
+          />
+        </div>
+        <IconButton icon={PanelLeftClose} label={closeLabel} onClick={() => onToggle?.(false)} />
+      </div>
+
+      <div className="mt-4 flex min-h-0 flex-1 flex-col">
+        <div className="flex h-8 shrink-0 items-center justify-between pl-2">
+          <Label shown={labels} className="truncate text-meta font-medium text-ink-500">Tasks</Label>
+          <IconButton size="sm" icon={Plus} label="New task" onClick={onNewTask} />
+        </div>
+        <div className="min-h-0 flex-1 space-y-px overflow-y-auto overflow-x-hidden">
+          {tasks.map((t) => (
+            <Row
+              key={t.id}
+              lead={<StatusGlyph state={t.state} progress={t.progress} />}
+              title={<Label shown={labels}>{t.title}</Label>}
+              meta={t.meta ? <Label shown={labels}>{t.meta}</Label> : null}
+              selected={t.selected}
+              muted={t.muted}
+              onClick={() => onSelectTask?.(t.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex h-14 shrink-0 items-center gap-2 px-2">
+        <Avatar />
+        <Label shown={labels} className="min-w-0 truncate text-ui font-medium text-ink-900">{OWNER}</Label>
+      </div>
+    </>
   );
 }
 
-// Eyebrow role with the rail's w-3 rule. The rule stays visible when folded.
-function GroupLabel({ open, children }) {
+function NarrowBody({ onToggle, home = {}, tasks = [], onHome, onNewTask, onSelectTask }) {
   return (
-    <div className="px-2.5 mb-2 flex items-center gap-2 h-[17px]">
-      <span className="h-px w-3 bg-ink-300 shrink-0" />
-      <FadeLabel open={open} className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500 whitespace-nowrap">
-        {children}
-      </FadeLabel>
-    </div>
-  );
-}
-
-// Task icon tiles are non-semantic, so they stay neutral.
-function TaskTile({ icon: Icon, children }) {
-  return (
-    <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0">
-      <Icon size={14} strokeWidth={1.8} />
-      {children}
-    </span>
-  );
-}
-
-function LiveDot() {
-  return (
-    <span className="relative flex h-1.5 w-1.5 shrink-0">
-      <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
-    </span>
-  );
-}
-
-function FooterLink({ icon: Icon, label }) {
-  return (
-    <button className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-xl text-[12px] text-ink-500 hover:text-ink-900 hover:bg-white transition-all">
-      <Icon size={12} strokeWidth={2} />
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function Logo() {
-  return (
-    <div className="relative h-8 w-8 rounded-xl bg-sage-600 ring-1 ring-sage-700/10 flex items-center justify-center shrink-0">
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-canvas-soft">
-        <path d="M4 11.5 12 4l8 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-        <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-        <circle cx="12" cy="15" r="1.5" fill="currentColor" />
-      </svg>
-      <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ember-300 ring-2 ring-canvas-soft" />
-    </div>
+    <>
+      <div className="flex h-14 shrink-0 items-center justify-center">
+        <IconButton icon={PanelLeftOpen} label="Open sidebar" side="right" onClick={() => onToggle?.(true)} />
+      </div>
+      <Row collapsed lead={<HouseMark />} title={HOME.name} selected={home.selected} preview={home.preview} onClick={onHome} />
+      <div className="flex h-8 shrink-0 items-center justify-center">
+        <IconButton size="sm" icon={Plus} label="New task" side="right" onClick={onNewTask} />
+      </div>
+      <div className="min-h-0 flex-1 space-y-px overflow-y-auto overflow-x-hidden">
+        {tasks.map((t) => (
+          <Row
+            key={t.id}
+            collapsed
+            lead={<StatusGlyph state={t.state} progress={t.progress} />}
+            title={t.title}
+            tooltip={t.tooltip}
+            selected={t.selected}
+            onClick={() => onSelectTask?.(t.id)}
+          />
+        ))}
+      </div>
+      <div className="flex h-14 shrink-0 items-center justify-center">
+        <Avatar />
+        <span className="sr-only">{OWNER}</span>
+      </div>
+    </>
   );
 }
