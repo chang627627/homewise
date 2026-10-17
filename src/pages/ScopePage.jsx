@@ -25,6 +25,7 @@ import Button from '../components/ui/Button';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
 import Pill from '../components/ui/Pill';
+import PhotoFill from '../components/ui/PhotoFill';
 
 const tasks = [
   {
@@ -107,16 +108,10 @@ const laborTotal = Math.round(totalHours * labor);
 // the homeowner reviewing the scope can see what was sent. Matches the
 // data shape used in IntakePage / ConversationPage.
 export const scopePhotos = [
-  { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
-  { label: 'Faucet base', tone: 'sky', tag: 'Slight drip' },
-  { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry' },
+  { label: 'Under the sink', tone: 'sage', tag: 'Standing water', photo: 'under-sink' },
+  { label: 'Faucet base', tone: 'sky', tag: 'Slight drip', photo: 'faucet-base' },
+  { label: 'Behind panel', tone: 'ember', tag: 'Supply line dry', photo: 'behind-panel' },
 ];
-
-const photoToneMap = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 export function ScopePhotoStrip({ photos = scopePhotos }) {
   return (
@@ -126,8 +121,7 @@ export function ScopePhotoStrip({ photos = scopePhotos }) {
           key={i}
           className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${photoToneMap[p.tone]}`} />
-          <div className="absolute inset-0 dot-grid opacity-30" />
+          <PhotoFill photo={p.photo} tone={p.tone} />
           <div className="absolute top-2 left-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-ink-700 ring-1 ring-ink-100">
               <ImageIcon size={9} strokeWidth={2.2} />

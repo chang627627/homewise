@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PhotoFill from '../ui/PhotoFill';
 import {
   Sparkles,
   Camera,
@@ -71,7 +72,7 @@ const freshScript = [
   },
   { type: 'gate', id: 'upload' },
   { type: 'user', text: 'Here it is.', time: '4:24 PM' },
-  { type: 'photos', photos: [{ label: 'Outdoor condenser', tone: 'sky', tag: 'Clogged coil fins' }] },
+  { type: 'photos', photos: [{ label: 'Outdoor condenser', tone: 'sky', tag: 'Clogged coil fins', photo: 'ac-condenser' }] },
   { type: 'thinking', text: 'Looking at it…' },
   {
     type: 'agent',
@@ -99,7 +100,7 @@ const sinkScript = [
   },
   { type: 'gate', id: 'upload' },
   { type: 'user', text: 'Here it is.', time: '10:30 AM' },
-  { type: 'photos', photos: [{ label: 'Under the sink', tone: 'sage', tag: 'Standing water' }] },
+  { type: 'photos', photos: [{ label: 'Under the sink', tone: 'sage', tag: 'Standing water', photo: 'under-sink' }] },
   { type: 'thinking', text: 'Looking at it…' },
   {
     type: 'agent',
@@ -610,12 +611,6 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
 
 const resolve = (v, ctx) => (typeof v === 'function' ? v(ctx) : v);
 
-const photoToneMap = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
-
 const actionAccentMap = {
   sage: 'text-sage-600 ring-sage-100',
   sky: 'text-sky2026-700 ring-sky2026-100',
@@ -678,8 +673,7 @@ function PhotoStrip({ m }) {
     >
       {m.photos.map((p, i) => (
         <div key={i} className="relative w-32 h-24 rounded-2xl overflow-hidden ring-1 ring-ink-100">
-          <div className={`absolute inset-0 bg-gradient-to-br ${photoToneMap[p.tone]}`} />
-          <div className="absolute inset-0 dot-grid opacity-30" />
+          <PhotoFill photo={p.photo} tone={p.tone} />
           <div className="absolute top-1.5 left-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
               <ImageIcon size={9} strokeWidth={2.2} />

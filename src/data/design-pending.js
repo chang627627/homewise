@@ -42,4 +42,15 @@
  */
 
 /** @type {PendingAddition[]} */
-export const pendingAdditions = [];
+export const pendingAdditions = [
+  {
+    id: 'pattern-2026-10-16-001',
+    type: 'pattern',
+    name: 'Photography in photo slots',
+    description:
+      "Real photos replace the tinted gradient + dot-grid placeholders in every photo slot: intake shots, the scope photo strip (also on the contractor bid form), completion after-photos, and the showcase drawer. Rendered through ui/PhotoFill with object-cover; the label pill and AI-tag chip overlays are unchanged, and the gradient stays as the fallback for any slot without a photo. Art direction: unstaged homeowner or contractor documentation shots, natural light, no people, hands, faces, readable text, or logos, so the imagery itself keeps the 'no faces, no addresses' privacy promise. Photos were AI-generated (Figma, gpt-image) and live in src/assets/photos.",
+    proposedBy: 'Claude session',
+    proposedDate: '2026-10-16',
+    preview: { kind: 'none' },
+  },
+];

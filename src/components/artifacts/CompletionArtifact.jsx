@@ -12,21 +12,16 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import Pill from '../ui/Pill';
+import PhotoFill from '../ui/PhotoFill';
 
 // Flow 3 close-out as a stage artifact. The visit-complete event lands in the
 // thread; the decision (confirm + photo consent + recommendation) lives here.
 // Privacy default is OFF for photo approval. Never flip the default.
 const completionPhotos = [
-  { tone: 'sage', label: 'Under sink · after', tag: 'Dry, no leak' },
-  { tone: 'sky', label: 'Faucet base · after', tag: 'Drip resolved' },
-  { tone: 'ember', label: 'P-trap · new', tag: 'PVC installed' },
+  { tone: 'sage', label: 'Under sink · after', tag: 'Dry, no leak', photo: 'under-sink-after' },
+  { tone: 'sky', label: 'Faucet base · after', tag: 'Drip resolved', photo: 'faucet-base-after' },
+  { tone: 'ember', label: 'P-trap · new', tag: 'PVC installed', photo: 'p-trap-new' },
 ];
-
-const photoTone = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 export default function CompletionArtifact({ gates, scheduledSlot, recommended, photosShared, onClearGate }) {
   const done = !!gates['close-out'];
@@ -113,8 +108,7 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
           <div className="p-5 grid grid-cols-3 gap-3">
             {completionPhotos.map((p, i) => (
               <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100">
-                <div className={`absolute inset-0 bg-gradient-to-br ${photoTone[p.tone]}`} />
-                <div className="absolute inset-0 dot-grid opacity-30" />
+                <PhotoFill photo={p.photo} tone={p.tone} />
                 <div className="absolute top-2 left-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
                     <ImageIcon size={9} strokeWidth={2.2} />

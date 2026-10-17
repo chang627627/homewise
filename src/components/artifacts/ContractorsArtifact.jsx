@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import Pill from '../ui/Pill';
+import PhotoFill from '../ui/PhotoFill';
 
 // Contractor comparison artifact. All three Round 1 trust signals carry over:
 // global heads-up note, mirrored header pills, ember-tinted flagged cell, and
@@ -39,9 +40,9 @@ const contractors = [
     earliest: { value: 'Friday', label: '2 days' },
     recommendCount: 12,
     showcase: [
-      { category: 'Sink leak repair', scope: 'P-trap + faucet cartridge replacement', date: 'Mar 2026', photoTone: 'sage', photoLabel: 'Under sink · after' },
-      { category: 'Water heater swap', scope: '50-gal gas heater replacement + permit', date: 'Feb 2026', photoTone: 'sky', photoLabel: 'New heater · installed' },
-      { category: 'Toilet replacement', scope: 'Two-piece toilet swap + supply line', date: 'Jan 2026', photoTone: 'ember', photoLabel: 'Toilet · finished' },
+      { category: 'Sink leak repair', scope: 'P-trap + faucet cartridge replacement', date: 'Mar 2026', photoTone: 'sage', photo: 'jason-sink-repair', photoLabel: 'Under sink · after' },
+      { category: 'Water heater swap', scope: '50-gal gas heater replacement + permit', date: 'Feb 2026', photoTone: 'sky', photo: 'jason-water-heater', photoLabel: 'New heater · installed' },
+      { category: 'Toilet replacement', scope: 'Two-piece toilet swap + supply line', date: 'Jan 2026', photoTone: 'ember', photo: 'jason-toilet', photoLabel: 'Toilet · finished' },
     ],
   },
   {
@@ -58,8 +59,8 @@ const contractors = [
     earliest: { value: 'Saturday', label: '3 days' },
     recommendCount: 7,
     showcase: [
-      { category: 'Pipe repair', scope: 'Burst supply line · drywall left for owner', date: 'Mar 2026', photoTone: 'sky', photoLabel: 'Pipe · repaired' },
-      { category: 'Sink installation', scope: 'Undermount sink + new faucet', date: 'Jan 2026', photoTone: 'sage', photoLabel: 'Sink · installed' },
+      { category: 'Pipe repair', scope: 'Burst supply line · drywall left for owner', date: 'Mar 2026', photoTone: 'sky', photo: 'bayline-pipe-repair', photoLabel: 'Pipe · repaired' },
+      { category: 'Sink installation', scope: 'Undermount sink + new faucet', date: 'Jan 2026', photoTone: 'sage', photo: 'bayline-sink-install', photoLabel: 'Sink · installed' },
     ],
   },
   {
@@ -85,12 +86,6 @@ const sharedRationale = [
   { label: 'Bayline', text: 'has the most years licensed and offers a longer workmanship warranty, but soonest slot is Saturday.' },
   { label: 'Quickfix', text: 'is the only same-day option, but has the thinnest review history and an insurance renewal pending.' },
 ];
-
-const photoTone = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 const accentBg = {
   sage: 'from-sage-200 to-sage-400 ring-sage-300/40 text-sage-700',
@@ -508,8 +503,7 @@ function ShowcaseDrawer({ contractor, onClose }) {
                 className="rounded-2xl bg-white border border-ink-100/80 overflow-hidden"
               >
                 <div className="relative aspect-[5/2]">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${photoTone[job.photoTone]}`} />
-                  <div className="absolute inset-0 dot-grid opacity-30" />
+                  <PhotoFill photo={job.photo} tone={job.photoTone} />
                   <div className="absolute top-2 left-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
                       <ImageIcon size={9} strokeWidth={2.2} />
