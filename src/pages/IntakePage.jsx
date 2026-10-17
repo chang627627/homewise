@@ -18,6 +18,7 @@ import {
   ArrowUp,
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
+import PhotoFill from '../components/ui/PhotoFill';
 
 // Conversation script. staged
 const script = [
@@ -49,7 +50,7 @@ const script = [
   {
     type: 'photos',
     photos: [
-      { label: 'Under the sink', tone: 'sage', tag: 'Standing water' },
+      { label: 'Under the sink', tone: 'sage', tag: 'Standing water', photo: 'under-sink' },
     ],
   },
   {
@@ -101,12 +102,6 @@ const script = [
     time: '10:32 AM',
   },
 ];
-
-const toneMap = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 const urgencyReplies = {
   urgent: 'Active leak right now. Need someone today.',
@@ -349,10 +344,7 @@ function PhotoStrip({ m, onCorrect }) {
           key={i}
           className="relative w-32 h-24 rounded-2xl overflow-hidden ring-1 ring-ink-100"
         >
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${toneMap[p.tone]}`}
-          />
-          <div className="absolute inset-0 dot-grid opacity-30" />
+          <PhotoFill photo={p.photo} tone={p.tone} />
           <div className="absolute top-1.5 left-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
               <ImageIcon size={9} strokeWidth={2.2} />

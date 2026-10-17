@@ -14,19 +14,14 @@ import {
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import Pill from '../components/ui/Pill';
+import PhotoFill from '../components/ui/PhotoFill';
 
 // Mocked photos that "Jason" uploaded — three "after" shots
 const completionPhotos = [
-  { tone: 'sage', label: 'Under sink · after', tag: 'Dry, no leak' },
-  { tone: 'sky', label: 'Faucet base · after', tag: 'Drip resolved' },
-  { tone: 'ember', label: 'P-trap · new', tag: 'PVC installed' },
+  { tone: 'sage', label: 'Under sink · after', tag: 'Dry, no leak', photo: 'under-sink-after' },
+  { tone: 'sky', label: 'Faucet base · after', tag: 'Drip resolved', photo: 'faucet-base-after' },
+  { tone: 'ember', label: 'P-trap · new', tag: 'PVC installed', photo: 'p-trap-new' },
 ];
-
-const photoTone = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 export default function CompletionPage({ onNavigate, scheduledSlot }) {
   const [confirm, setConfirm] = useState('yes'); // 'yes' | 'not-yet' | 'wrong'
@@ -127,10 +122,7 @@ export default function CompletionPage({ onNavigate, scheduledSlot }) {
                 key={i}
                 className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100"
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${photoTone[p.tone]}`}
-                />
-                <div className="absolute inset-0 dot-grid opacity-30" />
+                <PhotoFill photo={p.photo} tone={p.tone} />
                 <div className="absolute top-2 left-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
                     <ImageIcon size={9} strokeWidth={2.2} />

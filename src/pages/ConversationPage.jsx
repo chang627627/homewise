@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import BackBar from '../components/ui/BackBar';
 import Pill from '../components/ui/Pill';
+import PhotoFill from '../components/ui/PhotoFill';
 
 // Conversation datasets. each task has its own thread
 const conversations = {
@@ -62,9 +63,9 @@ const conversations = {
       {
         type: 'photos',
         photos: [
-          { tone: 'sage', label: 'Under the sink', tag: 'Standing water' },
-          { tone: 'sky', label: 'Faucet base', tag: 'Slight drip' },
-          { tone: 'ember', label: 'Behind panel', tag: 'Supply line dry' },
+          { tone: 'sage', label: 'Under the sink', tag: 'Standing water', photo: 'under-sink' },
+          { tone: 'sky', label: 'Faucet base', tag: 'Slight drip', photo: 'faucet-base' },
+          { tone: 'ember', label: 'Behind panel', tag: 'Supply line dry', photo: 'behind-panel' },
         ],
       },
       {
@@ -233,12 +234,6 @@ const accentMap = {
   sage: 'bg-sage-50 text-sage-600 ring-sage-100',
   sky: 'bg-sky2026-50 text-sky2026-700 ring-sky2026-100',
   ember: 'bg-ember-50 text-ember-500 ring-ember-100',
-};
-
-const photoTone = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
 };
 
 export default function ConversationPage({ onNavigate, conversationId = 'sink', decisionHandled = false, jobCompleted = false, recommended }) {
@@ -596,8 +591,7 @@ function PhotoStrip({ m }) {
           key={i}
           className="relative w-32 h-24 rounded-2xl overflow-hidden ring-1 ring-ink-100"
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${photoTone[p.tone]}`} />
-          <div className="absolute inset-0 dot-grid opacity-30" />
+          <PhotoFill photo={p.photo} tone={p.tone} />
           <div className="absolute top-1.5 left-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
               <ImageIcon size={9} strokeWidth={2.2} />

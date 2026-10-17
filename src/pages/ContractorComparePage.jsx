@@ -24,6 +24,7 @@ import Button from '../components/ui/Button';
 import BackBar from '../components/ui/BackBar';
 import FlowProgress from '../components/ui/FlowProgress';
 import Pill from '../components/ui/Pill';
+import PhotoFill from '../components/ui/PhotoFill';
 
 // 3 contractors with the criteria spec'd in the PDF
 const contractors = [
@@ -47,6 +48,7 @@ const contractors = [
         scope: 'P-trap + faucet cartridge replacement',
         date: 'Mar 2026',
         photoTone: 'sage',
+        photo: 'jason-sink-repair',
         photoLabel: 'Under sink · after',
       },
       {
@@ -54,6 +56,7 @@ const contractors = [
         scope: '50-gal gas heater replacement + permit',
         date: 'Feb 2026',
         photoTone: 'sky',
+        photo: 'jason-water-heater',
         photoLabel: 'New heater · installed',
       },
       {
@@ -61,6 +64,7 @@ const contractors = [
         scope: 'Two-piece toilet swap + supply line',
         date: 'Jan 2026',
         photoTone: 'ember',
+        photo: 'jason-toilet',
         photoLabel: 'Toilet · finished',
       },
     ],
@@ -84,6 +88,7 @@ const contractors = [
         scope: 'Burst supply line · drywall left for owner',
         date: 'Mar 2026',
         photoTone: 'sky',
+        photo: 'bayline-pipe-repair',
         photoLabel: 'Pipe · repaired',
       },
       {
@@ -91,6 +96,7 @@ const contractors = [
         scope: 'Undermount sink + new faucet',
         date: 'Jan 2026',
         photoTone: 'sage',
+        photo: 'bayline-sink-install',
         photoLabel: 'Sink · installed',
       },
     ],
@@ -131,8 +137,8 @@ const alternates = [
     earliest: { value: 'Monday', label: '5 days' },
     recommendCount: 9,
     showcase: [
-      { category: 'Sink leak repair', scope: 'P-trap replacement + supply valve swap', date: 'Apr 2026', photoTone: 'sage', photoLabel: 'Under sink · after' },
-      { category: 'Faucet replacement', scope: 'Single-handle pull-down + cartridge', date: 'Feb 2026', photoTone: 'sky', photoLabel: 'Faucet · installed' },
+      { category: 'Sink leak repair', scope: 'P-trap replacement + supply valve swap', date: 'Apr 2026', photoTone: 'sage', photo: 'mike-sink-repair', photoLabel: 'Under sink · after' },
+      { category: 'Faucet replacement', scope: 'Single-handle pull-down + cartridge', date: 'Feb 2026', photoTone: 'sky', photo: 'mike-faucet', photoLabel: 'Faucet · installed' },
     ],
   },
   {
@@ -149,7 +155,7 @@ const alternates = [
     earliest: { value: 'Sunday', label: '4 days' },
     recommendCount: 4,
     showcase: [
-      { category: 'Sink leak repair', scope: 'P-trap + cartridge swap', date: 'Mar 2026', photoTone: 'sage', photoLabel: 'Sink · finished' },
+      { category: 'Sink leak repair', scope: 'P-trap + cartridge swap', date: 'Mar 2026', photoTone: 'sage', photo: 'greenvalley-sink', photoLabel: 'Sink · finished' },
     ],
   },
   {
@@ -166,16 +172,10 @@ const alternates = [
     earliest: { value: 'Wednesday', label: '7 days' },
     recommendCount: 6,
     showcase: [
-      { category: 'Bathroom leak repair', scope: 'Faucet cartridge + drain assembly', date: 'Feb 2026', photoTone: 'sky', photoLabel: 'Bathroom · finished' },
+      { category: 'Bathroom leak repair', scope: 'Faucet cartridge + drain assembly', date: 'Feb 2026', photoTone: 'sky', photo: 'sarahwells-bathroom', photoLabel: 'Bathroom · finished' },
     ],
   },
 ];
-
-const photoTone = {
-  sage: 'from-sage-200 to-sage-300',
-  sky: 'from-sky2026-100 to-sky2026-300',
-  ember: 'from-ember-100 to-ember-200',
-};
 
 const accentBg = {
   sage: 'from-sage-200 to-sage-400 ring-sage-300/40 text-sage-700',
@@ -726,10 +726,7 @@ function ShowcaseDrawer({ contractor, onClose }) {
                 className="rounded-2xl bg-white border border-ink-100/80 overflow-hidden"
               >
                 <div className="relative aspect-[5/2]">
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${photoTone[job.photoTone]}`}
-                  />
-                  <div className="absolute inset-0 dot-grid opacity-30" />
+                  <PhotoFill photo={job.photo} tone={job.photoTone} />
                   <div className="absolute top-2 left-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
                       <ImageIcon size={9} strokeWidth={2.2} />
