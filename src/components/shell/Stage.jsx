@@ -194,10 +194,12 @@ export default function Stage({
   const canExport = view.kind === 'sink' && view.tab === 'scope' && !onConversation;
   const liveHere = focusMode || (compact && !onConversation);
 
+  // relative: the ring is a box-shadow drawn just outside the panel, and its left edge falls on the
+  // Thread pane, a positioned section in the canvas colour that would otherwise paint over it
   return (
     <section
       aria-label="Stage"
-      className={`flex min-w-0 flex-1 flex-col overflow-hidden bg-white transition-[margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+      className={`relative flex min-w-0 flex-1 flex-col overflow-hidden bg-white transition-[margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
         print:m-0 print:overflow-visible print:ring-0
         ${compact ? 'm-0 rounded-none ring-0' : focusMode ? 'm-2 rounded-xl ring-1 ring-line' : 'my-2 mr-2 rounded-xl ring-1 ring-line'}`}
     >
