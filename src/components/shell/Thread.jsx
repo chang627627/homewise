@@ -6,7 +6,7 @@ import Tooltip from '../v2/Tooltip';
 import { StatusGlyph } from '../v2/Status';
 import useMediaQuery, { usePrefersReducedMotion } from '../v2/useMediaQuery';
 import useScrolled from '../v2/useScrolled';
-import { dur, ease, enter, fade, prefersReducedMotion } from '../v2/motion';
+import { dur, ease, enter, fade, fold, grow, prefersReducedMotion } from '../v2/motion';
 import { DEFAULT_BOOKING, DEFAULT_URGENCY, GATES, GUTTERS_PLAN, JOB, PLAN, describeBooking } from '../../data/demo';
 import Composer from './thread/Composer';
 import { ActivityRail, AgentProse, DayMarker, FinishLine, PhaseHeader, PlanList, Receipt, ReceiptGroup, UserMessage } from './thread/lines';
@@ -32,6 +32,7 @@ import {
 const RENDERED = new Set(['marker', 'agent', 'user', 'receipt', 'finish']);
 const SIDE = { marker: 'neutral', finish: 'neutral', user: 'user', agent: 'agent', receipt: 'agent', group: 'agent' };
 const LINES = new Set(['receipt', 'group']);
+const GAP_PX = { 'mt-2': 8, 'mt-3': 12 }; // the turn gaps in px, for the animated gap of a new run of lines
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25';
 
 export default function Thread({
@@ -374,17 +375,30 @@ export default function Thread({
     return (
       <div key={turn.key}>
         {runs.map((run, r) => {
-          const body = run.items.map((it, n) => (
+          const body = run.items.map((it, n) => {
+            // receipts open their height (the log is pinned, so a full-height line would snap it)
+            const appear = it.kind === 'receipt' ? grow : enter;
+            return (
             <motion.div
               key={it.key}
-              {...enter}
-              initial={it.first < bootStep ? false : enter.initial}
+              {...appear}
+              initial={it.first < bootStep ? false : appear.initial}
               className={n === 0 ? '' : run.lines ? 'mt-0.5' : gap}
             >
               {renderItem(it)}
             </motion.div>
-          ));
+            );
+          });
           const cls = r === 0 ? '' : gap;
+          // A new run of lines under prose opens its gap on the fold curve with its first line, so the
+          // pinned log never hops up a gap's height before it glides.
+          if (run.lines && r > 0 && run.items[0].first >= bootStep) {
+            return (
+              <motion.div key={run.key} initial={{ marginTop: 0 }} animate={{ marginTop: GAP_PX[gap] }} transition={fold}>
+                <ActivityRail>{body}</ActivityRail>
+              </motion.div>
+            );
+          }
           return run.lines
             ? <ActivityRail key={run.key} className={cls}>{body}</ActivityRail>
             : <div key={run.key} className={cls}>{body}</div>;

@@ -5,7 +5,7 @@ import Photo from '../../v2/Photo';
 import { StatusGlyph } from '../../v2/Status';
 import Tooltip from '../../v2/Tooltip';
 import { useEvidence } from '../../v2/Evidence';
-import { collapse, dur, ease } from '../../v2/motion';
+import { collapse, dur, ease, fold } from '../../v2/motion';
 import { PLAN } from '../../../data/demo';
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25';
@@ -253,7 +253,7 @@ export function PlanList({ show }) {
           key="plan"
           className="mt-3 space-y-px overflow-hidden"
           exit={{ height: 0, opacity: 0, marginTop: 0 }}
-          transition={{ duration: dur.base, ease }}
+          transition={fold}
         >
           {PLAN.map((s) => (
             <li key={s.id} className="flex min-h-7 items-start gap-2.5 py-1">

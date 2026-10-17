@@ -6,7 +6,7 @@ import IconButton from '../../v2/IconButton';
 import Kbd from '../../v2/Kbd';
 import Tooltip from '../../v2/Tooltip';
 import { StatusGlyph } from '../../v2/Status';
-import { dur, ease } from '../../v2/motion';
+import { dur, ease, fold } from '../../v2/motion';
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25';
 const LINK = `rounded-md text-meta font-medium text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline ${FOCUS}`;
@@ -27,7 +27,7 @@ function AutoHeight({ children }) {
     return () => ro.disconnect();
   }, []);
   return (
-    <motion.div initial={false} animate={{ height }} transition={{ duration: dur.base, ease }} className="overflow-hidden">
+    <motion.div initial={false} animate={{ height }} transition={fold} className="overflow-hidden">
       <div ref={inner}>{children}</div>
     </motion.div>
   );

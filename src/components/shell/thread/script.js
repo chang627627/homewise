@@ -333,7 +333,7 @@ const sink = [
   agent(`Scoped as a ${JOB.scope}, about ${SCOPE.visitEstimate}. Here's the plan; nothing goes out without your OK.`, { plan: true }),
   status('working', 'Drafting the scope', stepMeta('scope')),
   gate('plan', planDock),
-  receipt('You approved the plan', `${PLAN.length} steps`, AT.scoped, null, { wait: 200 }),
+  receipt('You approved the plan', `${PLAN.length} steps`, AT.scoped, null, { wait: 0 }),
   phase('scope'),
   receipt('Drafted Scope of work', `${BENCHMARK.jobs} local jobs`, AT.scopeDrafted, stage('scope'), { wait: 1800 }),
   effect({ type: 'stage', artifact: 'scope' }),

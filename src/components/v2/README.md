@@ -29,6 +29,9 @@ Text link recipe (no component): `text-ui font-medium text-ink-700 underline-off
 | `dur` | `{ fast: 0.15, base: 0.2, slow: 0.3 }` (seconds) |
 | `enter` | opacity 0 to 1 and y 4 to 0, `dur.base`. Spread onto a `motion.*`: `<motion.div {...enter}>` |
 | `fade` | opacity in and out, `dur.base`. `<motion.div {...fade}>` |
+| `easeInOut` | `[0.65, 0, 0.35, 1]`, for folds only |
+| `fold` | `{ duration: dur.slow, ease: easeInOut }`: content leaving or arriving in the pinned Thread (the plan list, the composer's height) |
+| `grow` | a line opening its height on `fold` (receipts), overflow hidden until it lands |
 | `collapse` | height 0 to auto plus opacity, `dur.base`. Use inside `<AnimatePresence>` on an `overflow-hidden` element |
 | `REDUCED_MOTION` | `'(prefers-reduced-motion: reduce)'` |
 | `prefersReducedMotion()` | synchronous check, for one-off decisions (scroll behavior) |
