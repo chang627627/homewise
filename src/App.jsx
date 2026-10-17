@@ -93,7 +93,7 @@ export default function App() {
     setGates((g) => ({ ...g, [id]: true }));
   };
 
-  // Manual restage via stage pills or rail items. Pane widths untouched.
+  // Manual restage via the stage tabs or thread links. Pane widths untouched.
   const restage = (artifact) => {
     if (!unlocked.has(artifact)) return;
     setStaged(artifact);
@@ -124,11 +124,8 @@ export default function App() {
         taskStarted={taskStarted}
         taskStatus={taskStatus}
         booked={booked}
-        staged={staged}
-        unlocked={unlocked}
         extraTasks={extraTasks}
         activeThread={activeThread}
-        onRestage={restage}
         onNewTask={newTask}
         onSelectTask={selectTask}
       />

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  FileText,
   CheckCircle2,
   AlertCircle,
   Clock,
@@ -58,19 +57,19 @@ export default function ScopeArtifact({ gates, onClearGate }) {
         <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100 shrink-0">
           <AlertCircle size={12} strokeWidth={2} />
         </span>
-        <div className="text-[12.5px] text-ink-700 leading-relaxed">
-          <strong className="text-ink-900 font-semibold">AI-generated, please review.</strong>{' '}
+        <div className="text-[12.5px] text-ink-700 leading-[1.5]">
+          <strong className="font-medium text-ink-900">AI-generated, please review.</strong>{' '}
           Homewise drafted this scope from your conversation and photo. Edit any section or ask questions in the thread before contractors see it.
         </div>
       </div>
 
       {/* Document */}
       <article className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
-        <div className="px-6 md:px-8 pt-7 pb-5 border-b border-ink-100/80 bg-gradient-to-b from-canvas-soft/40 to-white">
+        <div className="px-6 md:px-8 pt-7 pb-5 border-b border-ink-100/80">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2">
-              <FileText size={15} className="text-ink-500" />
-              <span className="text-[11px] uppercase tracking-[0.18em] text-ink-500 font-semibold">
+              <span className="h-px w-6 bg-ink-300" />
+              <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500">
                 Scope of work · SOW-2026-0423-001
               </span>
             </div>
@@ -78,7 +77,7 @@ export default function ScopeArtifact({ gates, onClearGate }) {
               {approved ? 'Approved · sent' : 'Ready to send'}
             </Pill>
           </div>
-          <h2 className="editorial text-[22px] leading-tight text-ink-900 mt-3">
+          <h2 className="editorial editorial-s text-[22px] leading-[1.2] text-ink-900 mt-3">
             Kitchen sink: P-trap leak and faucet cartridge replacement
           </h2>
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-[12px]">
@@ -91,34 +90,34 @@ export default function ScopeArtifact({ gates, onClearGate }) {
 
         <div className="px-6 md:px-8 py-6 space-y-8">
           <SectionBlock label="01 · Diagnosis" eyebrow="Most likely root cause + alternatives">
-            <div className="rounded-2xl border border-ink-100 overflow-hidden">
-              <div className="p-4 bg-canvas-soft/50 border-b border-ink-100">
+            <div className="rounded-2xl bg-canvas-soft divide-y divide-ink-100 overflow-hidden">
+              <div className="p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sage-50 text-sage-600 ring-1 ring-sage-100">
-                    <Lightbulb size={11} strokeWidth={2.2} />
+                  <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-sage-50 text-sage-600 ring-1 ring-sage-100">
+                    <Lightbulb size={12} strokeWidth={2} />
                   </span>
-                  <span className="text-[10.5px] uppercase tracking-[0.16em] text-sage-600 font-semibold">
+                  <span className="text-[12px] font-medium text-ink-500">
                     Most likely cause
                   </span>
                 </div>
-                <div className="text-[14px] font-semibold text-ink-900 leading-snug">
+                <div className="text-[15px] font-medium text-ink-900 leading-[1.3]">
                   Worn P-trap seal + worn faucet cartridge (independent issues)
                 </div>
-                <p className="mt-1.5 text-[12.5px] text-ink-500 leading-relaxed">
+                <p className="mt-1.5 text-[12.5px] text-ink-500 leading-[1.5]">
                   Standing water under the trap and the slow drip at the spout base are unrelated. The photo rules out a higher-pressure supply leak.
                 </p>
                 <ScopePhotoStrip />
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-ink-100 text-ink-500">
-                    <GitBranch size={11} strokeWidth={2.2} />
+                  <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-white text-ink-700 ring-1 ring-ink-100">
+                    <GitBranch size={12} strokeWidth={2} />
                   </span>
-                  <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+                  <span className="text-[12px] font-medium text-ink-500">
                     Alternative if cartridge swap doesn't resolve drip
                   </span>
                 </div>
-                <div className="text-[12.5px] text-ink-700 leading-relaxed">
+                <div className="text-[12.5px] text-ink-700 leading-[1.5]">
                   O-ring or full faucet body wear (~10% likelihood given faucet age of 3 years). Contractor can confirm during the diagnostic step. If found, see unit pricing in section 04.
                 </div>
               </div>
@@ -126,17 +125,17 @@ export default function ScopeArtifact({ gates, onClearGate }) {
           </SectionBlock>
 
           <SectionBlock label="02 · Itemized labor" eyebrow={`${totalHours} hrs total · @ $${labor}/hr`}>
-            <ol className="divide-y divide-ink-100 rounded-2xl border border-ink-100 overflow-hidden">
+            <ol className="divide-y divide-ink-100 rounded-2xl bg-canvas-soft overflow-hidden">
               {tasks.map((t) => (
-                <li key={t.n} className="grid grid-cols-12 gap-3 px-4 py-3.5 hover:bg-canvas-soft/50 transition-colors">
+                <li key={t.n} className="grid grid-cols-12 gap-3 px-4 py-3.5">
                   <div className="figure col-span-1 text-[12px] text-ink-500">{String(t.n).padStart(2, '0')}</div>
                   <div className="col-span-9 min-w-0">
-                    <div className="text-[13.5px] font-semibold text-ink-900 tracking-[-0.005em]">{t.title}</div>
+                    <div className="text-[13.5px] font-medium text-ink-900">{t.title}</div>
                     <div className="text-[12px] text-ink-500 mt-0.5">{t.detail}</div>
                   </div>
                   <div className="col-span-2 text-right">
                     <div className="figure inline-flex items-center gap-1 text-[12px] text-ink-700">
-                      <Clock size={11} className="text-ink-300" strokeWidth={1.8} />
+                      <Clock size={12} className="text-ink-300" strokeWidth={2} />
                       {t.hours} hr
                     </div>
                   </div>
@@ -146,8 +145,8 @@ export default function ScopeArtifact({ gates, onClearGate }) {
           </SectionBlock>
 
           <SectionBlock label="03 · Materials" eyebrow="Estimated · contractor may substitute equivalents">
-            <div className="rounded-2xl border border-ink-100 overflow-hidden">
-              <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-2.5 bg-canvas-soft border-b border-ink-100 text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+            <div className="rounded-2xl bg-canvas-soft overflow-hidden">
+              <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-ink-100 text-[12px] font-medium text-ink-500">
                 <div className="col-span-5">Item</div>
                 <div className="col-span-4">Spec</div>
                 <div className="col-span-1 text-center">Qty</div>
@@ -155,16 +154,16 @@ export default function ScopeArtifact({ gates, onClearGate }) {
               </div>
               <div className="divide-y divide-ink-100">
                 {materials.map((m, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-canvas-soft/50 transition-colors items-center">
+                  <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3 items-center">
                     <div className="col-span-5 flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0">
-                        <Box size={12} strokeWidth={1.8} />
+                      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-ink-700 ring-1 ring-ink-100 shrink-0">
+                        <Box size={12} strokeWidth={2} />
                       </span>
-                      <span className="text-[13px] font-semibold text-ink-900">{m.item}</span>
+                      <span className="text-[13.5px] font-medium text-ink-900">{m.item}</span>
                     </div>
                     <div className="col-span-4 text-[12px] text-ink-500">{m.spec}</div>
                     <div className="figure col-span-1 text-center text-[12.5px] text-ink-700">{m.qty}</div>
-                    <div className="figure col-span-2 text-right text-[13px] text-ink-900">${m.est}</div>
+                    <div className="figure col-span-2 text-right text-[12.5px] text-ink-900">${m.est}</div>
                   </div>
                 ))}
               </div>
@@ -172,35 +171,35 @@ export default function ScopeArtifact({ gates, onClearGate }) {
           </SectionBlock>
 
           <SectionBlock label="04 · Unit-priced add-ons" eyebrow="Pre-agreed pricing if scope expands during the job">
-            <div className="rounded-2xl border border-ember-100 bg-ember-50/30 overflow-hidden">
+            <div className="rounded-2xl bg-ember-50/40 divide-y divide-ember-100 overflow-hidden">
               {unitPriced.map((c, i) => (
-                <div key={i} className={`grid grid-cols-12 gap-3 px-4 py-3.5 ${i > 0 ? 'border-t border-ember-100' : ''}`}>
+                <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3.5">
                   <div className="col-span-1">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white text-ember-500 ring-1 ring-ember-100">
                       <AlertCircle size={12} strokeWidth={2} />
                     </span>
                   </div>
                   <div className="col-span-7 min-w-0">
-                    <div className="text-[13px] font-semibold text-ink-900">{c.if}</div>
+                    <div className="text-[13.5px] font-medium text-ink-900">{c.if}</div>
                     <div className="text-[12px] text-ink-500 mt-0.5">{c.add}</div>
-                    <div className="text-[10.5px] text-ink-500 mt-1 uppercase tracking-[0.14em] font-semibold">
+                    <div className="text-[12px] font-medium text-ink-500 mt-1">
                       Likelihood: {c.likelihood}
                     </div>
                   </div>
-                  <div className="col-span-4 text-right text-[14px] font-semibold tabular-nums text-ember-500">{c.cost}</div>
+                  <div className="col-span-4 text-right text-[14px] font-medium tabular-nums text-ember-500">{c.cost}</div>
                 </div>
               ))}
             </div>
           </SectionBlock>
 
           <SectionBlock label="05 · Acceptance criteria" eyebrow="What 'done' looks like">
-            <ol className="rounded-2xl border border-sage-100 bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
+            <ol className="rounded-2xl bg-sage-50/40 divide-y divide-sage-100 overflow-hidden">
               {acceptance.map((a, i) => (
                 <li key={i} className="flex items-start gap-3 px-4 py-3">
-                  <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-500 text-white text-[10px] font-bold tabular-nums shrink-0">
+                  <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-500 text-white text-[12px] font-medium tabular-nums shrink-0">
                     {i + 1}
                   </span>
-                  <span className="text-[12.5px] text-ink-700 leading-snug">{a}</span>
+                  <span className="text-[12.5px] text-ink-700 leading-[1.5]">{a}</span>
                 </li>
               ))}
             </ol>
@@ -221,22 +220,20 @@ export default function ScopeArtifact({ gates, onClearGate }) {
       <section className="pt-2">
         {approved ? (
           <div className="flex items-center gap-2.5 rounded-2xl bg-sage-50/60 border border-sage-100 px-4 py-3">
-            <CheckCircle2 size={15} strokeWidth={2.2} className="text-sage-600 shrink-0" />
-            <div className="text-[12.5px] text-ink-700">
-              <strong className="text-ink-900 font-semibold">Scope approved.</strong>{' '}
+            <CheckCircle2 size={14} strokeWidth={1.8} className="text-sage-600 shrink-0" />
+            <div className="text-[12.5px] leading-[1.5] text-ink-700">
+              <strong className="font-medium text-ink-900">Scope approved.</strong>{' '}
               Homewise is verifying contractors, follow along in the conversation.
             </div>
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2">
-            <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-              <Download size={13} strokeWidth={1.8} />
+            <Button variant="secondary" size="md" icon={Download}>
               Export PDF
-            </button>
-            <button className="h-10 px-3.5 rounded-2xl bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all">
-              <Pencil size={13} strokeWidth={1.8} />
+            </Button>
+            <Button variant="secondary" size="md" icon={Pencil}>
               Edit scope
-            </button>
+            </Button>
             <Button variant="hero" onClick={() => onClearGate('approve-scope')} icon={Send} iconRight={ChevronRight}>
               Approve &amp; find contractors
             </Button>
@@ -250,7 +247,7 @@ export default function ScopeArtifact({ gates, onClearGate }) {
 function MetaCell({ label, value }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">{label}</div>
+      <div className="text-[12px] font-medium text-ink-500">{label}</div>
       <div className="text-ink-900 mt-0.5">{value}</div>
     </div>
   );
@@ -262,30 +259,38 @@ function SectionBlock({ label, eyebrow, children }) {
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
           <span className="h-px w-4 bg-ink-200" />
-          <h3 className="editorial text-[17px] leading-tight text-ink-900">{label}</h3>
+          <h3 className="editorial editorial-xs text-[17px] leading-[1.25] text-ink-900">{label}</h3>
         </div>
-        {eyebrow && <span className="text-[11px] text-ink-500">{eyebrow}</span>}
+        {eyebrow && <span className="text-[12px] text-ink-500">{eyebrow}</span>}
       </div>
       {children}
     </section>
   );
 }
 
+// Totals strip. The estimated total is data, not a CTA, so it is marked with
+// a canvas-deep inset instead of an ink-900 fill: the stage keeps one dark
+// element, the Approve CTA. Siblings drop their border (third stroke level
+// inside the document card) and group by white fill on the tinted footer.
 function Total({ label, value, sub, highlight = false, tone }) {
   const colorCls = tone === 'sage' ? 'text-sage-600' : 'text-ink-900';
   return (
     <div
       className={`rounded-2xl px-3.5 py-3 ${
-        highlight ? 'bg-ink-900 text-canvas-soft' : 'bg-white border border-ink-100'
+        highlight ? 'bg-canvas-deep hairline-inset text-ink-900' : 'bg-white'
       }`}
     >
-      <div className={`text-[10px] uppercase tracking-[0.16em] font-semibold ${highlight ? 'text-canvas-soft/70' : 'text-ink-500'}`}>
+      <div className="text-[12px] font-medium text-ink-500">
         {label}
       </div>
-      <div className={`editorial ${highlight ? 'text-[24px]' : 'text-[18px]'} leading-none mt-1 tabular-nums ${highlight ? 'text-canvas-soft' : colorCls}`}>
+      <div
+        className={`editorial leading-none mt-1 tabular-nums ${
+          highlight ? 'editorial-s text-[22px] text-ink-900' : `editorial-xs text-[20px] ${colorCls}`
+        }`}
+      >
         {value}
       </div>
-      <div className={`text-[11px] mt-1 ${highlight ? 'text-canvas-soft/65' : 'text-ink-500'}`}>{sub}</div>
+      <div className="text-[12px] mt-1 text-ink-500">{sub}</div>
     </div>
   );
 }

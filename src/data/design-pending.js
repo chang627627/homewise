@@ -44,6 +44,46 @@
 /** @type {PendingAddition[]} */
 export const pendingAdditions = [
   {
+    id: 'type-2026-10-16-002',
+    type: 'type',
+    name: 'Size-graded editorial tracking',
+    description:
+      "Owner-approved direction (decision 1, 2026-10-16). Keep -0.040em as the hero-l 52px signature, loosen at smaller editorial sizes so Geist letter pairs stop touching: .editorial-m -0.026em (hero-m 24/30, leading 1.10), .editorial-s -0.018em (section-l 22/26, stat-l 28, doc-total), .editorial-xs -0.012em (20px and below). Implemented as modifier classes in index.css. To promote: update the letterSpacing values on hero-m, section-l, stat-l in DESIGN.md.",
+    proposedBy: 'Claude session',
+    proposedDate: '2026-10-16',
+    preview: { kind: 'text', text: 'Three contractors, side by side.' },
+  },
+  {
+    id: 'component-2026-10-16-003',
+    type: 'component',
+    name: 'Neutral selected state for user choices',
+    description:
+      "Owner-approved direction (decision 2, 2026-10-16). A user's own selection (availability windows, slot chips, completion confirm and recommend options) is drawn bg-canvas-deep + ring-1 ring-ink-300 + text-ink-900 with a 12px Check (no .hairline-inset: it and ring-1 are both box-shadows, so the ring would cancel it), never ink-900 and never sage. Ink-900 stays reserved for the single decisive action per pane; sage stays reserved for the AI's pick. To promote: replace slot-chip.selected in DESIGN.md.",
+    proposedBy: 'Claude session',
+    proposedDate: '2026-10-16',
+    preview: { kind: 'component', cls: 'inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-canvas-deep ring-1 ring-ink-300 text-ink-900 text-[12px] font-medium', text: 'Weekday PM' },
+  },
+  {
+    id: 'component-2026-10-16-004',
+    type: 'component',
+    name: 'Segmented artifact tabs (V2 stage header)',
+    description:
+      "V2 only. The stage's artifact pills become one segmented control: a bg-ink-100/60 rounded-2xl p-1 track, the active tab a white thumb with .hairline-strong that slides between tabs (framer layoutId, 200ms ease-out-soft), inactive tabs text-ink-500 on transparent. Replaces the ink-900 active pill so the stage's only dark element is its decision CTA.",
+    proposedBy: 'Claude session',
+    proposedDate: '2026-10-16',
+    preview: { kind: 'none' },
+  },
+  {
+    id: 'other-2026-10-16-005',
+    type: 'other',
+    name: 'Neutral contractor monograms',
+    description:
+      "Owner-approved direction (decision 5, 2026-10-16). Contractor avatars drop the sage / sky / ember gradients (accent color used as decoration, and it pre-judged Quickfix as 'ember' before any flag was read). Monograms become bg-canvas-deep + .hairline-inset with ink-700 initials; the AI-pick lane and the flag pill carry meaning instead. Faces stay out per the photography art direction.",
+    proposedBy: 'Claude session',
+    proposedDate: '2026-10-16',
+    preview: { kind: 'component', cls: 'inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-canvas-deep hairline-inset text-ink-700 editorial text-[15px]', text: 'J' },
+  },
+  {
     id: 'pattern-2026-10-16-001',
     type: 'pattern',
     name: 'Photography in photo slots',

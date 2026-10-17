@@ -130,6 +130,20 @@ textarea:-webkit-autofill:focus {
     font-feature-settings: 'tnum';
   }
 
+  /* Size-graded editorial tracking. -0.040em is the hero-l (52px)
+     signature; at smaller sizes the same value makes Geist pairs touch, so
+     each step down loosens. Triple-class specificity (0,3,0) beats
+     .editorial.editorial (0,2,0). */
+  .editorial.editorial.editorial-m {
+    letter-spacing: -0.026em; /* hero-m 24/30 */
+  }
+  .editorial.editorial.editorial-s {
+    letter-spacing: -0.018em; /* section-l 22/26, stat-l 28, doc-total */
+  }
+  .editorial.editorial.editorial-xs {
+    letter-spacing: -0.012em; /* 20px and below: wordmark, monograms */
+  }
+
   .editorial-italic {
     /* Quiet AI-narration voice. Used as a quote marker inside agent
        messages and for hushed callouts ("Booked. Jason will text…"). */

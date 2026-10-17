@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   CheckCircle2,
 } from 'lucide-react';
+import Button from '../ui/Button';
 import Pill from '../ui/Pill';
 import PhotoFill from '../ui/PhotoFill';
 
@@ -33,19 +34,19 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
     return (
       <div className="space-y-5">
         <header>
-          <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
+          <h1 className="editorial editorial-m text-[24px] md:text-[30px] leading-[1.1] text-ink-900">
             Job closed out.
           </h1>
-          <p className="mt-2 text-[13.5px] text-ink-500 max-w-xl leading-relaxed">
+          <p className="mt-2 text-[14px] text-ink-500 max-w-xl leading-[1.55]">
             Logged in your home file. Homewise is keeping a quiet eye out for follow-ups.
           </p>
         </header>
         <section className="rounded-3xl bg-white border border-sage-100 overflow-hidden">
           <div className="px-5 py-4 border-b border-sage-100 bg-sage-50/40 flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-sage-500 text-white shrink-0">
-              <CheckCircle2 size={15} strokeWidth={2.2} />
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sage-500 text-white shrink-0">
+              <CheckCircle2 size={14} strokeWidth={1.8} />
             </span>
-            <div className="text-[13.5px] font-semibold text-ink-900">
+            <div className="text-[15px] font-medium leading-[1.3] text-ink-900">
               Kitchen sink leak &amp; drip repair · completed {scheduledSlot || 'Fri 2 PM'}
             </div>
           </div>
@@ -70,10 +71,10 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
   return (
     <div className="space-y-7">
       <header>
-        <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
+        <h1 className="editorial editorial-m text-[24px] md:text-[30px] leading-[1.1] text-ink-900">
           Jason marked the visit complete.
         </h1>
-        <p className="mt-2 text-[13.5px] text-ink-500 max-w-xl leading-relaxed">
+        <p className="mt-2 text-[14px] text-ink-500 max-w-xl leading-[1.55]">
           Take a minute to close it out. Your recommendation is the trust signal other Homewisers see.
         </p>
       </header>
@@ -81,9 +82,9 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
       {/* 1. Confirm work */}
       <Section num="01" title="Confirm the work is done">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <ConfirmOption id="yes" current={confirm} onSelect={setConfirm} tone="sage" icon={Check} label="Yes, it's done" sub="Looks resolved, no follow-up needed" />
-          <ConfirmOption id="not-yet" current={confirm} onSelect={setConfirm} tone="ink" icon={Sparkles} label="Not yet" sub="Remind me later" />
-          <ConfirmOption id="wrong" current={confirm} onSelect={setConfirm} tone="ember" icon={AlertTriangle} label="Something's wrong" sub="Escalate to Homewise" />
+          <ConfirmOption id="yes" current={confirm} onSelect={setConfirm} icon={Check} label="Yes, it's done" sub="Looks resolved, no follow-up needed" />
+          <ConfirmOption id="not-yet" current={confirm} onSelect={setConfirm} icon={Sparkles} label="Not yet" sub="Remind me later" />
+          <ConfirmOption id="wrong" current={confirm} onSelect={setConfirm} icon={AlertTriangle} label="Something's wrong" sub="Escalate to Homewise" />
         </div>
       </Section>
 
@@ -94,10 +95,10 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
         sub="Optional. Off by default. Photos go up exactly as shown: no faces, no addresses."
       >
         <div className="rounded-3xl bg-white border border-ink-100/80 overflow-hidden">
-          <div className="px-5 py-4 border-b border-ink-100/80 bg-gradient-to-b from-canvas-soft/30 to-white flex items-center justify-between gap-3 flex-wrap">
+          <div className="px-5 py-4 border-b border-ink-100/80 flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <Camera size={13} className="text-ink-500" strokeWidth={1.8} />
-              <span className="text-[11px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+              <Camera size={14} className="text-ink-500" strokeWidth={1.8} />
+              <span className="text-[12px] font-medium text-ink-500">
                 Jason uploaded · 3 photos
               </span>
             </div>
@@ -105,33 +106,33 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
               Same angles as your intake shots
             </Pill>
           </div>
+          {/* Photos carry their own edge: no ring, the card already owns the
+              stroke. Overlay labels are opaque pills, no blur, no dark fill. */}
           <div className="p-5 grid grid-cols-3 gap-3">
             {completionPhotos.map((p, i) => (
-              <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-ink-100">
+              <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden">
                 <PhotoFill photo={p.photo} tone={p.tone} />
-                <div className="absolute top-2 left-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
-                    <ImageIcon size={9} strokeWidth={2.2} />
+                <div className="absolute top-2 left-2 right-2">
+                  <Pill tone="neutral" icon={ImageIcon} className="max-w-full whitespace-nowrap overflow-hidden">
                     {p.label}
-                  </span>
+                  </Pill>
                 </div>
                 <div className="absolute bottom-2 left-2 right-2">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-canvas-soft">
-                    <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
+                  <Pill tone="sage" icon={Sparkles} className="max-w-full whitespace-nowrap overflow-hidden">
                     AI: {p.tag}
-                  </span>
+                  </Pill>
                 </div>
               </div>
             ))}
           </div>
           <div className="px-5 py-4 border-t border-ink-100/80 bg-canvas-soft/30 flex items-center justify-between gap-3">
             <div className="flex items-start gap-2">
-              <ShieldCheck size={13} className="text-sage-500 mt-0.5 shrink-0" strokeWidth={2} />
+              <ShieldCheck size={14} className="text-sage-500 mt-0.5 shrink-0" strokeWidth={1.8} />
               <div>
-                <div className="text-[12.5px] font-semibold text-ink-900">
+                <div className="text-[13.5px] font-medium text-ink-900">
                   Allow these photos in Jason's Homewise showcase
                 </div>
-                <div className="text-[11px] text-ink-500 mt-0.5">
+                <div className="text-[12px] text-ink-500 mt-0.5">
                   Other Homewisers can see them when comparing contractors. No personal info shown.
                 </div>
               </div>
@@ -148,27 +149,21 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
         sub="Binary. The count is the signal, not stars or comments."
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <RecommendOption id="yes" current={recommend} onSelect={setRecommend} icon={ThumbsUp} label="Yes, recommend" tone="sage" />
-          <RecommendOption id="no" current={recommend} onSelect={setRecommend} icon={ThumbsDown} label="No, don't recommend" tone="ember" />
+          <RecommendOption id="yes" current={recommend} onSelect={setRecommend} icon={ThumbsUp} label="Yes, recommend" />
+          <RecommendOption id="no" current={recommend} onSelect={setRecommend} icon={ThumbsDown} label="No, don't recommend" />
         </div>
       </Section>
 
       {/* Submit */}
       <div className="pt-1 flex items-center gap-3 flex-wrap">
-        <button
-          onClick={() => canSubmit && onClearGate('close-out', { recommended: recommend || 'no', photosShared: share })}
+        <Button
+          variant="hero"
+          iconRight={ArrowRight}
           disabled={!canSubmit}
-          className={`group h-12 pl-5 pr-3 rounded-2xl inline-flex items-center gap-2.5 text-[13.5px] font-semibold transition-all ${
-            canSubmit
-              ? 'bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark'
-              : 'bg-ink-100 text-ink-300 cursor-not-allowed'
-          }`}
+          onClick={() => canSubmit && onClearGate('close-out', { recommended: recommend || 'no', photosShared: share })}
         >
           Close out the job
-          <span className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${canSubmit ? 'bg-canvas-soft/15 group-hover:bg-canvas-soft/25' : 'bg-white/30'}`}>
-            <ArrowRight size={14} strokeWidth={2.2} />
-          </span>
-        </button>
+        </Button>
         <span className="text-[12px] text-ink-500">
           {recommend === null ? 'Pick a recommendation to submit.' : 'You can change your mind anytime.'}
         </span>
@@ -180,61 +175,65 @@ export default function CompletionArtifact({ gates, scheduledSlot, recommended, 
 function SummaryRow({ label, value }) {
   return (
     <div className="px-5 py-3.5 flex items-start gap-3">
-      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
-        <Check size={11} strokeWidth={2.4} />
+      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-lg bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
+        <Check size={12} strokeWidth={2} />
       </span>
       <div className="min-w-0">
-        <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">{label}</div>
-        <div className="text-[12.5px] text-ink-700 leading-relaxed mt-0.5">{value}</div>
+        <div className="text-[12px] font-medium text-ink-500">{label}</div>
+        <div className="text-[12.5px] text-ink-700 leading-[1.5] mt-0.5">{value}</div>
       </div>
     </div>
   );
 }
 
+// Rule deployment: '01 ── Title'. Number as a figure, 16px hairline, then
+// the title in the editorial-small role.
 function Section({ num, title, sub, children }) {
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-3 flex-wrap">
-        <span className="text-[11px] tabular-nums text-ink-500 font-bold">{num}</span>
+        <span className="figure text-[11px] text-ink-500">{num}</span>
         <span className="h-px w-4 bg-ink-200" />
-        <h3 className="editorial text-[17px] leading-tight text-ink-900">{title}</h3>
+        <h3 className="editorial editorial-xs text-[17px] leading-[1.25] text-ink-900">{title}</h3>
       </div>
-      {sub && <p className="ml-7 mb-3 text-[12.5px] text-ink-500 max-w-2xl leading-relaxed">{sub}</p>}
+      {sub && <p className="ml-7 mb-3 text-[12.5px] text-ink-500 max-w-2xl leading-[1.5]">{sub}</p>}
       <div className="ml-7">{children}</div>
     </section>
   );
 }
 
-function ConfirmOption({ id, current, onSelect, tone, icon: Icon, label, sub }) {
+// The user's own choice: neutral selected state with a leading check (the
+// check replaces the option glyph while selected). Never ink-900 and never
+// sage here; sage means the AI's pick.
+const optionSelected = 'bg-canvas-deep ring-1 ring-ink-300 text-ink-900';
+const optionUnselected = 'bg-white ring-1 ring-ink-200 text-ink-700 hover:ring-ink-300';
+
+function ConfirmOption({ id, current, onSelect, icon: Icon, label, sub }) {
   const selected = current === id;
-  const toneMap = {
-    sage: selected ? 'bg-sage-500 text-white ring-sage-500' : 'bg-white ring-ink-200 hover:ring-ink-300 text-ink-900',
-    ember: selected ? 'bg-ember-500 text-white ring-ember-500' : 'bg-white ring-ink-200 hover:ring-ink-300 text-ink-900',
-    ink: selected ? 'bg-ink-900 text-canvas-soft ring-ink-900' : 'bg-white ring-ink-200 hover:ring-ink-300 text-ink-900',
-  };
   return (
-    <button onClick={() => onSelect(id)} className={`text-left rounded-2xl p-4 ring-1 transition-all ${toneMap[tone]}`}>
+    <button
+      onClick={() => onSelect(id)}
+      className={`text-left rounded-2xl p-4 transition-all ${selected ? optionSelected : optionUnselected}`}
+    >
       <div className="flex items-center gap-2 mb-1.5">
-        <Icon size={13} strokeWidth={2.2} />
-        <span className="text-[13px] font-semibold tracking-[-0.005em]">{label}</span>
+        {selected ? <Check size={12} strokeWidth={2} /> : <Icon size={12} strokeWidth={2} />}
+        <span className="text-[13.5px] font-medium">{label}</span>
       </div>
-      <div className={`text-[11.5px] ${selected ? 'opacity-80' : 'text-ink-500'}`}>{sub}</div>
+      <div className="text-[12px] text-ink-500">{sub}</div>
     </button>
   );
 }
 
-function RecommendOption({ id, current, onSelect, icon: Icon, label, tone }) {
+function RecommendOption({ id, current, onSelect, icon: Icon, label }) {
   const selected = current === id;
-  const toneMap = {
-    sage: selected ? 'bg-sage-500 text-white ring-sage-500' : 'bg-white ring-ink-200 hover:ring-ink-300 text-ink-900',
-    ember: selected ? 'bg-ink-900 text-canvas-soft ring-ink-900' : 'bg-white ring-ink-200 hover:ring-ink-300 text-ink-900',
-  };
   return (
     <button
       onClick={() => onSelect(id)}
-      className={`rounded-2xl p-4 ring-1 transition-all inline-flex items-center justify-center gap-2 text-[13.5px] font-semibold ${toneMap[tone]}`}
+      className={`rounded-2xl p-4 transition-all inline-flex items-center justify-center gap-2 text-[13.5px] font-medium ${
+        selected ? optionSelected : optionUnselected
+      }`}
     >
-      <Icon size={14} strokeWidth={2.2} />
+      {selected ? <Check size={12} strokeWidth={2} /> : <Icon size={12} strokeWidth={2} />}
       {label}
     </button>
   );

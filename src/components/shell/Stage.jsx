@@ -15,8 +15,9 @@ import QuotesArtifact from '../artifacts/QuotesArtifact';
 import ScheduleArtifact from '../artifacts/ScheduleArtifact';
 import CompletionArtifact from '../artifacts/CompletionArtifact';
 
-// The stage: the artifact board. One artifact at a time; the pills row is the
-// board's memory, every artifact the flow has produced stays reachable.
+// The stage: the artifact board. One artifact at a time; the tab row is the
+// board's memory, every artifact the flow has produced stays reachable. It is
+// also the only artifact navigation (the rail no longer carries board links).
 const ARTIFACTS = [
   { id: 'home', label: 'Board', icon: LayoutGrid },
   { id: 'scope', label: 'Scope of work', icon: FileText },
@@ -51,10 +52,11 @@ export default function Stage({
   const scrollRef = useRef(null);
 
   return (
-    <section className="flex-1 min-w-0 h-full flex flex-col">
-      {/* Stage header: artifact pills + context */}
-      <header className="shrink-0 px-5 lg:px-7 pt-4 pb-3.5 border-b border-ink-100/60 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1 flex-wrap min-w-0">
+    <section className="flex-1 min-w-0 h-full flex flex-col bg-canvas">
+      {/* Stage header: one segmented control for the artifact tabs + context.
+          The context takes only the space the tabs leave and truncates. */}
+      <header className="shrink-0 h-14 px-5 lg:px-7 border-b border-ink-100 flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-0.5 p-1 rounded-2xl bg-ink-100/60 min-w-0 overflow-x-auto no-scrollbar">
           {ARTIFACTS.filter((a) => unlocked.has(a.id)).map((a) => {
             const Icon = a.icon;
             const active = staged === a.id;
@@ -62,27 +64,38 @@ export default function Stage({
               <button
                 key={a.id}
                 onClick={() => onRestage(a.id)}
-                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-semibold tracking-tight whitespace-nowrap transition-all ${
-                  active
-                    ? 'bg-ink-900 text-canvas-soft hairline-on-dark grain-dark'
-                    : 'bg-white border border-ink-100 text-ink-700 hover:border-ink-300 hover:text-ink-900'
+                className={`relative h-8 px-3 rounded-xl text-[12.5px] font-medium inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors ${
+                  active ? 'text-ink-900' : 'text-ink-500 hover:text-ink-900'
                 }`}
               >
-                <Icon size={12} strokeWidth={2} className={active ? '' : 'text-ink-500'} />
-                {a.label}
+                {active && (
+                  <motion.span
+                    layoutId="stage-tab-thumb"
+                    className="absolute inset-0 rounded-xl bg-white hairline-strong"
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                )}
+                <span className="relative z-10 inline-flex items-center gap-1.5">
+                  <Icon size={14} strokeWidth={1.8} />
+                  {a.label}
+                </span>
               </button>
             );
           })}
         </div>
-        <span className="hidden md:block text-[11px] uppercase tracking-[0.18em] text-ink-500 font-medium whitespace-nowrap shrink-0">
-          {taskStarted ? 'On your board · Kitchen sink leak' : 'On your board · Maple Street'}
-        </span>
+        {/* Once four or more artifacts are open the tabs carry the context,
+            and the line would only survive as a truncated stub. */}
+        {unlocked.size <= 3 && (
+          <span className="hidden md:block flex-1 min-w-0 truncate text-right text-[12px] text-ink-500">
+            {taskStarted ? 'On your board · Kitchen sink leak' : 'On your board · Maple Street'}
+          </span>
+        )}
       </header>
 
       {/* Artifact surface: every newly staged artifact starts at the top.
           The reset fires between the old artifact's exit and the new one's
           entrance so neither view visibly jumps. */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden">
         <AnimatePresence
           mode="wait"
           onExitComplete={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' })}

@@ -14,6 +14,7 @@ import {
   Star,
   Calendar,
 } from 'lucide-react';
+import Pill from '../ui/Pill';
 
 // Quote comparison artifact: the apples-to-apples matrix plus the scheduling
 // loop (availability windows -> slot chips -> per-contractor approve).
@@ -149,24 +150,20 @@ const rows = [
   },
 ];
 
+// Icon tiles inside cells carry fill only (no ring): the tinted cell is
+// already the second stroke level inside the bordered matrix card.
 const stateMap = {
-  included: { icon: Check, bg: 'bg-sage-50', fg: 'text-sage-600', ring: 'ring-sage-100', cell: 'bg-white' },
-  better: { icon: TrendingUp, bg: 'bg-sage-50', fg: 'text-sage-700', ring: 'ring-sage-100', cell: 'bg-sage-50/40 ring-1 ring-sage-100' },
-  higher: { icon: TrendingUp, bg: 'bg-ember-50', fg: 'text-ember-500', ring: 'ring-ember-100', cell: 'bg-ember-50/40 ring-1 ring-ember-100' },
-  flag: { icon: AlertTriangle, bg: 'bg-ember-50', fg: 'text-ember-500', ring: 'ring-ember-100', cell: 'bg-ember-50/40 ring-1 ring-ember-100' },
-  none: { icon: X, bg: 'bg-ink-100', fg: 'text-ink-500', ring: 'ring-ink-100', cell: 'bg-white' },
+  included: { icon: Check, bg: 'bg-sage-50', fg: 'text-sage-600', cell: 'bg-white' },
+  better: { icon: TrendingUp, bg: 'bg-sage-50', fg: 'text-sage-700', cell: 'bg-sage-50/40 ring-1 ring-sage-100', badgeTone: 'sage' },
+  higher: { icon: TrendingUp, bg: 'bg-ember-50', fg: 'text-ember-500', cell: 'bg-ember-50/40 ring-1 ring-ember-100', badgeTone: 'ember' },
+  flag: { icon: AlertTriangle, bg: 'bg-ember-50', fg: 'text-ember-500', cell: 'bg-ember-50/40 ring-1 ring-ember-100' },
+  none: { icon: X, bg: 'bg-ink-100', fg: 'text-ink-500', cell: 'bg-white' },
 };
 
-const accentBg = {
-  sage: 'from-sage-200 to-sage-400 ring-sage-300/40 text-sage-700',
-  sky: 'from-sky2026-100 to-sky2026-300 ring-sky2026-300/40 text-sky2026-700',
-  ember: 'from-ember-100 to-ember-300 ring-ember-300/40 text-ember-500',
-};
-
-const toneClass = {
-  sage: 'bg-sage-50 text-sage-600 ring-sage-100',
-  ember: 'bg-ember-50 text-ember-500 ring-ember-100',
-};
+// A user's own selection: neutral fill + ink-300 ring + leading check.
+// Never ink-900 (reserved for the decision CTA), never sage (the AI's pick).
+const chipOn = 'bg-canvas-deep ring-1 ring-ink-300 text-ink-900';
+const chipOff = 'bg-white ring-1 ring-ink-200 text-ink-700 hover:ring-ink-300';
 
 export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
   const booked = !!gates['approve-jason'];
@@ -194,17 +191,17 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="editorial text-[24px] md:text-[30px] leading-[1.04] text-ink-900 tracking-tight">
+        <h1 className="editorial editorial-m text-[24px] md:text-[30px] leading-[1.1] text-ink-900">
           Three quotes, one normalized scope.
         </h1>
       </header>
 
       {/* AI plain-language summary */}
       <section className="rounded-3xl bg-white border border-sage-100 px-5 py-4 md:px-6 flex items-start gap-3">
-        <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-xl bg-sage-50 text-sage-500 ring-1 ring-sage-100 shrink-0">
-          <Sparkles size={12} strokeWidth={2.2} />
+        <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-sage-50 text-sage-500 ring-1 ring-sage-100 shrink-0">
+          <Sparkles size={12} strokeWidth={2} />
         </span>
-        <p className="editorial-italic text-[14px] leading-relaxed text-ink-900">
+        <p className="editorial-italic text-[14px] leading-[1.55] text-ink-900">
           "Jason is the cheapest <em className="not-italic font-medium text-ink-700">that's complete</em>, fair price, full scope, fastest. Bayline includes more (1-yr warranty) but charges a $75 fee + 21% labor premium. Quickfix is cheapest at $175 but their quote is missing materials and warranty language."
         </p>
       </section>
@@ -215,7 +212,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           {/* Quote cards as column headers */}
           <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-b border-ink-100/80 bg-canvas-soft/40 items-stretch">
             <div className="flex items-end">
-              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Scope item</div>
+              <div className="text-[12px] font-medium text-ink-500">Scope item</div>
             </div>
             {cols.map((c, i) => (
               <motion.div
@@ -223,31 +220,26 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: i * 0.06 }}
-                className={`rounded-2xl p-3.5 ${
-                  c.aiPick ? 'bg-sage-50/50 border border-sage-200 ring-1 ring-sage-100' : 'bg-white border border-ink-100'
+                className={`rounded-2xl p-3.5 flex flex-col ${
+                  c.aiPick ? 'bg-sage-50/50 border border-sage-200' : 'bg-white border border-ink-100'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`relative h-10 w-10 rounded-2xl bg-gradient-to-br ${accentBg[c.accent]} ring-1 flex items-center justify-center shrink-0`}>
-                    <span className="editorial text-[15px]">{c.initials}</span>
+                  <div className="relative h-10 w-10 rounded-2xl bg-canvas-deep hairline-inset text-ink-700 flex items-center justify-center shrink-0">
+                    <span className="editorial editorial-xs text-[15px]">{c.initials}</span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em] leading-snug">{c.name}</div>
-                    {c.aiPick && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Sparkles size={10} className="text-sage-500" />
-                        <span className="text-[10px] uppercase tracking-[0.14em] text-sage-600 font-bold">AI pick</span>
-                      </div>
-                    )}
-                  </div>
+                  <div className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-900 leading-snug">{c.name}</div>
                 </div>
-                <div className="mt-3 flex flex-wrap items-end justify-between gap-x-2 gap-y-1.5">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-wide ring-1 ${toneClass[c.verdict.tone]}`}>
-                    {c.verdict.label}
-                  </span>
+                {c.aiPick && (
+                  <div className="mt-2.5 flex flex-wrap gap-1">
+                    <Pill tone="sage" icon={Sparkles}>AI top match</Pill>
+                  </div>
+                )}
+                <div className="mt-auto pt-3 flex flex-wrap items-end justify-between gap-x-2 gap-y-1.5">
+                  <Pill tone={c.verdict.tone}>{c.verdict.label}</Pill>
                   <div className="text-right shrink-0">
-                    <span className="editorial text-[24px] leading-none text-ink-900 tabular-nums">${c.total}</span>
-                    <div className="text-[10.5px] text-ink-500 mt-0.5">total</div>
+                    <span className="editorial editorial-s text-[22px] leading-none text-ink-900 tabular-nums">${c.total}</span>
+                    <div className="text-[12px] text-ink-500 mt-0.5">total</div>
                   </div>
                 </div>
               </motion.div>
@@ -258,8 +250,8 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
             {rows.map((row) => (
               <div key={row.label} className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">{row.label}</div>
-                  {row.sub && <div className="text-[11.5px] text-ink-500 mt-0.5">{row.sub}</div>}
+                  <div className="text-[12.5px] font-medium text-ink-900">{row.label}</div>
+                  {row.sub && <div className="text-[12px] text-ink-500 mt-0.5">{row.sub}</div>}
                 </div>
                 {row.cells.map((cell, i) => {
                   const meta = stateMap[cell.state];
@@ -275,19 +267,15 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                       }
                     >
                       <div className="flex items-start gap-2">
-                        <span className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md ${meta.bg} ${meta.fg} ring-1 ${meta.ring} shrink-0`}>
-                          <Icon size={11} strokeWidth={2.2} />
+                        <span className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-lg ${meta.bg} ${meta.fg} shrink-0`}>
+                          <Icon size={12} strokeWidth={2} />
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`text-[12.5px] font-semibold ${meta.fg}`}>{cell.text}</span>
-                            {cell.badge && (
-                              <span className="inline-flex items-center rounded-full bg-white px-1.5 py-0.5 text-[9.5px] font-semibold ring-1 ring-current uppercase tracking-[0.1em]">
-                                {cell.badge}
-                              </span>
-                            )}
+                            <span className={`text-[12.5px] font-medium ${meta.fg}`}>{cell.text}</span>
+                            {cell.badge && <Pill tone={meta.badgeTone}>{cell.badge}</Pill>}
                           </div>
-                          <div className="text-[11px] text-ink-500 mt-0.5 leading-snug">{cell.value}</div>
+                          <div className="text-[12px] text-ink-500 mt-0.5 leading-snug">{cell.value}</div>
                         </div>
                       </div>
                     </div>
@@ -299,16 +287,16 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
             {/* Earliest start */}
             <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
               <div className="min-w-0">
-                <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">Earliest start</div>
-                <div className="text-[11.5px] text-ink-500 mt-0.5">Stated availability for this job</div>
+                <div className="text-[12.5px] font-medium text-ink-900">Earliest start</div>
+                <div className="text-[12px] text-ink-500 mt-0.5">Stated availability for this job</div>
               </div>
               {cols.map((c, i) => (
                 <div key={c.id} className={i === aiPickIndex ? 'px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'px-3 py-2.5'}>
                   <div className="flex items-center gap-1.5">
-                    <Calendar size={12} strokeWidth={1.8} className="text-ink-300 shrink-0" />
-                    <span className="text-[12.5px] font-semibold text-ink-900">{c.schedule.earliestStart}</span>
+                    <Calendar size={12} strokeWidth={2} className="text-ink-300 shrink-0" />
+                    <span className="text-[12.5px] font-medium text-ink-900">{c.schedule.earliestStart}</span>
                   </div>
-                  <div className="text-[11px] text-ink-500 mt-0.5">{c.schedule.duration}</div>
+                  <div className="text-[12px] text-ink-500 mt-0.5">{c.schedule.duration}</div>
                 </div>
               ))}
             </div>
@@ -316,8 +304,8 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
             {/* Contractor note */}
             <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 items-stretch">
               <div className="min-w-0">
-                <div className="text-[13px] font-semibold text-ink-900 tracking-[-0.005em]">Contractor note</div>
-                <div className="text-[11.5px] text-ink-500 mt-0.5">In their own words</div>
+                <div className="text-[12.5px] font-medium text-ink-900">Contractor note</div>
+                <div className="text-[12px] text-ink-500 mt-0.5">In their own words</div>
               </div>
               {cols.map((c, i) => (
                 <div key={c.id} className={i === aiPickIndex ? 'px-[18px] py-[26px] bg-sage-50/40 -my-4 -mx-1.5' : 'px-3 py-2.5'}>
@@ -330,7 +318,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           {/* Your availability */}
           <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
             <div>
-              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Your availability</div>
+              <div className="text-[12px] font-medium text-ink-500">Your availability</div>
             </div>
             <div className="col-span-3 flex flex-wrap gap-1.5">
               {WINDOWS.map((w) => {
@@ -339,11 +327,11 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                   <button
                     key={w.id}
                     onClick={() => toggleWindow(w.id)}
-                    className={`h-8 px-3 rounded-full inline-flex items-center gap-1.5 text-[11.5px] font-medium transition-all ${
-                      on ? 'bg-ink-900 text-canvas-soft hairline-on-dark' : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
+                    className={`h-8 px-3 rounded-full inline-flex items-center gap-1.5 text-[12px] font-medium transition-all ${
+                      on ? chipOn : chipOff
                     } ${booked ? 'opacity-60' : ''}`}
                   >
-                    {on && <Check size={11} strokeWidth={2.4} />}
+                    {on && <Check size={12} strokeWidth={2} />}
                     {w.label}
                   </button>
                 );
@@ -354,14 +342,14 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           {/* Ask before booking */}
           <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-canvas-soft/40 items-center">
             <div className="flex flex-col justify-center">
-              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Ask before booking</div>
-              <div className="text-[11.5px] text-ink-500 mt-0.5">Optional. Talk first if you have questions.</div>
+              <div className="text-[12px] font-medium text-ink-500">Ask before booking</div>
+              <div className="text-[12px] text-ink-500 mt-0.5">Optional. Talk first if you have questions.</div>
             </div>
             {cols.map((c, i) => (
               <div key={c.id} className={`${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
                 <button
                   onClick={() => setContactOpen(c.id)}
-                  className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold transition-all"
+                  className="w-full h-10 rounded-2xl bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft inline-flex items-center justify-center gap-1.5 text-[12.5px] font-medium transition-all"
                 >
                   <Phone size={12} strokeWidth={2} />
                   Ask {c.name.split(' ')[0]}
@@ -373,7 +361,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
           {/* Pick a slot & approve */}
           <div className="grid grid-cols-[minmax(116px,0.72fr)_repeat(3,minmax(0,1fr))] gap-3 px-5 py-4 border-t border-ink-100 bg-white items-stretch">
             <div className="flex flex-col justify-center">
-              <div className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Pick a slot &amp; approve</div>
+              <div className="text-[12px] font-medium text-ink-500">Pick a slot &amp; approve</div>
             </div>
             {cols.map((c, i) => {
               const valid = slotsFor(c);
@@ -383,7 +371,7 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
               return (
                 <div key={c.id} className={`flex flex-col gap-2 ${i === aiPickIndex ? 'bg-sage-50/40 -my-4 py-4 -mx-1.5 px-1.5' : ''}`}>
                   {noOverlap ? (
-                    <div className="rounded-xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[11.5px] text-ink-700 leading-snug">
+                    <div className="rounded-2xl bg-ember-50/50 border border-ember-100 px-3 py-2 text-[12px] text-ink-700 leading-snug">
                       No overlap with your availability. Add a window above or ask {c.name.split(' ')[0]} for more times.
                     </div>
                   ) : (
@@ -394,11 +382,15 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                           <button
                             key={s.id}
                             onClick={() => !booked && setPicked((p) => ({ ...p, [c.id]: s.id }))}
-                            className={`h-7 px-2.5 rounded-full inline-flex items-center gap-1 text-[11.5px] font-medium transition-all ${
-                              on ? 'bg-sage-500 text-white ring-1 ring-sage-500 hairline-on-dark' : 'bg-white text-ink-700 ring-1 ring-ink-200 hover:ring-ink-300'
+                            className={`h-7 px-2.5 rounded-full inline-flex items-center gap-1 text-[12px] font-medium transition-all ${
+                              on ? chipOn : chipOff
                             } ${booked && !on ? 'opacity-50' : ''}`}
                           >
-                            <Clock size={10} strokeWidth={2} className={on ? 'opacity-90' : 'text-ink-300'} />
+                            {on ? (
+                              <Check size={12} strokeWidth={2} />
+                            ) : (
+                              <Clock size={12} strokeWidth={2} className="text-ink-300" />
+                            )}
                             {s.time}
                           </button>
                         );
@@ -407,15 +399,15 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                   )}
 
                   {isBookedCol ? (
-                    <div className="w-full min-h-[40px] px-2 py-2 rounded-2xl bg-sage-50 ring-1 ring-sage-200 inline-flex flex-wrap items-center justify-center gap-x-1.5 leading-snug text-center text-[12.5px] font-semibold text-sage-700">
-                      <CheckCircle2 size={13} strokeWidth={2.4} />
-                      Booked · {scheduledSlot}
+                    <div className="w-full min-h-[40px] px-2 py-2 rounded-2xl bg-sage-50 ring-1 ring-sage-200 inline-flex items-center justify-center gap-1.5 leading-snug text-center text-[12.5px] font-medium text-sage-700">
+                      <CheckCircle2 size={14} strokeWidth={1.8} className="shrink-0" />
+                      <span className="min-w-0">Booked · {scheduledSlot}</span>
                     </div>
                   ) : (
                     <button
                       onClick={() => !booked && onClearGate('approve-jason', { slot: sel?.time })}
                       disabled={noOverlap || booked}
-                      className={`w-full min-h-[40px] px-2 py-2 rounded-2xl inline-flex flex-wrap items-center justify-center gap-x-1.5 leading-snug text-center text-[12.5px] font-semibold transition-all ${
+                      className={`w-full min-h-[40px] px-2 py-2 rounded-2xl inline-flex items-center justify-center gap-1.5 leading-snug text-center text-[12.5px] font-medium transition-all ${
                         noOverlap || booked
                           ? 'bg-ink-100 text-ink-300 cursor-not-allowed'
                           : c.aiPick
@@ -423,9 +415,11 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
                             : 'bg-white text-ink-900 ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft'
                       }`}
                     >
-                      {c.aiPick && !noOverlap && !booked && <Check size={13} strokeWidth={2.4} />}
-                      Approve {c.name.split(' ')[0]}
-                      {sel && !booked && ` · ${sel.time}`}
+                      {c.aiPick && !noOverlap && !booked && <Check size={14} strokeWidth={1.8} className="shrink-0" />}
+                      <span className="min-w-0">
+                        Approve {c.name.split(' ')[0]}
+                        {sel && !booked && ` · ${sel.time}`}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -437,9 +431,9 @@ export default function QuotesArtifact({ gates, scheduledSlot, onClearGate }) {
 
       {booked && (
         <div className="flex items-center gap-2.5 rounded-2xl bg-sage-50/60 border border-sage-100 px-4 py-3">
-          <CheckCircle2 size={15} strokeWidth={2.2} className="text-sage-600 shrink-0" />
+          <CheckCircle2 size={16} strokeWidth={1.8} className="text-sage-600 shrink-0" />
           <div className="text-[12.5px] text-ink-700">
-            <strong className="text-ink-900 font-semibold">Jason is booked for {scheduledSlot}.</strong>{' '}
+            <strong className="font-medium text-ink-900">Jason is booked for {scheduledSlot}.</strong>{' '}
             Free to reschedule or cancel until Thursday 6 PM. The visit is on your schedule.
           </div>
         </div>
@@ -487,13 +481,13 @@ function ContactDrawer({ contractor, onClose }) {
       >
         <div className="sticky top-0 z-10 px-6 py-5 border-b border-ink-100 bg-white/95 backdrop-blur flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`relative h-9 w-9 rounded-2xl bg-gradient-to-br ${accentBg[contractor.accent]} ring-1 flex items-center justify-center shrink-0`}>
-              <span className="editorial text-[13px]">{contractor.initials}</span>
+            <div className="relative h-9 w-9 rounded-xl bg-canvas-deep hairline-inset text-ink-700 flex items-center justify-center shrink-0">
+              <span className="editorial editorial-xs text-[15px]">{contractor.initials}</span>
             </div>
             <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-ink-900 truncate">{contractor.name}</div>
-              <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-ink-500">
-                <Star size={10} className="text-ember-300 fill-ember-300" strokeWidth={0} />
+              <div className="text-[13.5px] font-medium text-ink-900 truncate">{contractor.name}</div>
+              <div className="flex items-center gap-1.5 mt-0.5 text-[12px] text-ink-500">
+                <Star size={12} className="text-ember-300 fill-ember-300" strokeWidth={2} />
                 <span className="figure text-ink-700">{contractor.rating.score}</span>
                 <span>({contractor.rating.reviews})</span>
                 <span className="mx-1 text-ink-300">·</span>
@@ -505,50 +499,50 @@ function ContactDrawer({ contractor, onClose }) {
             onClick={onClose}
             className="h-8 w-8 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
           >
-            <X size={13} strokeWidth={2} />
+            <X size={14} strokeWidth={1.8} />
           </button>
         </div>
 
         <div className="flex-1 px-6 py-5 space-y-5">
           <section>
             <div className="flex items-center gap-2 mb-2">
-              <span className="h-px w-3 bg-ink-200" />
-              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">About</span>
+              <span className="h-px w-6 bg-ink-300 shrink-0" />
+              <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500">About</span>
             </div>
-            <p className="text-[13px] text-ink-700 leading-relaxed">{contractor.bio}</p>
+            <p className="text-[14px] leading-[1.55] text-ink-700">{contractor.bio}</p>
           </section>
 
           <section>
             <div className="flex items-center gap-2 mb-2">
-              <span className="h-px w-3 bg-ink-200" />
-              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Direct contact</span>
+              <span className="h-px w-6 bg-ink-300 shrink-0" />
+              <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500">Direct contact</span>
             </div>
             <a
               href={`tel:${contractor.phone.replace(/\D/g, '')}`}
               className="group flex items-center justify-between gap-3 rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark px-4 py-3 transition-all"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-canvas-soft/15 text-canvas-soft shrink-0">
-                  <Phone size={14} strokeWidth={2} />
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-canvas-soft/15 text-canvas-soft shrink-0">
+                  <Phone size={14} strokeWidth={1.8} />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[13.5px] font-semibold tabular-nums">{contractor.phone}</div>
-                  <div className="text-[11px] text-canvas-soft/70">Call {contractor.name.split(' ')[0]} directly</div>
+                  <div className="text-[13.5px] font-medium tabular-nums">{contractor.phone}</div>
+                  <div className="text-[12px] text-canvas-soft/70">Call {contractor.name.split(' ')[0]} directly</div>
                 </div>
               </div>
-              <ArrowRight size={13} className="opacity-70 group-hover:translate-x-0.5 transition-all shrink-0" strokeWidth={2} />
+              <ArrowRight size={14} className="opacity-70 group-hover:translate-x-0.5 transition-all shrink-0" strokeWidth={1.8} />
             </a>
           </section>
 
           <section>
             <div className="flex items-center gap-2 mb-2">
-              <span className="h-px w-3 bg-ink-200" />
-              <span className="text-[10.5px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Things to ask when you call</span>
+              <span className="h-px w-6 bg-ink-300 shrink-0" />
+              <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500">Things to ask when you call</span>
             </div>
             <ul className="space-y-1.5">
               {suggestedQuestions.map((q, i) => (
-                <li key={q} className="flex items-start gap-2 text-[12.5px] text-ink-700 leading-snug">
-                  <span className="shrink-0 mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-md bg-canvas-soft text-ink-500 text-[10px] font-bold tabular-nums">
+                <li key={q} className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-ink-700">
+                  <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-lg bg-canvas-soft text-ink-500 text-[12px] font-medium tabular-nums">
                     {i + 1}
                   </span>
                   {q}

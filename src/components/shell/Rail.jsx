@@ -6,8 +6,6 @@ import {
   Droplets,
   Wrench,
   Wind,
-  LayoutGrid,
-  CalendarDays,
   Bell,
   Settings,
   HelpCircle,
@@ -15,12 +13,13 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 
-// Left rail: brand, the task switcher, and two board shortcuts. Collapsible to
-// a 64px icon strip. One DOM tree for both states: the aside animates its
-// width while icons stay anchored in place and labels fade, so the collapse
-// reads as a smooth fold instead of a re-layout jump. Widths animate with a
-// plain CSS transition; the right-justified toggle simply rides the moving
-// edge as the container narrows.
+// Left rail: brand, home switcher, New AI task, and the task switcher. Artifact
+// navigation lives in the Stage tabs, so the rail carries no board shortcuts.
+// Collapsible to a 64px icon strip. One DOM tree for both states: the aside
+// animates its width while icons stay anchored in place and labels fade, so
+// the collapse reads as a smooth fold instead of a re-layout jump. Widths
+// animate with a plain CSS transition; the right-justified toggle simply rides
+// the moving edge as the container narrows.
 
 export default function Rail({
   open = true,
@@ -29,24 +28,21 @@ export default function Rail({
   taskStarted,
   taskStatus,
   booked,
-  staged,
-  unlocked,
   extraTasks = [],
   activeThread,
-  onRestage,
   onNewTask,
   onSelectTask,
 }) {
   return (
     <aside
       style={{ width: open ? 240 : 64, transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-      className="shrink-0 h-full flex flex-col bg-white/80 backdrop-blur-md border-r border-ink-100/80 overflow-hidden"
+      className="shrink-0 h-full flex flex-col bg-canvas-soft border-r border-ink-100 overflow-hidden"
     >
       {/* Top row, Grok pattern: logo left, panel toggle right. The toggle
           keeps its vertical position in both states; folded, the brand
           collapses to zero width and the right-justified toggle rides the
           narrowing edge into the icon column. */}
-      <div className="pt-5 px-3.5 flex items-center">
+      <div className="shrink-0 h-14 px-3.5 flex items-center border-b border-ink-100">
         <span
           style={{
             maxWidth: open ? 160 : 0,
@@ -56,7 +52,9 @@ export default function Rail({
           className="overflow-hidden flex items-center gap-2.5"
         >
           <Logo />
-          <span className="editorial text-[17px] leading-none text-ink-900 whitespace-nowrap">Homewise</span>
+          <span className="editorial editorial-xs text-[17px] font-semibold leading-none text-ink-900 whitespace-nowrap">
+            Homewise
+          </span>
         </span>
         <span className="flex-1" />
         <button
@@ -64,7 +62,7 @@ export default function Rail({
           title={open ? 'Collapse the sidebar' : 'Open the sidebar'}
           className="h-9 w-9 rounded-xl bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft flex items-center justify-center text-ink-700 hover:text-ink-900 transition-colors shrink-0"
         >
-          {open ? <ChevronsLeft size={15} strokeWidth={2} /> : <ChevronsRight size={15} strokeWidth={2} />}
+          {open ? <ChevronsLeft size={14} strokeWidth={1.8} /> : <ChevronsRight size={14} strokeWidth={1.8} />}
         </button>
       </div>
 
@@ -72,20 +70,20 @@ export default function Rail({
       <div className="mt-3 px-3.5">
         <div
           className={`flex items-center gap-2.5 rounded-2xl border transition-all duration-300 ${
-            open ? 'bg-canvas-soft border-ink-100 p-2' : 'bg-transparent border-transparent p-0'
+            open ? 'bg-white border-ink-100 p-2' : 'bg-transparent border-transparent p-0'
           }`}
         >
           <span
             title="Maple Street · Oakland, CA"
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0"
           >
-            <Home size={15} strokeWidth={1.8} />
+            <Home size={14} strokeWidth={1.8} />
           </span>
           <FadeLabel open={open} className="flex-1 min-w-0">
             <span className="flex flex-col items-start leading-tight">
-              <span className="text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">Maple Street</span>
-              <span className="flex items-center gap-1 text-[10.5px] text-ink-500 whitespace-nowrap">
-                <MapPin size={9} strokeWidth={2} />
+              <span className="text-[13.5px] font-medium text-ink-900 whitespace-nowrap">Maple Street</span>
+              <span className="mt-0.5 flex items-center gap-1 text-[12px] text-ink-500 whitespace-nowrap">
+                <MapPin size={12} strokeWidth={2} />
                 Oakland, CA
               </span>
             </span>
@@ -98,37 +96,16 @@ export default function Rail({
         <button
           onClick={onNewTask}
           title="New AI task"
-          className={`w-full rounded-2xl bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center justify-center text-[12.5px] font-semibold transition-colors overflow-hidden ${
-            open ? 'h-10 gap-1.5 grain-dark' : 'h-9'
+          className={`w-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center justify-center text-[13.5px] font-medium transition-colors overflow-hidden ${
+            open ? 'h-10 rounded-2xl gap-1.5 grain-dark' : 'h-9 rounded-xl'
           }`}
         >
-          <Sparkles size={13} strokeWidth={2.2} className="shrink-0" />
+          <Sparkles size={14} strokeWidth={2.2} className="shrink-0" />
           <FadeWidth open={open}>
             <span className="pl-1.5 whitespace-nowrap">New AI task</span>
           </FadeWidth>
         </button>
       </div>
-
-      {/* Board shortcuts */}
-      <nav className="mt-5 px-3 space-y-0.5">
-        <GroupLabel open={open}>Your board</GroupLabel>
-        <RailItem
-          open={open}
-          icon={LayoutGrid}
-          label="Home"
-          active={staged === 'home'}
-          onClick={() => onRestage('home')}
-        />
-        <RailItem
-          open={open}
-          icon={CalendarDays}
-          label="Schedule"
-          active={staged === 'schedule'}
-          disabled={!unlocked.has('schedule')}
-          badge={booked ? '1' : null}
-          onClick={() => onRestage('schedule')}
-        />
-      </nav>
 
       {/* Tasks */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden mt-5 px-3 pb-3">
@@ -137,39 +114,33 @@ export default function Rail({
           <button
             onClick={() => onSelectTask?.('sink')}
             title={open ? undefined : `Kitchen sink leak · ${taskStatus}`}
-            className={`w-full rounded-2xl bg-canvas-soft ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
+            className={`w-full rounded-2xl bg-white ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
               activeThread === 'sink' ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
             } ${open ? 'p-2.5' : 'p-1'}`}
           >
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-sage-50 text-sage-600 ring-1 ring-sage-100 shrink-0">
-              <Droplets size={13} strokeWidth={1.8} />
+            <TaskTile icon={Droplets}>
               {!open && !booked && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                   <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500 ring-2 ring-white" />
                 </span>
               )}
-            </span>
+            </TaskTile>
             <FadeLabel open={open} className="flex-1 min-w-0">
               <span className="block leading-tight">
-                <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">
+                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">
                   Kitchen sink leak
                 </span>
-                <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-ink-500">
-                  {!booked && (
-                    <span className="relative flex h-1.5 w-1.5 shrink-0">
-                      <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
-                    </span>
-                  )}
-                  <span className="whitespace-nowrap">{taskStatus}</span>
+                <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-ink-500">
+                  {!booked && <LiveDot />}
+                  <span className="min-w-0 truncate">{taskStatus}</span>
                 </span>
               </span>
             </FadeLabel>
           </button>
         ) : (
           open && (
-            <div className="rounded-2xl border border-dashed border-ink-200 px-3 py-3 text-[11.5px] text-ink-500 leading-relaxed">
+            <div className="rounded-2xl border border-dashed border-ink-200 px-3 py-3 text-[12px] leading-[1.5] text-ink-500">
               No tasks yet. Tell the AI what happened and the first one starts here.
             </div>
           )
@@ -178,22 +149,17 @@ export default function Rail({
           <button
             key={t.id}
             onClick={() => onSelectTask?.(t.id)}
-            className={`mt-2 w-full rounded-2xl bg-canvas-soft ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
+            className={`mt-2 w-full rounded-2xl bg-white ring-1 flex items-start gap-2.5 text-left transition-all duration-300 ${
               activeThread === t.id ? 'ring-ink-200' : 'ring-ink-100 hover:ring-ink-200'
             } ${open ? 'p-2.5' : 'p-1'}`}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky2026-50 text-sky2026-700 ring-1 ring-sky2026-100 shrink-0">
-              <Wind size={13} strokeWidth={1.8} />
-            </span>
+            <TaskTile icon={Wind} />
             <FadeLabel open={open} className="flex-1 min-w-0">
               <span className="block leading-tight">
-                <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">{t.title}</span>
-                <span className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-ink-500">
-                  <span className="relative flex h-1.5 w-1.5 shrink-0">
-                    <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
-                  </span>
-                  <span className="whitespace-nowrap">Scoping the job</span>
+                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">{t.title}</span>
+                <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-ink-500">
+                  <LiveDot />
+                  <span className="min-w-0 truncate">Scoping the job</span>
                 </span>
               </span>
             </FadeLabel>
@@ -202,17 +168,15 @@ export default function Rail({
         {guttersPlanned && (
           <div
             title={open ? undefined : 'Gutter cleaning · Planned · early September'}
-            className={`mt-2 w-full rounded-2xl bg-canvas-soft ring-1 ring-ink-100 flex items-start gap-2.5 text-left transition-all duration-300 ${
+            className={`mt-2 w-full rounded-2xl bg-white ring-1 ring-ink-100 flex items-start gap-2.5 text-left transition-all duration-300 ${
               open ? 'p-2.5' : 'p-1'
             }`}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-ember-50 text-ember-500 ring-1 ring-ember-100 shrink-0">
-              <Wrench size={13} strokeWidth={1.8} />
-            </span>
+            <TaskTile icon={Wrench} />
             <FadeLabel open={open} className="flex-1 min-w-0">
               <span className="block leading-tight">
-                <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">Gutter cleaning</span>
-                <span className="mt-0.5 block text-[10.5px] text-ink-500 whitespace-nowrap">Planned · early September</span>
+                <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">Gutter cleaning</span>
+                <span className="mt-0.5 block text-[12px] text-ink-500 min-w-0 truncate">Planned · early September</span>
               </span>
             </FadeLabel>
           </div>
@@ -220,20 +184,21 @@ export default function Rail({
       </div>
 
       {/* User */}
-      <div className="shrink-0 border-t border-ink-100/80 p-3 bg-gradient-to-t from-canvas-soft/60 to-white">
+      <div className="shrink-0 border-t border-ink-100 p-3">
         <div className="flex items-center gap-2">
-          <span className="h-9 w-9 rounded-xl ring-1 ring-ink-100 overflow-hidden shrink-0" title="Mara Halligan">
-            <span className="h-full w-full bg-gradient-to-br from-sage-200 via-sage-100 to-ember-100 flex items-center justify-center">
-              <span className="editorial text-[13px] text-sage-700">M</span>
-            </span>
+          <span
+            className="h-9 w-9 rounded-xl bg-canvas-deep hairline-inset flex items-center justify-center shrink-0"
+            title="Mara Halligan"
+          >
+            <span className="editorial editorial-xs text-[14px] leading-none text-ink-700">M</span>
           </span>
           <FadeLabel open={open} className="flex-1 min-w-0">
-            <span className="block text-[12.5px] font-semibold text-ink-900 whitespace-nowrap">Mara Halligan</span>
+            <span className="block text-[13.5px] font-medium text-ink-900 min-w-0 truncate">Mara Halligan</span>
           </FadeLabel>
           <FadeLabel open={open}>
             <span className="relative h-9 w-9 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-colors cursor-pointer">
               <Bell size={14} strokeWidth={1.8} />
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-ember-300 ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-ember-300 ring-2 ring-canvas-soft" />
             </span>
           </FadeLabel>
         </div>
@@ -278,60 +243,41 @@ function FadeWidth({ open, children }) {
   );
 }
 
+// Eyebrow role with the rail's w-3 rule. The rule stays visible when folded.
 function GroupLabel({ open, children }) {
   return (
     <div className="px-2.5 mb-2 flex items-center gap-2 h-[17px]">
-      <span className="h-px w-3 bg-ink-200 shrink-0" />
-      <FadeLabel open={open} className="text-[10px] uppercase tracking-[0.18em] text-ink-500 font-semibold whitespace-nowrap">
+      <span className="h-px w-3 bg-ink-300 shrink-0" />
+      <FadeLabel open={open} className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500 whitespace-nowrap">
         {children}
       </FadeLabel>
     </div>
   );
 }
 
-function RailItem({ open, icon: Icon, label, active, disabled, badge, onClick }) {
+// Task icon tiles are non-semantic, so they stay neutral.
+function TaskTile({ icon: Icon, children }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={open ? undefined : label}
-      className={`group relative w-full flex items-center gap-2.5 rounded-xl px-2.5 h-9 text-[12.5px] transition-colors ${
-        active
-          ? 'bg-canvas-soft text-ink-900 font-medium ring-1 ring-ink-100'
-          : disabled
-            ? 'text-ink-300'
-            : 'text-ink-700 hover:bg-canvas-soft/70 hover:text-ink-900'
-      }`}
-    >
-      {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-r-full bg-sage-500" />
-      )}
-      <Icon
-        size={15}
-        strokeWidth={1.8}
-        className={`shrink-0 ${active ? 'text-sage-600' : disabled ? 'text-ink-300' : 'text-ink-500 group-hover:text-ink-700'}`}
-      />
-      <FadeLabel open={open} className="flex-1 text-left whitespace-nowrap">
-        {label}
-      </FadeLabel>
-      {badge && (
-        <FadeLabel open={open}>
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-md text-[10px] font-semibold tabular-nums bg-sage-100 text-sage-600">
-            {badge}
-          </span>
-        </FadeLabel>
-      )}
-      {!open && badge && (
-        <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-sage-500 ring-2 ring-white" />
-      )}
-    </button>
+    <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-canvas-soft text-ink-700 ring-1 ring-ink-100 shrink-0">
+      <Icon size={14} strokeWidth={1.8} />
+      {children}
+    </span>
+  );
+}
+
+function LiveDot() {
+  return (
+    <span className="relative flex h-1.5 w-1.5 shrink-0">
+      <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
+      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sage-500" />
+    </span>
   );
 }
 
 function FooterLink({ icon: Icon, label }) {
   return (
-    <button className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-xl text-[11.5px] text-ink-500 hover:text-ink-900 hover:bg-canvas-soft transition-all">
-      <Icon size={12} strokeWidth={1.8} />
+    <button className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-xl text-[12px] text-ink-500 hover:text-ink-900 hover:bg-white transition-all">
+      <Icon size={12} strokeWidth={2} />
       <span>{label}</span>
     </button>
   );
@@ -339,7 +285,7 @@ function FooterLink({ icon: Icon, label }) {
 
 function Logo() {
   return (
-    <div className="relative h-8 w-8 rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 ring-1 ring-sage-700/10 flex items-center justify-center shrink-0">
+    <div className="relative h-8 w-8 rounded-xl bg-sage-600 ring-1 ring-sage-700/10 flex items-center justify-center shrink-0">
       <svg viewBox="0 0 24 24" className="h-4 w-4 text-canvas-soft">
         <path d="M4 11.5 12 4l8 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />

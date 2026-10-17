@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PhotoFill from '../ui/PhotoFill';
+import Pill from '../ui/Pill';
 import {
   Sparkles,
+  Check,
   Camera,
   Paperclip,
   Mic,
@@ -392,7 +394,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
   return (
     <div
       style={{ width: open ? 460 : 56, transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-      className="shrink-0 h-full bg-white/60 backdrop-blur-md border-r border-ink-100/80 overflow-hidden"
+      className="shrink-0 h-full bg-white border-r border-ink-100 overflow-hidden"
     >
       <AnimatePresence mode="popLayout" initial={false}>
         {open ? (
@@ -405,7 +407,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
             className="w-[460px] h-full flex flex-col"
           >
       {/* Thread header */}
-      <div className="shrink-0 px-4 py-3 border-b border-ink-100/80 flex items-center gap-2 bg-gradient-to-b from-white to-canvas-soft/20">
+      <div className="shrink-0 h-14 px-4 border-b border-ink-100 flex items-center gap-2">
         <span className="relative flex h-2 w-2 shrink-0">
           <span className={`absolute inset-0 rounded-full bg-sage-300 ${pulse ? 'animate-pulseDot' : ''}`} />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
@@ -416,16 +418,16 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
         <button
           onClick={() => onToggle(false)}
           title="Collapse the conversation"
-          className="ml-auto h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+          className="ml-auto h-7 w-7 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
         >
-          <ChevronsLeft size={13} strokeWidth={2} />
+          <ChevronsLeft size={14} strokeWidth={1.8} />
         </button>
       </div>
 
       {/* Messages */}
       <div
         ref={messagesRef}
-        className="flex-1 overflow-y-auto px-4 py-5 space-y-4 bg-gradient-to-b from-canvas-soft/30 to-white scroll-smooth"
+        className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
       >
         {visible.map((m, i) => {
           const isLast = i === visible.length - 1;
@@ -472,54 +474,28 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
         })}
 
         {atKickoff && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.35 }}
-            className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
-          >
+          <SuggestedReplies>
             {kickoffPrompts.map((p) => (
-              <button
+              <ReplyChip
                 key={p.label}
+                primary={p.primary}
                 onClick={() => {
                   setKickoffText(p.message);
                   setKickoffTitle(p.railTitle || null);
                   setKickoffClicked(true);
                 }}
-                className={
-                  p.primary
-                    ? 'h-9 px-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all'
-                    : 'h-9 px-3.5 rounded-full bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 inline-flex items-center gap-1.5 text-[12.5px] font-medium transition-all'
-                }
               >
-                {p.primary && <Sparkles size={12} strokeWidth={2.2} />}
                 {p.label}
-              </button>
+              </ReplyChip>
             ))}
-          </motion.div>
+          </SuggestedReplies>
         )}
 
         {atLadder && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
-          >
-            <button
-              onClick={() => setLadderChoice('no')}
-              className="h-9 px-3.5 rounded-full bg-white ring-1 ring-ink-200 hover:ring-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12.5px] font-medium transition-all"
-            >
-              Not now
-            </button>
-            <button
-              onClick={() => setLadderChoice('yes')}
-              className="h-9 px-3.5 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-all"
-            >
-              <Sparkles size={12} strokeWidth={2.2} />
-              Yes, plan it
-            </button>
-          </motion.div>
+          <SuggestedReplies>
+            <ReplyChip onClick={() => setLadderChoice('no')}>Not now</ReplyChip>
+            <ReplyChip primary onClick={() => setLadderChoice('yes')}>Yes, plan it</ReplyChip>
+          </SuggestedReplies>
         )}
 
         {waitingOnBoard && (
@@ -527,18 +503,18 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-1.5 justify-center text-[11px] text-ink-500 pt-1"
+            className="flex items-center gap-1.5 justify-center text-[12px] text-ink-500 pt-1"
           >
             The decision lives on the board
-            <ArrowRight size={11} strokeWidth={2} />
+            <ArrowRight size={12} strokeWidth={2} />
           </motion.div>
         )}
       </div>
 
       {/* Input dock */}
-      <div className="shrink-0 border-t border-ink-100/80 px-3 py-2.5 flex items-center gap-1.5 bg-gradient-to-t from-canvas-soft/40 to-white">
+      <div className="shrink-0 border-t border-ink-100 px-3 py-2.5 flex items-center gap-1.5">
         <button className="h-9 w-9 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-          <Paperclip size={13} strokeWidth={1.8} />
+          <Paperclip size={14} strokeWidth={1.8} />
         </button>
         <div className="relative flex-1 min-w-0">
           <input
@@ -563,7 +539,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
               }
             }}
             disabled={!inputValue.trim()}
-            className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
+            className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-xl flex items-center justify-center transition-all ${
               inputValue.trim() ? 'bg-ink-900 text-canvas-soft hover:bg-ink-700' : 'text-ink-300'
             }`}
           >
@@ -571,7 +547,7 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
           </button>
         </div>
         <button className="h-9 w-9 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0">
-          <Mic size={13} strokeWidth={1.8} />
+          <Mic size={14} strokeWidth={1.8} />
         </button>
       </div>
           </motion.div>
@@ -582,17 +558,17 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.16 }}
-            className="w-14 h-full flex flex-col items-center py-4 gap-3"
+            className="w-14 h-full flex flex-col items-center py-3.5 gap-3"
           >
             <button
               onClick={() => onToggle(true)}
               title="Open the conversation"
-              className="h-7 w-7 rounded-lg ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
+              className="h-7 w-7 rounded-xl ring-1 ring-ink-100 hover:ring-ink-200 flex items-center justify-center text-ink-500 hover:text-ink-900 transition-all shrink-0"
             >
-              <ChevronsRight size={13} strokeWidth={2} />
+              <ChevronsRight size={14} strokeWidth={1.8} />
             </button>
-            <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10 shrink-0">
-              <Sparkles size={13} strokeWidth={2.2} />
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sage-600 text-canvas-soft shrink-0">
+              <Sparkles size={14} strokeWidth={2.2} />
             </span>
             {!done && (
               <span className="relative flex h-2 w-2 shrink-0">
@@ -611,15 +587,44 @@ export default function Thread({ open, onToggle, gates, scheduledSlot, recommend
 
 const resolve = (v, ctx) => (typeof v === 'function' ? v(ctx) : v);
 
+// Receipt icon tiles stay neutral; only the icon carries the semantic tone.
 const actionAccentMap = {
-  sage: 'text-sage-600 ring-sage-100',
-  sky: 'text-sky2026-700 ring-sky2026-100',
-  ember: 'text-ember-500 ring-ember-100',
+  sage: 'text-sage-600',
+  sky: 'text-sky2026-700',
+  ember: 'text-ember-500',
 };
+
+// One recipe for every suggested-reply chip (kickoff, plan, ladder).
+const chipBase =
+  'h-9 rounded-full px-3.5 text-[12.5px] font-medium inline-flex items-center gap-1.5 transition-all';
+const chipPrimary = `${chipBase} bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark`;
+const chipSecondary = `${chipBase} bg-white ring-1 ring-ink-200 text-ink-700 hover:ring-ink-300 hover:text-ink-900`;
+
+function SuggestedReplies({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.3 }}
+      className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function ReplyChip({ primary = false, onClick, children }) {
+  return (
+    <button onClick={onClick} className={primary ? chipPrimary : chipSecondary}>
+      {primary && <Sparkles size={12} strokeWidth={2.2} />}
+      <span>{children}</span>
+    </button>
+  );
+}
 
 function AgentAvatar() {
   return (
-    <span className="shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-2xl bg-gradient-to-br from-sage-500 to-sage-700 text-canvas-soft ring-1 ring-sage-700/10">
+    <span className="shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-xl bg-sage-600 text-canvas-soft">
       <Sparkles size={12} strokeWidth={2.2} />
     </span>
   );
@@ -634,7 +639,7 @@ function DateDivider({ m }) {
       className="flex items-center gap-3 pt-2"
     >
       <span className="flex-1 h-px bg-ink-100" />
-      <span className="text-[10px] uppercase tracking-[0.2em] text-ink-500 font-semibold whitespace-nowrap">
+      <span className="text-[11px] uppercase tracking-[0.20em] font-medium text-ink-500 whitespace-nowrap">
         {m.label}
       </span>
       <span className="flex-1 h-px bg-ink-100" />
@@ -650,14 +655,14 @@ function UserMessage({ m, ctx }) {
       transition={{ duration: 0.35 }}
       className="flex items-start gap-2 justify-end"
     >
-      <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-ink-900 text-canvas-soft px-3.5 py-2.5">
-        <p className="text-[13px] leading-relaxed">{resolve(m.text, ctx)}</p>
+      <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-canvas-deep text-ink-900 hairline-inset px-3.5 py-2.5">
+        <p className="text-[14px] leading-[1.55]">{resolve(m.text, ctx)}</p>
         <div className="mt-0.5 flex items-center justify-end">
-          <span className="text-[10px] tabular-nums text-canvas-soft/60">{m.time}</span>
+          <span className="text-[11px] tabular-nums text-ink-500">{m.time}</span>
         </div>
       </div>
-      <div className="shrink-0 mt-0.5 h-7 w-7 rounded-2xl ring-1 ring-ink-100 overflow-hidden bg-gradient-to-br from-sage-200 via-sage-100 to-ember-100 flex items-center justify-center">
-        <span className="editorial text-[12px] text-sage-700">M</span>
+      <div className="shrink-0 mt-0.5 h-7 w-7 rounded-xl overflow-hidden bg-canvas-deep hairline-inset text-ink-700 flex items-center justify-center">
+        <span className="editorial editorial-xs text-[12px]">M</span>
       </div>
     </motion.div>
   );
@@ -672,18 +677,18 @@ function PhotoStrip({ m }) {
       className="flex gap-2 justify-end"
     >
       {m.photos.map((p, i) => (
-        <div key={i} className="relative w-32 h-24 rounded-2xl overflow-hidden ring-1 ring-ink-100">
+        <div key={i} className="relative w-48 h-36 rounded-2xl overflow-hidden ring-1 ring-ink-100">
           <PhotoFill photo={p.photo} tone={p.tone} />
-          <div className="absolute top-1.5 left-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-700 ring-1 ring-ink-100">
-              <ImageIcon size={9} strokeWidth={2.2} />
-              {p.label}
+          <div className="absolute top-1.5 left-1.5 right-1.5">
+            <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[12px] font-medium text-ink-700">
+              <ImageIcon size={12} strokeWidth={2} className="shrink-0" />
+              <span className="truncate">{p.label}</span>
             </span>
           </div>
           <div className="absolute bottom-1.5 left-1.5 right-1.5">
-            <span className="inline-flex items-center gap-1 rounded-md bg-ink-900/80 backdrop-blur px-1.5 py-0.5 text-[9.5px] font-semibold text-canvas-soft">
-              <Sparkles size={9} className="text-sage-200" strokeWidth={2.2} />
-              AI: {p.tag}
+            <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-sage-50 px-2 py-0.5 text-[12px] font-medium text-sage-700">
+              <Sparkles size={12} strokeWidth={2} className="shrink-0 text-sage-500" />
+              <span className="truncate">AI: {p.tag}</span>
             </span>
           </div>
         </div>
@@ -701,12 +706,12 @@ function Thinking({ m }) {
       className="flex items-center gap-2"
     >
       <AgentAvatar />
-      <div className="rounded-2xl rounded-tl-md bg-canvas-soft border border-ink-100 px-3 py-2">
+      <div className="rounded-2xl rounded-tl-md bg-white border border-ink-100 px-3 py-2">
         <div className="flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" />
           <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.2s' }} />
           <span className="h-1.5 w-1.5 rounded-full bg-ink-300 animate-pulseDot" style={{ animationDelay: '0.4s' }} />
-          <span className="ml-2 text-[11.5px] text-ink-500 italic">{m.text}</span>
+          <span className="ml-2 text-[12px] text-ink-500 italic">{m.text}</span>
         </div>
       </div>
     </motion.div>
@@ -717,24 +722,24 @@ function ActionItem({ m, ctx, onOpen }) {
   const Icon = m.icon;
   const body = (
     <>
-      <span className={`shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-xl ring-1 bg-white ${actionAccentMap[m.accent]}`}>
-        <Icon size={12} strokeWidth={1.8} />
+      <span className={`shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-xl bg-white ring-1 ring-ink-100 ${actionAccentMap[m.accent]}`}>
+        <Icon size={14} strokeWidth={1.8} />
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-900">
+          <span className="inline-flex items-center gap-1 text-[12.5px] leading-[1.5] font-medium text-ink-900">
             {resolve(m.title, ctx)}
             {m.target && (
               <ChevronRight
-                size={10}
+                size={12}
                 strokeWidth={2}
                 className="text-ink-300 group-hover:text-ink-700 group-hover:translate-x-0.5 transition-all shrink-0"
               />
             )}
           </span>
-          <span className="text-[10px] tabular-nums text-ink-500 shrink-0">{m.time}</span>
+          <span className="text-[11px] tabular-nums text-ink-500 shrink-0">{m.time}</span>
         </div>
-        <div className="text-[11px] text-ink-500 mt-0.5">{resolve(m.detail, ctx)}</div>
+        <div className="text-[12px] text-ink-500 mt-0.5">{resolve(m.detail, ctx)}</div>
       </div>
     </>
   );
@@ -764,29 +769,31 @@ function LiveIndicator({ m, ctx }) {
       className="flex items-center gap-2.5 rounded-2xl bg-canvas-soft border border-dashed border-ink-200 px-3 py-2.5 mt-1"
     >
       {m.done ? (
-        <CheckCircle2 size={13} strokeWidth={2.2} className="text-sage-600 shrink-0" />
+        <CheckCircle2 size={14} strokeWidth={1.8} className="text-sage-600 shrink-0" />
       ) : (
         <span className="relative flex h-2 w-2 shrink-0">
           <span className="absolute inset-0 rounded-full bg-sage-300 animate-pulseDot" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-sage-500" />
         </span>
       )}
-      <div className="flex-1 text-[12px] text-ink-700">{resolve(m.text, ctx)}</div>
-      <span className="text-[10px] text-ink-500 shrink-0">{m.eta}</span>
+      <div className="flex-1 text-[12px] font-medium text-ink-700">{resolve(m.text, ctx)}</div>
+      <span className="text-[12px] text-ink-500 shrink-0">{m.eta}</span>
     </motion.div>
   );
 }
 
 function UrgencyPick({ m, selectedId, onSelect, locked }) {
+  // Semantic tones stay; unselected is the tint alone (no inner stroke),
+  // selected adds the tone's 300 ring and a leading check.
   const toneMap = {
-    ember: 'bg-ember-50 text-ember-500 ring-ember-100',
-    sage: 'bg-sage-50 text-sage-600 ring-sage-100',
-    sky: 'bg-sky2026-50 text-sky2026-700 ring-sky2026-100',
+    ember: 'bg-ember-50 text-ember-500',
+    sage: 'bg-sage-50 text-sage-600',
+    sky: 'bg-sky2026-50 text-sky2026-700',
   };
   const selectedTone = {
-    ember: 'bg-ember-500 text-white ring-ember-500',
-    sage: 'bg-sage-500 text-white ring-sage-500',
-    sky: 'bg-sky2026-500 text-white ring-sky2026-500',
+    ember: 'bg-ember-50 text-ember-500 ring-1 ring-ember-300',
+    sage: 'bg-sage-50 text-sage-600 ring-1 ring-sage-300',
+    sky: 'bg-sky2026-50 text-sky2026-700 ring-1 ring-sky2026-300',
   };
   const options = [
     { id: 'urgent', label: 'Active leak now', tone: 'ember', icon: Flame, sub: 'Get someone today' },
@@ -802,7 +809,7 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
     >
       <AgentAvatar />
       <div className="flex-1 min-w-0 rounded-2xl rounded-tl-md bg-white border border-ink-100 px-3.5 py-3">
-        <p className="text-[13px] leading-relaxed text-ink-900">{m.text}</p>
+        <p className="text-[14px] leading-[1.55] text-ink-900">{m.text}</p>
         <div className="mt-2.5 space-y-1.5">
           {options.map((o) => {
             const Icon = o.icon;
@@ -812,19 +819,23 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
                 key={o.id}
                 onClick={() => !locked && onSelect?.(o.id)}
                 disabled={locked}
-                className={`w-full rounded-xl px-2.5 py-2 text-left ring-1 transition-all flex items-center gap-2 ${
+                className={`w-full rounded-xl px-2.5 py-2 text-left transition-all flex items-center gap-2 ${
                   isSelected ? selectedTone[o.tone] : toneMap[o.tone]
                 } ${locked && !isSelected ? 'opacity-40' : ''}`}
               >
-                <Icon size={12} strokeWidth={2} className="shrink-0" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.08em] flex-1">{o.label}</span>
-                <span className={`text-[10.5px] ${isSelected ? 'text-white/80' : 'opacity-70'}`}>{o.sub}</span>
+                {isSelected ? (
+                  <Check size={12} strokeWidth={2} className="shrink-0" />
+                ) : (
+                  <Icon size={12} strokeWidth={2} className="shrink-0" />
+                )}
+                <span className="text-[12.5px] font-medium flex-1">{o.label}</span>
+                <span className="text-[12px] opacity-70">{o.sub}</span>
               </button>
             );
           })}
         </div>
         <div className="mt-1.5 flex items-center justify-end">
-          <span className="text-[10px] tabular-nums text-ink-500">{m.time}</span>
+          <span className="text-[11px] tabular-nums text-ink-500">{m.time}</span>
         </div>
       </div>
     </motion.div>
@@ -834,27 +845,10 @@ function UrgencyPick({ m, selectedId, onSelect, locked }) {
 function ChipsRow({ onFocusInput, onGenerate, locked }) {
   if (locked) return null;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.15 }}
-      className="pt-1 flex flex-wrap items-center gap-1.5 justify-end"
-    >
-      <button
-        onClick={onFocusInput}
-        className="h-8 px-3 rounded-full bg-white border border-ink-200 hover:border-ink-300 hover:bg-canvas-soft text-ink-700 hover:text-ink-900 text-[12px] font-medium transition-all"
-      >
-        Adjust the plan
-      </button>
-      <button
-        onClick={onGenerate}
-        className="group h-8 pl-2.5 pr-3 rounded-full bg-ink-900 hover:bg-ink-700 text-canvas-soft hairline-on-dark grain-dark inline-flex items-center gap-1.5 text-[12px] font-semibold transition-all"
-      >
-        <Sparkles size={11} strokeWidth={2.2} />
-        Looks good, start
-        <ArrowRight size={10} strokeWidth={2.2} className="opacity-70 group-hover:translate-x-0.5 transition-transform" />
-      </button>
-    </motion.div>
+    <SuggestedReplies>
+      <ReplyChip onClick={onFocusInput}>Adjust the plan</ReplyChip>
+      <ReplyChip primary onClick={onGenerate}>Looks good, start</ReplyChip>
+    </SuggestedReplies>
   );
 }
 
@@ -869,23 +863,23 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
       <AgentAvatar />
       <div className="flex-1 min-w-0 max-w-[88%] space-y-2">
         <div className="rounded-2xl rounded-tl-md bg-white border border-ink-100 px-3.5 py-2.5">
-          <p className="text-[13px] leading-relaxed text-ink-900">{m.text}</p>
+          <p className="text-[14px] leading-[1.55] text-ink-900">{m.text}</p>
 
           {m.plan && (
-            <ol className="mt-2.5 space-y-1.5">
+            <ol className="mt-2.5 rounded-xl bg-canvas-soft divide-y divide-ink-100">
               {m.plan.map((step, i) => (
-                <li key={i} className="flex items-center gap-2.5 rounded-xl bg-canvas-soft border border-ink-100 px-2.5 py-2">
-                  <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage-100 text-sage-700 text-[10px] font-bold tabular-nums">
+                <li key={i} className="flex items-center gap-2.5 px-3 py-2.5">
+                  <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-canvas-deep text-ink-700 text-[12px] font-medium tabular-nums">
                     {i + 1}
                   </span>
-                  <span className="flex-1 min-w-0 leading-tight">
-                    <span className="block text-[12.5px] font-medium text-ink-900">{step.label}</span>
-                    <span className="block text-[11px] text-ink-500 mt-0.5">{step.sub}</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[12.5px] leading-[1.5] font-medium text-ink-900">{step.label}</span>
+                    <span className="block text-[12px] text-ink-500 mt-0.5">{step.sub}</span>
                   </span>
                   {step.gate && (
-                    <span className="shrink-0 inline-flex items-center rounded-full bg-sage-50 ring-1 ring-sage-100 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-sage-700">
+                    <Pill tone="sage" className="shrink-0">
                       Asks you first
-                    </span>
+                    </Pill>
                   )}
                 </li>
               ))}
@@ -893,52 +887,52 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
           )}
 
           {m.photoRequest && (
-            <div className="mt-2.5 rounded-xl bg-canvas-soft border border-dashed border-ink-200 p-2.5">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">
-                <Camera size={10} className="text-sage-600" />
+            <div className="mt-2.5 rounded-xl bg-canvas-soft p-2.5">
+              <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink-500 mb-2">
+                <Camera size={12} strokeWidth={2} />
                 {uploaded ? 'Photo checked' : 'Photo requested'}
               </div>
-              <div className={`flex items-start gap-2 rounded-lg px-2 py-1.5 ${uploaded ? '' : 'bg-white ring-1 ring-sage-100'}`}>
+              <div className={`flex items-start gap-2 rounded-lg px-2 py-1.5 ${uploaded ? '' : 'bg-white'}`}>
                 <span
-                  className={`shrink-0 mt-0.5 inline-flex h-[17px] w-[17px] items-center justify-center rounded-md ring-1 ${
-                    uploaded ? 'bg-sage-500 text-white ring-sage-500' : 'bg-white text-sage-600 ring-sage-100'
+                  className={`shrink-0 mt-px inline-flex h-5 w-5 items-center justify-center rounded-lg ${
+                    uploaded ? 'bg-sage-50 text-sage-600' : 'bg-canvas-deep text-ink-700'
                   }`}
                 >
-                  {uploaded ? <CheckCircle2 size={10} strokeWidth={2.5} /> : <Camera size={9} strokeWidth={2.2} />}
+                  {uploaded ? <CheckCircle2 size={12} strokeWidth={2} /> : <Camera size={12} strokeWidth={2} />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-medium text-ink-900 leading-snug">{m.photoRequest.label}</div>
-                  <div className="text-[11px] text-ink-500 leading-snug">{m.photoRequest.instruction}</div>
+                  <div className="text-[12.5px] leading-[1.5] font-medium text-ink-900">{m.photoRequest.label}</div>
+                  <div className="text-[12px] text-ink-500">{m.photoRequest.instruction}</div>
                   {uploaded && (
-                    <div className="mt-1 inline-flex items-center gap-1 text-[10.5px] text-sage-700">
-                      <Sparkles size={9} className="text-sage-500" strokeWidth={2.2} />
-                      {m.photoRequest.read}
+                    <div className="mt-1 flex items-start gap-1.5 text-[12px] leading-[1.5] text-sage-700">
+                      <Sparkles size={12} className="shrink-0 mt-[3px] text-sage-500" strokeWidth={2} />
+                      <span>{m.photoRequest.read}</span>
                     </div>
                   )}
                 </div>
               </div>
               {uploaded ? (
-                <div className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-sage-700">
-                  <CheckCircle2 size={12} strokeWidth={2.2} />
+                <div className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-sage-700">
+                  <CheckCircle2 size={12} strokeWidth={2} />
                   Photo received
                 </div>
               ) : (
                 <button
                   onClick={onUpload}
                   disabled={uploading}
-                  className={`mt-2.5 w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-lg transition-all text-[12px] font-semibold ${
+                  className={`mt-2.5 w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-xl hairline-on-dark grain-dark transition-all text-[12.5px] font-medium ${
                     uploading ? 'bg-ink-900/70 text-canvas-soft/80 cursor-wait' : 'bg-ink-900 text-canvas-soft hover:bg-ink-700'
                   }`}
                 >
                   {uploading ? (
                     <>
-                      <Loader2 size={12} strokeWidth={2.2} className="animate-spin" />
-                      Checking photo…
+                      <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+                      <span>Checking photo…</span>
                     </>
                   ) : (
                     <>
                       <Camera size={12} strokeWidth={2} />
-                      Upload photo
+                      <span>Upload photo</span>
                     </>
                   )}
                 </button>
@@ -949,8 +943,8 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
           {m.follow && (
             <ol className="mt-2.5 space-y-1.5">
               {m.follow.map((f, i) => (
-                <li key={i} className="flex items-start gap-2 text-[12.5px] text-ink-700 leading-snug">
-                  <span className="shrink-0 mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-sage-100 text-sage-700 text-[9.5px] font-bold tabular-nums">
+                <li key={i} className="flex items-start gap-2 text-[12.5px] text-ink-700 leading-5">
+                  <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-canvas-deep text-ink-700 text-[12px] font-medium tabular-nums">
                     {i + 1}
                   </span>
                   <span>{f}</span>
@@ -960,17 +954,17 @@ function AgentMessage({ m, uploaded, uploading, onUpload }) {
           )}
 
           <div className="mt-1.5 flex items-center justify-end">
-            <span className="text-[10px] tabular-nums text-ink-500">{m.time}</span>
+            <span className="text-[11px] tabular-nums text-ink-500">{m.time}</span>
           </div>
         </div>
 
         {m.summary && (
-          <div className="rounded-xl bg-canvas-soft border border-ink-100 p-3">
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold mb-1.5">
-              <CheckCircle2 size={10} className="text-sage-600" />
+          <div className="rounded-2xl bg-canvas-soft border border-ink-100 p-3">
+            <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink-500 mb-1.5">
+              <CheckCircle2 size={12} strokeWidth={2} className="text-sage-600" />
               Scoped as
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11.5px]">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[12px]">
               <div className="text-ink-500">Job</div>
               <div className="text-ink-900 font-medium">{m.summary.job}</div>
               <div className="text-ink-500">Scope</div>

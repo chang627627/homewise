@@ -36,7 +36,7 @@ export default function Button({
   if (variant === 'hero') {
     return (
       <button
-        className={`group inline-flex items-center justify-center gap-2.5 h-12 pl-5 pr-3 rounded-2xl text-[13.5px] font-semibold tracking-[-0.005em] bg-ink-900 text-canvas-soft hover:bg-ink-700 hairline-on-dark grain-dark transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none ${className}`}
+        className={`group inline-flex items-center justify-center gap-2.5 h-12 pl-5 pr-3 rounded-2xl text-[13.5px] font-semibold tracking-[-0.005em] bg-ink-900 text-canvas-soft hover:bg-ink-700 hairline-on-dark grain-dark transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-300 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${className}`}
         {...rest}
       >
         {Icon && <Icon size={14} strokeWidth={2} />}
@@ -52,7 +52,7 @@ export default function Button({
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-300 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas ${variants[variant]} ${sizes[size]} ${className}`}
       {...rest}
     >
       {Icon && <Icon size={16} strokeWidth={1.8} />}
