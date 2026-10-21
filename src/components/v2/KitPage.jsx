@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronsLeft, Download, Maximize2, Mic, PanelLeftClose, PanelLeftOpen, Paperclip, Plus } from 'lucide-react';
 import {
   AI_PICK_ID,
   AT,
   CLOSEOUT_PHOTOS,
   CONTRACTORS,
   DEFAULT_AVAILABILITY,
-  DEFAULT_BOOKING,
-  GUTTERS_PLAN,
-  HOME,
   INTAKE,
-  JOB,
   NEW_TO_HOMEWISE_BELOW,
   PLAN,
   QUOTE_ROWS,
@@ -19,372 +14,218 @@ import {
   SCOPE_TOTALS,
   STATUS,
   WINDOWS,
-  contractorRationale,
   defaultPick,
-  describeBooking,
   fmtUsd,
   getContractor,
   keepTogether,
   recommendCount,
   slotsFor,
 } from '../../data/demo';
-import Avatar from './Avatar';
 import Button from './Button';
 import Chip from './Chip';
 import DecisionBar from './DecisionBar';
 import Drawer from './Drawer';
 import Evidence, { EvidenceContext, EvidenceScope, useEvidenceController, useEvidenceHandlers } from './Evidence';
-import HouseMark from './HouseMark';
-import IconButton from './IconButton';
-import Kbd from './Kbd';
-import LabelValue from './LabelValue';
 import Matrix, { Absent, Exception, GroupLabel, Included, MatrixCorner, MatrixFooter, MatrixHeader, MatrixRow, Outlier, RowLabel, ValueCell } from './Matrix';
 import Photo from './Photo';
 import { RadioGroup } from './Radio';
 import RangeRail from './RangeRail';
-import Row from './Row';
 import SectionHeading from './SectionHeading';
-import { Dot, StatusGlyph, StatusText } from './Status';
+import { StatusGlyph, StatusText } from './Status';
 import Tabs from './Tabs';
 import Toggle from './Toggle';
-import Tooltip from './Tooltip';
-import useScrolled from './useScrolled';
 import { collapse, enter, fade } from './motion';
 
-// /kit: every V2 primitive in every state, on the real surfaces (canvas-v2
-// chrome on the left, the white Stage panel on the right). Review page only.
+// /kit: the V2 design system as one plain page. Four role boards (color, type,
+// status, controls), each value with its job, then the real components on
+// their own boards. No Rail or Thread: the system reads on its own.
 
 const pick = getContractor(AI_PICK_ID);
-const STATES = ['working', 'needs-you', 'waiting', 'done', 'idle'];
 // Sink progress steps: the plan marks up to and including the booking.
 const PROGRESS_STEPS = PLAN.findIndex((p) => p.mark === 'booked') + 1;
 const currentOf = (key) => {
   const n = CONTRACTORS.filter((c) => c[key].ok).length;
   return n === CONTRACTORS.length ? `all ${n} current` : `${n} of ${CONTRACTORS.length} current`;
 };
-const link = 'text-ui font-medium text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline';
 
 function Label({ id, children }) {
   return <div id={id} className="mb-2 text-meta font-medium text-ink-500">{children}</div>;
 }
 
-function Section({ title, meta, children }) {
+function Board({ title, meta, children }) {
   return (
-    <section className="mt-10 first:mt-0">
-      <SectionHeading title={title} meta={meta} />
-      {children}
+    <section className="rounded-xl bg-white px-5 py-6 ring-1 ring-line sm:px-8 sm:py-7">
+      <div className="mb-5 border-b border-line pb-4">
+        <h2 className="text-heading text-ink-900">{title}</h2>
+        {meta && <p className="mt-1 text-meta text-ink-500">{meta}</p>}
+      </div>
+      <div>{children}</div>
     </section>
   );
 }
 
-// ── Chrome (canvas-v2) ───────────────────────────────────────────────────────
-
-function RailSamples() {
-  const [selected, setSelected] = useState('draft');
-  const sink = STATUS['quotes-in'];
-  const booked = describeBooking(DEFAULT_BOOKING);
+function Group({ title, children }) {
   return (
-    <div className="flex flex-col px-3 lg:sticky lg:top-0 lg:h-screen">
-      <div className="flex h-14 items-center gap-1">
-        <Row lead={<HouseMark />} title={HOME.name} selected={selected === 'home'} onClick={() => setSelected('home')} />
-        <IconButton icon={PanelLeftClose} label="Collapse sidebar" />
-      </div>
-      <div className="mt-4">
-        <div className="flex h-8 items-center justify-between pl-2">
-          <span className="text-meta font-medium text-ink-500">Tasks</span>
-          <IconButton size="sm" icon={Plus} label="New task" />
-        </div>
-        <div className="space-y-px">
-          <Row lead={<StatusGlyph state="idle" />} title="New task" selected={selected === 'draft'} onClick={() => setSelected('draft')} />
-          <Row lead={<StatusGlyph state={STATUS.booked.state} />} title={JOB.name} meta={booked.slot.day} selected={selected === 'sink'} onClick={() => setSelected('sink')} />
-          <Row lead={<StatusGlyph state={sink.state} />} title={sink.label} />
-          <Row lead={<StatusGlyph state="working" progress={0.125} />} title="Working, 1/8 pie" onClick={() => setSelected('w')} selected={selected === 'w'} />
-          <Row lead={<StatusGlyph state="waiting" />} title="Waiting, with meta" meta={GUTTERS_PLAN.short} />
-          <Row lead={<StatusGlyph state="done" />} title="Done, muted" muted />
-          <Row lead={<HouseMark />} title="Evidence preview" preview />
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <Label>Collapsed, 56px</Label>
-        <div className="w-14 space-y-px border-r border-line px-3">
-          <IconButton icon={PanelLeftOpen} label="Open sidebar" side="right" />
-          <Row collapsed lead={<HouseMark />} title={HOME.name} />
-          <Row collapsed lead={<StatusGlyph state={sink.state} />} title={JOB.name} tooltip={`${JOB.name} · ${sink.label}`} selected />
-          <Row collapsed lead={<StatusGlyph state="working" progress={0.25} />} title="AC task" tooltip={`AC task · ${STATUS.scoping.label}`} />
-        </div>
-      </div>
-
-      <div className="mt-auto flex h-14 items-center gap-2 px-2">
-        <Avatar />
-        <span className="truncate text-ui font-medium">{`${HOME.owner.first} ${HOME.owner.last}`}</span>
-      </div>
+    <div className="mt-6 border-t border-line pt-5 first:mt-0 first:border-t-0 first:pt-0">
+      <div className="mb-4 text-ui text-ink-500">{title}</div>
+      {children}
     </div>
   );
 }
 
-function ThreadSamples() {
-  const [pins, setPins] = useState(true);
-  const [scrolled, onScroll] = useScrolled();
+// One row of a role table: the token, a real example, its spec and job.
+function RoleRow({ token, example, spec }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col">
-      <div className={`flex h-14 shrink-0 items-center border-b px-5 transition-colors duration-150 ${scrolled ? 'border-line' : 'border-transparent'}`}>
-        <span className="min-w-0 flex-1 truncate text-ui font-medium">{JOB.name}</span>
-        <IconButton icon={ChevronsLeft} label="Collapse conversation" />
-      </div>
-      <div onScroll={onScroll} className="space-y-6 px-5 pb-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-        <div>
-          <Label>Status glyphs (14px), live arc in the composer</Label>
-          <div className="space-y-1">
-            {STATES.map((s) => (
-              <div key={s} className="flex h-6 items-center gap-2 text-meta text-ink-700">
-                <StatusGlyph state={s} />
-                {s}
-              </div>
-            ))}
+    <div className="grid gap-x-6 gap-y-2 border-t border-line py-4 first:border-t-0 first:pt-0 last:pb-0 lg:grid-cols-[132px_minmax(0,1fr)_260px] lg:items-center">
+      <span className="text-meta tabular-nums text-ink-500">{token}</span>
+      <div className="min-w-0">{example}</div>
+      <span className="text-meta text-ink-500">{spec}</span>
+    </div>
+  );
+}
+
+// ── Color ────────────────────────────────────────────────────────────────────
+
+const SURFACES = [
+  ['canvas-v2', 'bg-canvas-v2 ring-1 ring-inset ring-line', '#F4F3EE', 'Rail, conversation, gutters'],
+  ['white', 'bg-white ring-1 ring-inset ring-line', '#FFFFFF', 'The board, composer, drawers'],
+  ['ink-900', 'bg-ink-900', '#1A1A17', 'Text, and the one primary fill per pane'],
+  ['ink-700', 'bg-ink-700', '#3C3C38', 'Links, matrix values'],
+  ['ink-500', 'bg-ink-500', '#6B6B65', 'Meta, row labels, status sentences'],
+  ['ink-300', 'bg-ink-300', '#A8A8A1', 'The idle ring'],
+  ['line', 'bg-line', 'ink at 9%', 'The only rule color: borders, dividers, rings'],
+  ['shade-1, 2, 3', 'bg-shade-2', 'ink at 4, 7, 10%', 'Hover, selected and secondary, secondary hover'],
+];
+
+const MEANING = [
+  ['sage-wash', 'bg-sage-wash', '#ECF0E7', 'The pick panel, a done day'],
+  ['sage-500', 'bg-sage-500', '#4F6942', 'Working pie, done check'],
+  ['sage-600', 'bg-sage-600', '#3D5333', 'Working and done words'],
+  ['ember-wash', 'bg-ember-wash', '#FBF0E3', 'The exception cell'],
+  ['ember-400', 'bg-ember-400', '#B98132', 'Needs-you dot, the tab dot'],
+  ['ember-500', 'bg-ember-500', '#8E601E', 'Needs-you words, the exception, an outlier fee'],
+  ['sky2026-wash', 'bg-sky2026-wash', '#ECF2F4', 'The booked day'],
+  ['sky2026-500, 700', 'bg-sky2026-500', '#4E6F7A, #2E4850', 'Waiting ring and words'],
+];
+
+function Roles({ items }) {
+  return (
+    <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map(([name, cls, hex, job]) => (
+        <div key={name} className="grid grid-cols-[40px_minmax(0,1fr)] gap-3">
+          <div className={`h-10 w-10 rounded-lg ${cls}`} />
+          <div className="min-w-0">
+            <div className="text-ui font-medium text-ink-900">{name}</div>
+            <div className="text-meta tabular-nums text-ink-500">{hex}</div>
+            <div className="mt-1 text-meta text-ink-700">{job}</div>
           </div>
         </div>
-        <div>
-          <Label>Working pie by progress</Label>
-          <div className="flex items-center gap-3 text-meta tabular-nums text-ink-500">
-            {[0, 0.25, 0.5, 0.75, 1].map((p) => (
-              <span key={p} className="inline-flex items-center gap-1.5">
-                <StatusGlyph state="working" progress={p} />
-                {p * 4}/4
-              </span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <Label>Keycaps</Label>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3].map((n) => <Kbd key={n}>{n}</Kbd>)}
-            <Kbd>Esc</Kbd>
-          </div>
-        </div>
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-meta font-medium text-ink-500">User photos, 160px, pinned</span>
-            <button type="button" onClick={() => setPins((v) => !v)} className="text-meta font-medium text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline">
-              {pins ? 'Hide pins' : 'Show pins'}
-            </button>
-          </div>
-          <div className="flex justify-end gap-2">
-            {INTAKE.photos.map((p) => (
-              <Photo key={p.id} photo={p.photo} label={p.label} pin pinVisible={pins} className="w-[160px]" />
-            ))}
-          </div>
-        </div>
-        <div>
-          <Label>Tooltip sides</Label>
-          <div className="flex items-center gap-1">
-            <IconButton icon={Paperclip} label="Attach (top)" side="top" />
-            <IconButton icon={Mic} label="Dictate (right)" side="right" />
-            <IconButton icon={Download} label="Export PDF (bottom)" side="bottom" />
-            <IconButton icon={Maximize2} label="Focus (left)" side="left" />
-            <IconButton size="sm" icon={ChevronDown} label="Show plan (sm)" side="top" />
-          </div>
-          <p className="mt-2 text-meta text-ink-500">Hover one, then slide to the next: the second opens at once.</p>
-        </div>
-      </div>
-      <div className="mx-3 mb-3 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-line">
-        <div className="flex h-10 items-center gap-2 border-b border-line px-3">
+      ))}
+    </div>
+  );
+}
+
+function ColorBoard() {
+  return (
+    <Board title="Color roles" meta="The whole V2 allowlist · one rule color · color only where it means something">
+      <Group title="Surfaces and ink"><Roles items={SURFACES} /></Group>
+      <Group title="Meaning"><Roles items={MEANING} /></Group>
+    </Board>
+  );
+}
+
+// ── Type ─────────────────────────────────────────────────────────────────────
+
+function TypeBoard() {
+  const quotes = CONTRACTORS.map((c) => fmtUsd(c.quote.total)).join(' · ');
+  return (
+    <Board title="Type roles" meta="Geist 400, 500 and 600 only · five sizes · sentence case, upright">
+      <RoleRow token="text-title" example={<span className="text-title text-balance">{`${pick.name} is the pick`}</span>} spec="26/32 · 600 · One per view, the answer, not a label" />
+      <RoleRow token="text-figure" example={<span className="text-figure tabular-nums">{quotes}</span>} spec="20/24 · 600 · Prices and totals, tabular figures" />
+      <RoleRow token="text-heading" example={<span className="text-heading">Why these three</span>} spec="16/24 · 600 · Sections on the board, drawer titles" />
+      <RoleRow token="text-ui" example={<span className="text-ui text-pretty">{`${pick.short} is my pick: the highest rating and the most jobs like this one.`}</span>} spec="14/20 · 400 · Rows, prose, matrix cells, tabs, inputs" />
+      <RoleRow token="text-ui 500" example={<span className="text-ui font-medium">{pick.name}</span>} spec="14/20 · 500 · Names, status words, buttons" />
+      <RoleRow token="text-meta" example={<span className="text-meta text-ink-500">{`Matched by Homewise · ${AT.prosMatched}`}</span>} spec="12/16 · 400 · Timestamps, row meta, captions" />
+    </Board>
+  );
+}
+
+// ── Status ───────────────────────────────────────────────────────────────────
+
+function StatusLine({ state, live, progress, word, sentence }) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      {live ? (
+        <span className="inline-flex items-center gap-1.5 text-ui font-medium text-ink-900">
           <StatusGlyph state="working" live />
-          <span className="min-w-0 flex-1 truncate text-ui font-medium">Drafting the scope</span>
-          <span className="text-meta tabular-nums text-ink-500">{`Step 1 of ${PROGRESS_STEPS}`}</span>
-        </div>
-        <div className="flex items-center gap-1 p-1.5">
-          <IconButton size="sm" icon={Paperclip} label="Attach" side="top" />
-          <span className="min-h-7 flex-1 px-1.5 py-1 text-ui text-ink-300">Reply to Homewise</span>
-          <IconButton size="sm" icon={Mic} label="Dictate" side="top" />
-        </div>
-      </div>
+          <span className="self-baseline">{word}</span>
+        </span>
+      ) : (
+        <StatusText state={state} progress={progress}>{word}</StatusText>
+      )}
+      {sentence && <span className="text-ui text-ink-500">{sentence}</span>}
     </div>
   );
 }
 
-// ── Stage (white panel) ──────────────────────────────────────────────────────
+function StatusBoard() {
+  return (
+    <Board title="Status" meta="Glyphs instead of pills · colored by who holds the ball · 14px">
+      <RoleRow token="working" example={<StatusLine state="working" progress={0.5} word={STATUS.scoping.label} sentence="From your photos and answers" />} spec="Sage pie, filled by progress · the agent has the ball" />
+      <RoleRow token="needs-you" example={<StatusLine state="needs-you" word={STATUS['scope-ready'].label} sentence="Edit anything before contractors see it" />} spec="Ember dot · you have the ball" />
+      <RoleRow token="waiting" example={<StatusLine state="waiting" word={STATUS.booked.label} sentence={`${pick.name}, 2-hour window`} />} spec="Dashed sky ring · someone else has the ball" />
+      <RoleRow token="done" example={<StatusLine state="done" word="Approved" sentence={AT.scopeApproved} />} spec="Sage disc with a check · a finished step folds to one line" />
+      <RoleRow token="idle" example={<StatusLine state="idle" word="Not started" />} spec="Ink-300 ring · not unlocked yet" />
+      <RoleRow token="live" example={<StatusLine live word="Drafting the scope" sentence={`Step 1 of ${PROGRESS_STEPS}`} />} spec="The spinning arc, the app's one loop, in one place" />
+    </Board>
+  );
+}
 
-function StageHeader() {
-  const [active, setActive] = useState('scope');
-  const [preview, setPreview] = useState(null);
+// ── Controls ─────────────────────────────────────────────────────────────────
+
+function ControlsBoard() {
+  const [windows, setWindows] = useState(DEFAULT_AVAILABILITY);
+  const [slot, setSlot] = useState(defaultPick(AI_PICK_ID)?.id ?? null);
+  const [share, setShare] = useState(false);
+  const [tab, setTab] = useState('scope');
+  const slots = slotsFor(AI_PICK_ID, windows);
+  const toggle = (id) => setWindows((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]));
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    { id: 'scope', label: 'Scope', needsYou: true },
+    { id: 'scope', label: 'Scope' },
     { id: 'contractors', label: 'Contractors', needsYou: true },
     { id: 'quotes', label: 'Quotes' },
   ];
   return (
-    <div className="flex h-10 shrink-0 items-stretch justify-between gap-6 border-b border-line px-6">
-      <Tabs tabs={tabs} active={active} preview={preview} onSelect={setActive} />
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onPointerEnter={() => setPreview('quotes')}
-          onPointerLeave={() => setPreview(null)}
-          className="mr-2 hidden text-meta tabular-nums text-ink-500 hover:text-ink-900 lg:block"
-        >
-          {`Drafted ${AT.scopeDrafted} · ${SCOPE.ref}`}
-        </button>
-        <IconButton icon={Download} label="Export PDF" />
-        <IconButton icon={Maximize2} label="Focus" />
-      </div>
-    </div>
-  );
-}
-
-function TypeSamples() {
-  const rows = [
-    ['text-title', <span className="text-title text-balance">{`${pick.name} is the pick`}</span>],
-    ['text-figure', <span className="text-figure tabular-nums">{fmtUsd(SCOPE_TOTALS.total)}</span>],
-    ['text-heading', <span className="text-heading">Why these three</span>],
-    ['text-ui', <span className="text-ui">Rows, prose, matrix cells, buttons, tabs, inputs.</span>],
-    ['text-ui 500', <span className="text-ui font-medium">{pick.name}</span>],
-    ['text-meta', <span className="text-meta text-ink-500">{`Matched by Homewise · ${AT.prosMatched}`}</span>],
-  ];
-  return (
-    <div className="divide-y divide-line">
-      {rows.map(([name, sample]) => (
-        <div key={name} className="grid grid-cols-[120px_minmax(0,1fr)] items-baseline gap-4 py-3">
-          <span className="text-meta tabular-nums text-ink-500">{name}</span>
-          {sample}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const SWATCHES = [
-  ['canvas-v2', 'bg-canvas-v2'],
-  ['white', 'bg-white ring-1 ring-inset ring-line'],
-  ['ink-900', 'bg-ink-900'],
-  ['ink-700', 'bg-ink-700'],
-  ['ink-500', 'bg-ink-500'],
-  ['ink-300', 'bg-ink-300'],
-  ['ink-200', 'bg-ink-200'],
-  ['line', 'bg-line'],
-  ['shade-1', 'bg-shade-1'],
-  ['shade-2', 'bg-shade-2'],
-  ['shade-3', 'bg-shade-3'],
-  ['sage-wash', 'bg-sage-wash'],
-  ['sage-500', 'bg-sage-500'],
-  ['sage-600', 'bg-sage-600'],
-  ['ember-wash', 'bg-ember-wash'],
-  ['ember-400', 'bg-ember-400'],
-  ['ember-500', 'bg-ember-500'],
-  ['sky2026-wash', 'bg-sky2026-wash'],
-  ['sky2026-500', 'bg-sky2026-500'],
-  ['sky2026-700', 'bg-sky2026-700'],
-];
-
-function ColorSamples() {
-  return (
-    <div className="grid grid-cols-3 gap-x-4 gap-y-3 sm:grid-cols-5">
-      {SWATCHES.map(([name, cls]) => (
-        <div key={name}>
-          <div className={`h-10 rounded-md ${cls}`} />
-          <div className="mt-1.5 text-meta text-ink-500">{name}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ButtonSamples() {
-  return (
-    <div className="space-y-5">
-      {['md', 'sm'].map((size) => (
-        <div key={size}>
-          <Label>{size === 'md' ? 'md, 36px' : 'sm, 32px'}</Label>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button size={size}>Primary</Button>
-            <Button size={size} variant="secondary">Secondary</Button>
-            <Button size={size} variant="ghost">Ghost</Button>
-            <Button size={size} disabled>Disabled</Button>
-            <Button size={size} variant="secondary" as="a" href={`tel:${pick.phone.replace(/\D/g, '')}`}>{`Call ${pick.short}`}</Button>
+    <Board title="Controls" meta="Text only · at most one primary visible per screen · disabled is 40% opacity">
+      <RoleRow token="Primary" example={<Button>Approve and find contractors</Button>} spec="36px · the decision, one per screen" />
+      <RoleRow token="Secondary" example={<div className="flex flex-wrap gap-2"><Button variant="secondary">{`Book ${keepTogether(defaultPick(CONTRACTORS[1].id)?.label || '')}`}</Button><Button variant="secondary">{`Call ${pick.short}`}</Button></div>} spec="Shade-2 fill · every other action" />
+      <RoleRow token="Ghost" example={<div className="flex flex-wrap gap-2"><Button variant="ghost">Edit scope</Button><Button variant="ghost">{`Reject all ${CONTRACTORS.length}`}</Button></div>} spec="Text only · the quiet option beside the primary" />
+      <RoleRow token="Disabled" example={<Button disabled>Close out the job</Button>} spec="Until the last question is answered" />
+      <RoleRow token="Tabs" example={<div className="flex h-10 items-stretch border-b border-line"><Tabs tabs={tabs} active={tab} onSelect={setTab} label="Board views" /></div>} spec="A tab unlocks as the job moves, a dot when it needs you" />
+      <RoleRow token="Chips" example={<div className="flex flex-wrap gap-1">{WINDOWS.map((w) => <Chip key={w.id} on={windows.includes(w.id)} onClick={() => toggle(w.id)}>{w.label}</Chip>)}</div>} spec="Fill only · your times" />
+      <RoleRow
+        token="Radio"
+        example={slots.length ? (
+          <RadioGroup label={`${pick.short}'s slots`} value={slot} onChange={setSlot} options={slots.map((s) => ({ value: s.id, label: keepTogether(s.label) }))} />
+        ) : <span className="text-meta text-ink-500">No overlap with your times</span>}
+        spec="A slot per column · the Book button follows"
+      />
+      <RoleRow
+        token="Toggle"
+        example={(
+          <div className="flex items-center justify-between gap-6 sm:max-w-[420px]">
+            <span id="kit-share" className="text-ui text-ink-900">{`Share these photos in ${pick.short}'s showcase?`}</span>
+            <Toggle on={share} onChange={setShare} labelledBy="kit-share" />
           </div>
-        </div>
-      ))}
-      <div>
-        <Label>Full width, links</Label>
-        <div className="grid max-w-[480px] grid-cols-3 gap-3">
-          {CONTRACTORS.map((c) => (
-            <Button key={c.id} size="sm" full variant={c.aiPick ? 'primary' : 'secondary'}>
-              {`Book ${keepTogether(defaultPick(c.id)?.label || '')}`}
-            </Button>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center gap-5">
-          <button type="button" className={link}>Reschedule</button>
-          <button type="button" className="text-ui font-medium text-ink-500 underline-offset-4 hover:text-ink-900 hover:underline">Cancel visit</button>
-          <button type="button" className="text-meta font-medium text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline">See work</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatusSamples() {
-  return (
-    <div className="space-y-3">
-      {STATES.map((s) => (
-        <div key={s} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <StatusText state={s} progress={0.5}>{Object.values(STATUS).find((x) => x.state === s)?.label || 'Not started'}</StatusText>
-          <span className="text-ui text-ink-500">Status line sentence in ink-500</span>
-        </div>
-      ))}
-      <div className="flex items-center gap-2 text-ui text-ink-500">
-        <Dot />
-        Dot, on a non-active tab only
-      </div>
-    </div>
-  );
-}
-
-function ControlSamples() {
-  const [windows, setWindows] = useState(DEFAULT_AVAILABILITY);
-  const [slot, setSlot] = useState(defaultPick(AI_PICK_ID)?.id ?? null);
-  const [recommend, setRecommend] = useState(null);
-  const [share, setShare] = useState(false);
-  const slots = slotsFor(AI_PICK_ID, windows);
-  const toggle = (id) => setWindows((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]));
-  return (
-    <div className="grid gap-8 sm:grid-cols-2">
-      <div>
-        <Label>Chips (fill only)</Label>
-        <div className="flex flex-wrap gap-1">
-          {WINDOWS.map((w) => <Chip key={w.id} on={windows.includes(w.id)} onClick={() => toggle(w.id)}>{w.label}</Chip>)}
-          <Chip on disabled>Disabled</Chip>
-        </div>
-      </div>
-      <div>
-        <Label id="kit-slots">{`Radio group, ${pick.short}'s slots (arrows move and select)`}</Label>
-        {slots.length ? (
-          <RadioGroup labelledBy="kit-slots" value={slot} onChange={setSlot} options={slots.map((s) => ({ value: s.id, label: keepTogether(s.label) }))} />
-        ) : (
-          <span className="text-meta text-ink-500">No overlap with your times</span>
         )}
-      </div>
-      <div>
-        <Label>Radio group, no default</Label>
-        <RadioGroup label={`Recommend ${pick.short}`} value={recommend} onChange={setRecommend} options={[{ value: 'yes', label: `Yes, recommend ${pick.short}` }, { value: 'no', label: 'No' }]} />
-        <RadioGroup label="Disabled" disabled value="on" className="mt-2" options={[{ value: 'on', label: 'Disabled, selected' }, { value: 'off', label: 'Disabled' }]} />
-      </div>
-      <div>
-        <Label>Toggle (off by default)</Label>
-        <div className="flex items-start justify-between gap-6">
-          <span id="kit-share" className="text-ui text-ink-900">{`Share these photos in ${pick.short}'s showcase?`}</span>
-          <Toggle on={share} onChange={setShare} labelledBy="kit-share" />
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <Toggle on label="On" />
-          <Toggle label="Off" />
-          <Toggle on disabled label="Disabled" />
-        </div>
-      </div>
-    </div>
+        spec="Off by default, and never flipped for you"
+      />
+    </Board>
   );
 }
+
+// ── Components on the board ──────────────────────────────────────────────────
 
 function MatrixSample() {
   const [windows, setWindows] = useState(DEFAULT_AVAILABILITY);
@@ -648,117 +489,67 @@ function MotionSamples() {
   );
 }
 
-function ScrollSample() {
-  const [scrolled, onScroll] = useScrolled();
-  return (
-    <div className="flex h-48 flex-col overflow-hidden rounded-xl bg-canvas-v2">
-      <div className={`flex h-10 shrink-0 items-center border-b px-4 text-ui font-medium transition-colors duration-150 ${scrolled ? 'border-line' : 'border-transparent'}`}>
-        Scroll-aware header
-      </div>
-      <div onScroll={onScroll} className="flex-1 space-y-2 overflow-y-auto px-4 py-2">
-        {SCOPE.acceptance.concat(SCOPE.acceptance).map((a, i) => (
-          <p key={`${i}-${a}`} className="text-ui text-ink-700">{a}</p>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function KitPage() {
   const evidence = useEvidenceController();
   const [resolved, setResolved] = useState(false);
   return (
     <EvidenceContext.Provider value={evidence}>
-      <div className="v2 min-h-screen bg-canvas-v2 text-ink-900 antialiased lg:flex">
-        <aside className="border-line lg:w-[224px] lg:shrink-0 lg:border-r">
-          <RailSamples />
-        </aside>
-        <aside className="lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[360px] lg:shrink-0 xl:w-[400px]">
-          <ThreadSamples />
-        </aside>
-        <main className="m-2 flex min-w-0 flex-1 flex-col rounded-xl bg-white ring-1 ring-line">
-          <StageHeader />
-          <EvidenceScope artifact="kit">
-            <div className="flex flex-1 flex-col px-4 pt-8 lg:px-6 xl:px-8">
-              <div className="mx-auto flex w-full max-w-[960px] flex-1 flex-col">
-                <div className="flex-1">
-                  <h1 className="text-title text-balance text-ink-900">V2 primitives</h1>
-                  <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <StatusText state="needs-you">Review the craft</StatusText>
-                    <span className="text-ui text-ink-500">Every primitive in every state, on the real surfaces.</span>
-                  </div>
-                  <div className="mt-1 text-meta tabular-nums text-ink-500">src/components/v2 · README.md has the props</div>
-
-                  <div className="mt-8">
-                    <Section title="Type" meta="Five sizes, weights 400 to 600">
-                      <TypeSamples />
-                    </Section>
-                    <Section title="Color" meta="The whole V2 allowlist">
-                      <ColorSamples />
-                    </Section>
-                    <Section title="Buttons" meta="Text only">
-                      <ButtonSamples />
-                    </Section>
-                    <Section title="Status">
-                      <StatusSamples />
-                    </Section>
-                    <Section title="Controls">
-                      <ControlSamples />
-                    </Section>
-                    <Section title="Property grid">
-                      <div className="space-y-8">
-                        <LabelValue strong items={contractorRationale().map((r) => ({ key: r.label, label: r.label, value: r.text }))} />
-                        <LabelValue
-                          items={[
-                            { label: 'Scope of work', value: `${SCOPE.ref}. The same brief for all three.` },
-                            { label: 'Location', value: `${HOME.publicAddress}. Your full address goes only to the pro you book.` },
-                          ]}
-                        />
-                      </div>
-                    </Section>
-                    <Section title="Matrix" meta="Hover a dotted label for its definition">
-                      <MatrixSample />
-                    </Section>
-                    <Section title="Range rail" meta="Ticks appear as quotes arrive">
-                      <RailSample />
-                    </Section>
-                    <Section title="Photos" meta="Pins mark the spot the agent read">
-                      <PhotoSamples />
-                    </Section>
-                    <Section title="Evidence" meta="Click a line: restage, center, hold 1200ms">
-                      <EvidenceSamples />
-                    </Section>
-                    <Section title="Drawer">
-                      <DrawerSample />
-                    </Section>
-                    <Section title="Motion">
-                      <MotionSamples />
-                    </Section>
-                    <Section title="Scroll">
-                      <ScrollSample />
-                    </Section>
-                    <Section title="Tooltip on any element">
-                      <Tooltip label={`${JOB.name} · ${STATUS.booked.label}`} side="top">
-                        <span tabIndex={0} className="rounded-md text-ui text-ink-700 underline decoration-dotted decoration-ink-300 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25">
-                          Hover or tab to this text
-                        </span>
-                      </Tooltip>
-                    </Section>
-                  </div>
-                </div>
-                <DecisionBar
-                  note={resolved ? <StatusText state="done">{`Approved ${AT.scopeApproved}`}</StatusText> : `Next: Homewise verifies ${CONTRACTORS.length} local plumbers.`}
-                  actions={resolved ? null : (
-                    <>
-                      <Button variant="ghost">Edit scope</Button>
-                      <Button onClick={() => setResolved(true)}>Approve and find contractors</Button>
-                    </>
-                  )}
-                />
+      <div className="v2 min-h-screen bg-canvas-v2 text-ink-900 antialiased">
+        <EvidenceScope artifact="kit">
+          <main className="mx-auto w-full max-w-[1080px] px-4 py-12 sm:px-6 lg:py-16">
+            <header>
+              <div className="text-meta text-ink-500">Homewise · Version 2</div>
+              <h1 className="mt-2 text-title text-balance text-ink-900">Design system</h1>
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <StatusText state="done">One system</StatusText>
+                <span className="text-ui text-ink-500">Geist at 400 to 600, five sizes, one rule color, and three washes that each mean one thing.</span>
               </div>
+            </header>
+
+            <h2 className="mt-12 mb-4 text-heading text-ink-900">Foundations</h2>
+            <div className="space-y-6">
+              <ColorBoard />
+              <TypeBoard />
+              <StatusBoard />
+              <ControlsBoard />
             </div>
-          </EvidenceScope>
-        </main>
+
+            <h2 className="mt-14 mb-4 text-heading text-ink-900">On the board</h2>
+            <div className="space-y-6">
+              <Board title="Matrix" meta="One table on the board · two glyphs in its body, Included and Exception · the pick gets one sage panel">
+                <MatrixSample />
+              </Board>
+              <Board title="Range rail" meta="The local price range · ticks appear as quotes arrive (tap a chip)">
+                <RailSample />
+              </Board>
+              <Board title="Receipts" meta="Each finished step is one line in the conversation · hover or click a line to point at its proof">
+                <EvidenceSamples />
+              </Board>
+              <Board title="Photos" meta="Pins mark the spot the agent read">
+                <PhotoSamples />
+              </Board>
+              <Board title="Decision bar" meta="Every gate ends here · a note on what happens next, and the pane's one dark button">
+                <div className="-mt-12">
+                  <DecisionBar
+                    note={resolved ? <StatusText state="done">{`Approved ${AT.scopeApproved}`}</StatusText> : `Next: Homewise verifies ${CONTRACTORS.length} local plumbers.`}
+                    actions={resolved ? null : (
+                      <>
+                        <Button variant="ghost">Edit scope</Button>
+                        <Button onClick={() => setResolved(true)}>Approve and find contractors</Button>
+                      </>
+                    )}
+                  />
+                </div>
+              </Board>
+              <Board title="Drawer" meta="The one shadow in the app, for drawers only">
+                <DrawerSample />
+              </Board>
+              <Board title="Motion" meta="One ease, three durations · reduced motion makes every duration 0">
+                <MotionSamples />
+              </Board>
+            </div>
+          </main>
+        </EvidenceScope>
       </div>
     </EvidenceContext.Provider>
   );
